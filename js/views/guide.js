@@ -1,5 +1,6 @@
 // מדריך שימוש: נפתח אוטומטית בפתיחה הראשונה, ואפשר לפתוח שוב בכל רגע (כפתור "?" במסך הבית / מסך המאמן / #/guide).
-import { html, el, on, icon, em } from '../ui/dom.js';
+import { html, el, on, icon, em, ib } from '../ui/dom.js';
+import { BRAND } from '../brand.js';
 import { COACHES } from '../data/coaches.js';
 import { get, set } from '../store.js';
 import { unlock } from '../coach/voice.js';
@@ -15,10 +16,16 @@ function slides() {
   const coach = COACHES[p?.coach || 'ori'];
   return [
     {
-      id: 'welcome', title: 'ברוכים הבאים לסטודיו כושר', eyebrow: 'מדריך · 1 דקה',
-      visual: `<div class="g-duo"><img src="${COACHES.ori.img}" alt=""><img src="${COACHES.noa.img}" alt=""></div>`,
-      body: `<p>מאמן אישי וירטואלי שבונה לך תוכנית אימונים, מדגים כל תרגיל, <b>סופר איתך כל חזרה בקול</b>, מודד מנוחות — ומשנה את התוכנית לפי ההתקדמות.</p>
-        ${tip('🧭', 'המדריך מסביר מה להגדיר ואיך עובדים. אפשר לחזור אליו תמיד: כפתור <b>הגדרות</b> במסך הבית ← מדריך שימוש.')}`,
+      // שקף פתיחה בעיצוב משלו: שלושת המאמנים, שם האפליקציה ושלוש הבטחות קצרות
+      id: 'welcome', hero: true,
+      visual: `<div class="g-trio">${[['ori', 'חדר כושר'], ['maya', 'קליסתניקס'], ['noa', 'חדר כושר']].map(([c, t], k) => `<figure class="${k === 1 ? 'mid' : ''}"><img src="${COACHES[c].img}" alt=""><figcaption><b>${COACHES[c].name}</b><span>${t}</span></figcaption></figure>`).join('')}</div>`,
+      body: `<div class="g-brand">${BRAND.name}</div><h2>מאמן אישי לכל מסלול, בכל רמה</h2>
+        <div class="g-feats">
+          <div>${ib('dumbbell', 'pri')}<span><b>שני מסלולים</b>חדר כושר וריצה, או קליסתניקס במשקל גוף</span></div>
+          <div>${ib('vol', 'acc')}<span><b>מאמן שמדבר איתך</b>מדגים כל תרגיל, סופר חזרות ומודד מנוחות</span></div>
+          <div>${ib('chart', 'ok')}<span><b>תוכנית שמתקדמת איתך</b>משתנה לבד לפי הביצועים שלך</span></div>
+        </div>
+        <p class="g-note">המדריך לוקח דקה. אפשר לחזור אליו תמיד מההגדרות.</p>`,
     },
     {
       id: 'install', title: 'שלב 1 · מתקינים על הטלפון', eyebrow: 'פעם אחת',
@@ -118,8 +125,8 @@ export function openGuide({ onDone, first = false } = {}) {
   let i = 0;
   const root = el(`<div class="guide" role="dialog" aria-label="מדריך שימוש">
     <div class="g-top"><div class="g-dots">${S.map(() => '<i></i>').join('')}</div><button class="g-skip" data-g="skip">${first ? 'דלג' : 'סגור ✕'}</button></div>
-    <div class="g-track">${S.map((s) => html`<section class="g-slide" data-id="${s.id}"><div class="g-visual">${s.visual}</div>
-      <div class="g-body"><div class="eyebrow">${s.eyebrow}</div><h2>${s.title}</h2>${s.body}</div></section>`).join('')}</div>
+    <div class="g-track">${S.map((s) => html`<section class="g-slide ${s.hero ? 'hero' : ''}" data-id="${s.id}"><div class="g-visual">${s.visual}</div>
+      <div class="g-body">${s.hero ? s.body : `<div class="eyebrow">${s.eyebrow}</div><h2>${s.title}</h2>${s.body}`}</div></section>`).join('')}</div>
     <div class="g-nav"><button class="btn" data-g="prev">הקודם</button><button class="btn primary xl" data-g="next">הבא</button></div></div>`);
   document.body.append(root);
   document.body.style.overflow = 'hidden';
@@ -127,7 +134,7 @@ export function openGuide({ onDone, first = false } = {}) {
 
   const paint = () => {
     root.querySelectorAll('.g-dots i').forEach((d, j) => d.classList.toggle('on', j <= i));
-    root.querySelector('[data-g="prev"]').style.visibility = i ? 'visible' : 'hidden';
+    root.querySelector('[data-g="prev"]').style.display = i ? '' : 'none'; // בשקף הראשון כפתור "הבא" ברוחב מלא
     root.querySelector('[data-g="next"]').textContent = i === S.length - 1 ? (first ? 'בוא נתחיל' : 'סיום ✓') : 'הבא';
   };
   const go = (n) => {
