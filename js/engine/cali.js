@@ -295,3 +295,37 @@ export function toggleSkill(cali, lid) {
 }
 
 export { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, LADDER_OF };
+
+// ───── המלצת המערכת: איזה מסלול, וכמה אימונים מכל סוג ─────
+// לפי מה שהמתאמן סיפר בהיכרות: גישה לחדר כושר (yes / some = לפעמים / no), מטרה, ימים בשבוע ופציעות.
+// אלה כללי תכנון של האפליקציה, לא ממצא מחקרי: המחקר מראה ששתי השיטות בונות כוח ושריר (docs/CALISTHENICS.md),
+// ולכן ההמלצה נשענת על שיקולים מעשיים — היכן קל יותר להעמיס בהדרגה, מה דורש תרגול תכוף, ומה עוקף פציעה.
+// מחזיר { track, mixCali, why: [נימוקים] }. המתאמן תמיד יכול לבחור אחרת.
+export function recommendTrack({ gymAccess = 'yes', goal = 'combat', days = 4, injuries = [] } = {}) {
+  const n = Math.min(6, Math.max(3, days || 4));
+  const why = [];
+  let track, share = 0.5; // share = החלק של הקליסתניקס במסלול משולב
+  const wrist = injuries.includes('wrist');
+  if (gymAccess === 'no') {
+    track = 'cali';
+    why.push('אין גישה קבועה לחדר כושר — קליסתניקס עובד בבית, בפארק ובכל מקום.');
+    if (wrist) why.push('רגישות בשורש כף היד: התוכנית תדלג על תרגילים שנשענים עליו, ולכן חלק מהסולמות יהיו מצומצמים.');
+  } else if (wrist) {
+    track = 'gym';
+    why.push('רגישות בשורש כף היד: רוב תרגילי הקליסתניקס נשענים עליו, ובחדר הכושר קל יותר לעקוף אותו.');
+  } else if (goal === 'strength' || goal === 'muscle') {
+    if (gymAccess === 'some') { track = 'mix'; share = 0.5; why.push('חדר כושר רק לפעמים: מנצלים אותו לתרגילים הכבדים, ובשאר האימונים עובדים במשקל גוף.'); }
+    else { track = 'gym'; why.push(goal === 'strength' ? 'כוח מקסימלי: עם משקל חיצוני הכי פשוט להעמיס בהדרגה ולמדוד התקדמות.' : 'מסה: בחדר הכושר קל יותר להעמיס בהדרגה כל קבוצת שרירים, במיוחד רגליים.'); }
+  } else if (goal === 'skill') {
+    track = 'mix'; share = 2 / 3;
+    why.push('מיומנויות (עמידת ידיים, לברים, עליית כוח) דורשות תרגול תכוף, ולכן רוב השבוע קליסתניקס.');
+    why.push('אימון משקולות אחד או שניים משלים את מה שקשה להעמיס במשקל גוף — בעיקר רגליים.');
+  } else {
+    track = 'mix'; share = gymAccess === 'some' ? 2 / 3 : 0.5;
+    why.push(goal === 'cut' ? 'חיטוב: גיוון בין משקלים למשקל גוף שומר על כוח ומקל להתמיד.' : 'כושר כללי: משקלים בונים כוח, וקליסתניקס מוסיף שליטה בגוף, ליבה וניידות.');
+    if (gymAccess === 'some') why.push('חדר כושר רק לפעמים — לכן רוב האימונים במשקל גוף.');
+  }
+  if (track !== 'gym' && injuries.includes('shoulder')) why.push('רגישות בכתף: מיומנויות שמעמיסות על הכתף יישארו נעולות, והתוכנית תבחר חלופות.');
+  const mixCali = track === 'mix' ? Math.min(n - 1, Math.max(1, Math.round(n * share))) : 0;
+  return { track, mixCali, why };
+}

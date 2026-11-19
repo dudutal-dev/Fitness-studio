@@ -587,3 +587,24 @@ test('combined track: gym and calisthenics sessions share one week', async () =>
   // תוכנית חדר כושר רגילה לא משתנה ולא שואבת תרגילי קליסתניקס
   for (const days of [3, 4, 5, 6]) for (const s of buildWeek({ ...P, days, level: 1, injuries: ['knee', 'back', 'shoulder', 'wrist'] }).sessions) for (const it of s.items) assert.ok(EX[it.exId].tracks.includes('gym'), it.exId);
 });
+
+test('system recommendation: track and weekly split from what the trainee told us', async () => {
+  const { recommendTrack } = await import('../js/engine/cali.js');
+  const R = (o) => recommendTrack({ gymAccess: 'yes', goal: 'combat', days: 4, injuries: [], ...o });
+  assert.equal(R({ gymAccess: 'no' }).track, 'cali');
+  assert.equal(R({ gymAccess: 'no', goal: 'strength' }).track, 'cali', 'no gym → calisthenics whatever the goal');
+  assert.equal(R({ goal: 'strength' }).track, 'gym'); assert.equal(R({ goal: 'muscle' }).track, 'gym');
+  assert.deepEqual([R({}).track, R({}).mixCali], ['mix', 2]);
+  assert.deepEqual([R({ goal: 'cut', days: 5 }).track, R({ goal: 'cut', days: 5 }).mixCali], ['mix', 3]);
+  assert.equal(R({ injuries: ['wrist'] }).track, 'gym', 'wrist injury with a gym available → gym');
+  const skill = R({ goal: 'skill', days: 6 });
+  assert.equal(skill.track, 'mix'); assert.equal(skill.mixCali, 4, 'skills → mostly calisthenics');
+  assert.equal(R({ gymAccess: 'some', goal: 'muscle' }).track, 'mix');
+  assert.ok(R({ gymAccess: 'some', days: 3 }).mixCali >= 2, 'gym only sometimes → mostly calisthenics');
+  for (const gymAccess of ['yes', 'some', 'no']) for (const goal of ['combat', 'muscle', 'strength', 'cut', 'skill']) for (const days of [3, 4, 5, 6]) for (const injuries of [[], ['wrist'], ['shoulder', 'knee']]) {
+    const r = R({ gymAccess, goal, days, injuries });
+    assert.ok(['gym', 'cali', 'mix'].includes(r.track) && r.why.length >= 1);
+    if (r.track === 'mix') assert.ok(r.mixCali >= 1 && r.mixCali <= days - 1, `${gymAccess}/${goal}/${days}: ${r.mixCali}`); else assert.equal(r.mixCali, 0);
+    if (gymAccess === 'no') assert.equal(r.track, 'cali');
+  }
+});

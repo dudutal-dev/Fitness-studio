@@ -4,7 +4,7 @@ import { get, set, regenerateWeek, createPlan } from '../store.js';
 import { EX } from '../data/exercises.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EQUIP, MAX_ACTIVE_SKILLS } from '../data/cali.js';
-import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, rungState, ladderLock, ladderOpen, setRung, toggleSkill, newCali, caliLevel } from '../engine/cali.js';
+import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, rungState, ladderLock, ladderOpen, setRung, toggleSkill, newCali, caliLevel, recommendTrack, mixCaliCount } from '../engine/cali.js';
 import { goalForTrack } from '../engine/program.js';
 import { infoSheet } from './workout.js';
 import { say, stop, unlock } from '../coach/voice.js';
@@ -150,6 +150,40 @@ function after(track, rerender) {
   unlock(); stop(); say(`hello_${p.coach}`, { priority: true });
   toast(track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
   rerender();
+}
+
+// ───── המלצת המערכת (הגדרות) ─────
+// אותה המלצה כמו בסוף ההיכרות: שאלה אחת על גישה לחדר כושר, והשאר מהפרופיל (מטרה, ימים, פציעות).
+const TRACK_NAME = { gym: 'חדר כושר', cali: 'קליסתניקס', mix: 'משולב' };
+export function recommendSheet(rerender) {
+  const p = get().profile;
+  const cur = p.track || 'gym';
+  let access = p.gymAccess || (cur === 'cali' ? 'no' : 'yes');
+  const body = () => {
+    const r = recommendTrack({ gymAccess: access, goal: p.goal, days: p.days, injuries: p.injuries });
+    const same = r.track === cur && (r.track !== 'mix' || r.mixCali === mixCaliCount(p));
+    return html`<div class="eyebrow">המלצת המערכת</div><div class="h1" style="font-size:24px">איזה מסלול מתאים לך?</div>
+      <p class="sub">לפי המטרה שלך, ${p.days} אימונים בשבוע, הפציעות שסימנת — והגישה שלך לחדר כושר:</p>
+      <div style="font-weight:700;margin:0 0 6px">חדר כושר</div>
+      <div class="seg" data-access>${[['yes', 'יש לי'], ['some', 'לפעמים'], ['no', 'אין לי']].map(([v, t]) => `<button data-v="${v}" class="${access === v ? 'on' : ''}">${t}</button>`).join('')}</div>
+      <div class="card tight" style="margin-top:14px"><div class="eyebrow">${same ? 'זה המסלול שלך היום' : 'מומלץ'}</div>
+        <div class="h2" style="margin:2px 0 6px">${TRACK_NAME[r.track]}${r.track === 'mix' ? ` · ${p.days - r.mixCali} חדר כושר + ${r.mixCali} קליסתניקס` : ''}</div>
+        ${r.why.map((w) => `<div class="row" style="align-items:flex-start;padding:3px 0"><span style="color:var(--ok)">${icon('check', 'width="16" height="16"')}</span><span class="sub" style="font-size:14px">${esc(w)}</span></div>`).join('')}</div>
+      <button class="btn primary block xl" style="margin-top:14px" data-apply ${same ? 'disabled' : ''}>${same ? 'כבר במסלול המומלץ' : 'עבור למסלול המומלץ'}</button>
+      <button class="btn ghost block" style="margin-top:8px" data-close>${same ? 'סגור' : 'להישאר במסלול הנוכחי'}</button>`;
+  };
+  sheet(`<div data-tb>${body()}</div>`, {
+    onMount(sh, close) {
+      on(sh, 'click', '[data-access] button', (e, t) => { access = t.dataset.v; sh.querySelector('[data-tb]').innerHTML = body(); });
+      on(sh, 'click', '[data-apply]', () => {
+        const r = recommendTrack({ gymAccess: access, goal: p.goal, days: p.days, injuries: p.injuries });
+        close();
+        set((s) => { s.profile.gymAccess = access; if (r.track === 'mix') s.profile.mixCali = r.mixCali; return s; });
+        if (r.track !== cur) switchTrack(r.track, rerender);
+        else { set((s) => regenerateWeek(s)); toast('החלוקה עודכנה לפי ההמלצה'); rerender(); }
+      });
+    },
+  });
 }
 
 // שינוי ציוד: השלבים נשמרים; סולמות שדורשים ציוד שאין — יוצאים מהאימונים עד שיחזור
