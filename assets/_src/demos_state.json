@@ -1206,5 +1206,117 @@
  "lia/p_clam": {
   "img": "dauiJX6Fs62dTaJGcxtH",
   "vid": "VVwoppbRFuZsS48bOcn7"
+ },
+ "yael/y_breath": {
+  "img": "Vvc9feT2NjjVcWpZLIhi",
+  "vid": "WhUuNbB01Fylq32mvmNd"
+ },
+ "yael/y_cat_cow": {
+  "img": "1uwkkiLprBAFq9RTG6m3",
+  "vid": "qiaYuVSNrYxqrMKItOWS"
+ },
+ "yael/y_down_dog": {
+  "img": "HPGKj8GldcaZ6By4PZf8",
+  "vid": "hBw6D5wmIFtYpPlqijzC"
+ },
+ "yael/y_mountain": {
+  "img": "o8OwHm32R3eKJtwTHKtN",
+  "vid": "PwpO6llP3uGs3J57G2CC"
+ },
+ "yael/y_forward_fold": {
+  "img": "ioGLoe4gcrNrrudKJ9Vz",
+  "vid": "JSm2RW2NkiiM7uSShjpB"
+ },
+ "yael/y_chair": {
+  "img": "1QipvpJ2t33jiSmsixRB",
+  "vid": "Rn8WKsYjs4jbitPEwAHG"
+ },
+ "yael/y_warrior1": {
+  "img": "IeciEa7xAagv0piF6uvw",
+  "vid": "S3dc21jWbWO0pPayiiFg"
+ },
+ "yael/y_warrior2": {
+  "img": "oBRLgGP778WorKWIqJVK",
+  "vid": "MdFVKOqytDTM1L8Q8Rye"
+ },
+ "yael/y_triangle": {
+  "img": "76v7vW4POCVvlWPCvXsz",
+  "vid": "69DcRRs4bSZ7zwsjODvL"
+ },
+ "yael/y_warrior3": {
+  "img": "rAx2YKp82oPWtdBJ1IzT",
+  "vid": "PT77s88GDCckSyYfwuZD"
+ },
+ "yael/y_crow": {
+  "img": "RXZ8J06LyquncH0JWGSd",
+  "vid": "w2DZiodwM7qxr0dkiPP1"
+ },
+ "yael/y_plank": {
+  "img": "RpLbkTWFm0aX7KKek3kY",
+  "vid": "ZHt9XCx5fFclKqzApvaV"
+ },
+ "yael/y_boat": {
+  "img": "82lTNH1fNVcGbDTlnx5e",
+  "vid": "jEpwc3VHQOuy9dYIsdl5"
+ },
+ "yael/y_cobra": {
+  "img": "Z3hhV2Ic2kbtRYVa7Bpr",
+  "vid": "2y6KTEs3l0mj7Ob85Rv8"
+ },
+ "yael/y_bridge": {
+  "img": "wfOSgKjYH2s6BdCtazDg",
+  "vid": "i2NQwzjaC6khzXln4xXt"
+ },
+ "yael/y_locust": {
+  "img": "5z6t4lQy9aU2BS0gQ11k",
+  "vid": "eFQoEEkbcLNL64sy8MMT"
+ },
+ "yael/y_bow": {
+  "img": "UtwQJEZ07DLyET2iT8KM",
+  "vid": "qOmUjB96oblkeeOqF869"
+ },
+ "yael/y_seated_fold": {
+  "img": "lqOWJ4CzOF6Qu9uYmAZF",
+  "vid": "HO0qvwhrGIt5mURGPzUL"
+ },
+ "yael/y_butterfly": {
+  "img": "tzT6cpSnJi5AdUp7TDhZ",
+  "vid": "xd6QFbwxIHZZ0FE6WCx3"
+ },
+ "yael/y_pigeon": {
+  "img": "9yNBnqFeDz0EsYiRkeOy",
+  "vid": "JnxhZz4FDAhj1TVlTnyl"
+ },
+ "yael/y_child": {
+  "img": "o4XvmyrDmYTFx3lF5rSv",
+  "vid": "5lwbheK5MW6iJDpsqENP"
+ },
+ "yael/y_supine_twist": {
+  "img": "GKsNVbbc3NfhUv1kv5d8",
+  "vid": "8lyMqNEOF9RXiT1Qee78"
+ },
+ "yael/y_savasana": {
+  "img": "euaxU3lq8OSfYTTcI6Ic",
+  "vid": "7uop8oHuSF0Spk2eFeLf"
+ },
+ "yael/y_side_rest": {
+  "img": "cDjLQXL8c8imXpszMs8A",
+  "vid": "UYEDTEYTV4Hghu5wS1Mv"
+ },
+ "yael/y_low_lunge": {
+  "img": "xP45Obu4PZDzUodxuL3a",
+  "vid": "6ndSg2Ga30TBRONzYsvq"
+ },
+ "yael/y_happy_baby": {
+  "img": "0k7GMF8TWU7JV8yvJDqC",
+  "vid": "BpKc1imsmG7UVFenkbiS"
+ },
+ "yael/y_seated_twist": {
+  "img": "zD2esJbxkgBEZRYm8JoX",
+  "vid": "rtmeS9ZoPlbUcr2YD6Yi"
+ },
+ "yael/y_tree": {
+  "img": "yXtYBmBHbByV8I3LHfiu",
+  "vid": "PQ59VifGwShrduUJwQlW"
  }
 }

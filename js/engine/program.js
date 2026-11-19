@@ -3,6 +3,7 @@ import { EX, EXERCISES } from '../data/exercises.js';
 import { buildRunSession, isRun, buildRunWeek, buildRunSessions, RUN_PHASE } from './running.js';
 import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
 import { isPil, buildPilWeek, buildPilSessions, pilBlocked, PIL_PHASE } from './pil.js';
+import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } from './yoga.js';
 import { isHiit, buildHiitWeek, buildHiitSessions, hiitBlocked, HIIT_PHASE } from './hiit.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -41,12 +42,14 @@ export const GOALS = {
   fit: { name: 'כושר וסבולת', icon: 'bolt', runs: 0, finisher: false, phaseOrder: ['base'], track: 'hiit' },
   // מסלול פילאטיס בלבד
   core: { name: 'ליבה ויציבות', icon: 'target', runs: 0, finisher: false, phaseOrder: ['base'], track: 'pil' },
+  // מסלול יוגה בלבד
+  zen: { name: 'איזון ורוגע', icon: 'lotus', runs: 0, finisher: false, phaseOrder: ['base'], track: 'yoga' },
 };
 // המטרות של כל מסלול (מסה וחיטוב משותפות)
-const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'] };
-export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil'].includes(track) ? track : 'gym'];
+const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'], yoga: ['zen', 'flex', 'cut'] };
+export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil', 'yoga'].includes(track) ? track : 'gym'];
 // מעבר בין מסלולים: המטרה המקבילה במסלול השני
-export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : 'combat');
+export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : track === 'yoga' ? 'zen' : 'combat');
 
 // ───── תבניות פיצול ─────
 // כל משבצת: role + רשימת תרגילים מועדפים לפי סדר (בחירה לפי רמה/פציעות/רוטציה)
@@ -122,6 +125,7 @@ export function blockedSet(profile) {
   if (hasMob(profile)) for (const id of mobBlocked(profile)) s.add(id);
   if (isHiit(profile)) for (const id of hiitBlocked(profile)) s.add(id);
   if (isPil(profile)) for (const id of pilBlocked(profile)) s.add(id);
+  if (isYoga(profile)) for (const id of yogaBlocked(profile)) s.add(id);
   return s;
 }
 
@@ -131,6 +135,7 @@ export function phaseFor(profile, blockIndex) {
   if (isRun(profile)) return RUN_PHASE;
   if (isHiit(profile)) return HIIT_PHASE;
   if (isPil(profile)) return PIL_PHASE;
+  if (isYoga(profile)) return YOGA_PHASE;
   const order = GOALS[profile.goal]?.phaseOrder || GOALS.combat.phaseOrder;
   const id = order[blockIndex % order.length];
   return PHASES.find((p) => p.id === id);
@@ -224,6 +229,7 @@ export function buildWeek(profile, opt = {}) {
 }
 
 function buildMainWeek(profile, { blockIndex = 0, weekInBlock = 0, min = 3 } = {}) {
+  if (isYoga(profile)) return min < 3 ? { ...buildYogaWeek(profile, { blockIndex, weekInBlock }), sessions: buildYogaSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildYogaWeek(profile, { blockIndex, weekInBlock });
   if (isPil(profile)) return min < 3 ? { ...buildPilWeek(profile, { blockIndex, weekInBlock }), sessions: buildPilSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildPilWeek(profile, { blockIndex, weekInBlock });
   if (isHiit(profile)) return min < 3 ? { ...buildHiitWeek(profile, { blockIndex, weekInBlock }), sessions: buildHiitSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildHiitWeek(profile, { blockIndex, weekInBlock });
   if (isRun(profile)) return min < 3 ? { ...buildRunWeek(profile, { blockIndex, weekInBlock }), sessions: buildRunSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildRunWeek(profile, { blockIndex, weekInBlock });
@@ -268,7 +274,7 @@ export function buildFieldWorkout(profile) {
 export function applyReadiness(workout, readiness) {
   const w = structuredClone(workout);
   w.readiness = readiness;
-  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil') return w;
+  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil' || w.track === 'yoga') return w;
   if (w.track === 'hiit') {
     // HIIT: ביום קשה מורידים סבב; אין משקל לשנות
     if (readiness < 0.4 && w.rounds > 2) { w.items = w.items.map((it) => ({ ...it, sets: it.sets - 1 })); w.rounds -= 1; w.note = 'יום קשה? הורדתי סבב אחד. עדיף אימון קצר וטוב.'; }

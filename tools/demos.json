@@ -954,5 +954,145 @@
   "sitting on a dark exercise mat with both legs folded to the left side, the right hand on the mat and the left arm reaching up and over the head in a side bend to the right, front view",
   "holds the mermaid side stretch, breathing slowly",
   "pil"
+ ],
+ "y_breath": [
+  "sitting cross-legged on a dark yoga mat in an easy seated yoga pose, spine tall, hands resting on the knees, eyes closed, front view",
+  "sits completely still in the cross-legged pose, breathing slowly, the chest and belly gently rising and falling",
+  "yoga"
+ ],
+ "y_cat_cow": [
+  "on hands and knees on a dark yoga mat in a tabletop position, hands under the shoulders, knees under the hips, back flat, side view",
+  "slowly arches the back down lifting the head and tailbone, then rounds the back up toward the ceiling tucking the chin, and returns to a flat back",
+  "yoga"
+ ],
+ "y_down_dog": [
+  "in a downward-facing dog yoga pose on a dark yoga mat: hands and feet on the mat, hips high, body in an inverted V shape, arms and back in one long straight line, head relaxed between the arms, side view",
+  "holds the downward-facing dog almost still, breathing calmly",
+  "yoga"
+ ],
+ "y_mountain": [
+  "standing tall in mountain pose on a dark yoga mat, feet hip-width apart, arms relaxed by the sides with palms facing forward, shoulders relaxed, front view",
+  "stands tall and still in mountain pose, breathing calmly, the chest gently rising and falling",
+  "yoga"
+ ],
+ "y_forward_fold": [
+  "in a standing forward fold on a dark yoga mat: folded forward from the hips with the knees slightly bent, torso hanging over the legs, hands touching the mat beside the feet, head relaxed down, side view",
+  "hangs in the standing forward fold almost still, the head and arms relaxed, breathing slowly",
+  "yoga"
+ ],
+ "y_chair": [
+  "in yoga chair pose on a dark yoga mat: feet together, knees bent with the hips sitting back as if onto a chair, torso leaning slightly forward, both arms straight overhead beside the ears, side view",
+  "holds the chair pose still with the arms overhead, breathing steadily",
+  "yoga"
+ ],
+ "y_warrior1": [
+  "in yoga warrior one pose on a dark yoga mat: a long lunge stance with the front knee bent over the ankle, the back leg straight with the back foot flat and angled out, hips facing forward, both arms straight up overhead, side view",
+  "holds warrior one steady with the arms reaching up, breathing calmly",
+  "yoga"
+ ],
+ "y_warrior2": [
+  "in yoga warrior two pose on a dark yoga mat: wide stance, front knee bent over the ankle, back leg straight, hips and chest open to the side, both arms stretched out horizontally at shoulder height, gaze over the front hand, front view of the open chest",
+  "holds warrior two steady with the arms stretched out, breathing calmly",
+  "yoga"
+ ],
+ "y_low_lunge": [
+  "kneeling in a low lunge yoga pose on a dark yoga mat: the front foot flat with the front knee bent at ninety degrees, the BACK KNEE RESTING DOWN ON THE MAT with the back shin and the top of the back foot flat on the mat, hips sinking forward, torso upright, both arms reaching straight overhead, side view",
+  "holds the low lunge with the arms overhead, the hips sinking slightly lower with each breath",
+  "yoga"
+ ],
+ "y_triangle": [
+  "in yoga triangle pose on a dark yoga mat: wide stance with both legs straight, torso tilted sideways over the front leg, the lower hand resting on the front shin, the other arm reaching straight up to the ceiling, chest open, front view",
+  "holds the triangle pose still with the top arm reaching up, breathing calmly",
+  "yoga"
+ ],
+ "y_tree": [
+  "standing in an easy beginner balance pose on a dark yoga mat: all the weight on one straight leg, the other leg turned out with only its heel resting against the inner ankle of the standing leg and its toes still touching the mat like a kickstand, both knees low, palms pressed together in front of the chest, front view",
+  "balances almost perfectly still in the easy tree pose with the toes of one foot touching the mat, breathing calmly",
+  "yoga"
+ ],
+ "y_warrior3": [
+  "balancing in yoga warrior three pose on a dark yoga mat: standing on one straight leg, torso and the other leg lifted in one horizontal line parallel to the floor, arms extended back alongside the body, side view",
+  "balances in warrior three almost still, the body in one horizontal line",
+  "yoga"
+ ],
+ "y_crow": [
+  "balancing in yoga crow pose on a dark yoga mat: hands flat on the mat with the arms bent, knees resting on the backs of the upper arms, both feet lifted off the mat, body tucked into a compact ball, gaze forward, side view",
+  "balances in crow pose almost still on the hands, the feet staying off the mat",
+  "yoga"
+ ],
+ "y_plank": [
+  "in a high plank on a dark yoga mat: hands under the shoulders with straight arms, legs straight back on the toes, body in one straight line from head to heels, side view",
+  "holds the high plank perfectly still, breathing steadily",
+  "yoga"
+ ],
+ "y_boat": [
+  "in yoga boat pose on a dark yoga mat: balancing on the sit bones, torso leaning back with a straight spine, knees bent with the shins lifted parallel to the floor, arms extended straight forward beside the knees, side view",
+  "holds the boat pose steady, breathing calmly",
+  "yoga"
+ ],
+ "y_cobra": [
+  "in yoga cobra pose on a dark yoga mat: lying face down with the legs straight, hands under the shoulders, elbows bent and tucked in, chest lifted off the mat, shoulders down, gaze forward, side view",
+  "holds the low cobra, the chest lifting slightly on each inhale and softening on each exhale",
+  "yoga"
+ ],
+ "y_bridge": [
+  "in yoga bridge pose on a dark yoga mat: lying on the back with the knees bent and feet flat hip-width apart, hips lifted high, arms straight on the mat alongside the body, side view",
+  "holds the bridge pose with the hips lifted, breathing calmly",
+  "yoga"
+ ],
+ "y_locust": [
+  "in yoga locust pose on a dark yoga mat: lying face down with the chest, both arms and both straight legs lifted slightly off the mat, arms reaching back alongside the body, gaze down, side view",
+  "holds the locust pose with the chest and legs lifted, breathing steadily",
+  "yoga"
+ ],
+ "y_bow": [
+  "in yoga bow pose on a dark yoga mat: lying on the belly, knees bent, both hands holding the ankles behind the body, chest and thighs lifted off the mat so the body forms a bow shape, side view",
+  "holds the bow pose, gently rocking very slightly with the breath",
+  "yoga"
+ ],
+ "y_seated_fold": [
+  "in a seated forward fold on a dark yoga mat: sitting with both legs straight together in front, torso folded forward over the legs from the hips, hands holding the shins or feet, side view",
+  "stays in the seated forward fold almost still, folding a little deeper with each exhale",
+  "yoga"
+ ],
+ "y_butterfly": [
+  "sitting on a dark yoga mat in butterfly pose: soles of the feet pressed together close to the body, knees dropped out to the sides, hands holding the feet, spine tall, front view",
+  "sits tall in butterfly pose almost still, the knees gently sinking toward the mat",
+  "yoga"
+ ],
+ "y_pigeon": [
+  "in yoga pigeon pose on a dark yoga mat: the front leg bent on the mat with the shin angled across in front of the hips, the back leg extended straight behind, hips square and low, torso upright with the fingertips on the mat beside the hips, side view",
+  "holds the pigeon pose, slowly lowering the torso a little forward and coming back up",
+  "yoga"
+ ],
+ "y_happy_baby": [
+  "lying flat on the back on a dark yoga mat in happy baby pose: the head and shoulders resting flat on the mat, both knees bent and opened wide apart toward the armpits, shins vertical with the soles of the feet facing the ceiling, each hand holding the outer edge of the foot on the same side, side view from a slightly high angle",
+  "holds the happy baby pose, rocking very gently from side to side",
+  "yoga"
+ ],
+ "y_child": [
+  "in child's pose on a dark yoga mat: kneeling and sitting back on the heels, torso folded forward over the thighs, forehead resting on the mat, arms stretched forward on the mat, side view",
+  "rests in child's pose almost still, the back gently rising and falling with slow breathing",
+  "yoga"
+ ],
+ "y_seated_twist": [
+  "in a seated spinal twist on a dark yoga mat, seen from the side: sitting tall with the left leg straight on the mat and the right knee bent up with the right foot flat on the mat, the whole torso and shoulders rotated strongly to the right so the chest faces away over the bent knee, the left arm hugging the bent knee, the right hand on the mat behind the hips, head turned looking over the right shoulder",
+  "holds the seated twist, lengthening the spine and turning slightly further with each exhale",
+  "yoga"
+ ],
+ "y_supine_twist": [
+  "lying on the back on a dark yoga mat in a supine spinal twist: both shoulders flat on the mat, arms spread out to the sides in a T shape, one knee bent and dropped across the body to the opposite side, head turned away from the knee, view from above at an angle",
+  "rests in the supine twist almost still, breathing slowly",
+  "yoga"
+ ],
+ "y_savasana": [
+  "lying flat on the back on a dark yoga mat in savasana relaxation pose: legs slightly apart and relaxed, arms resting a little away from the body with the palms facing up, eyes closed, side view from a slightly high angle",
+  "lies completely still in savasana with the eyes closed, the belly gently rising and falling with slow breathing",
+  "yoga"
+ ],
+ "y_side_rest": [
+  "lying on the left side on a dark yoga mat in a relaxed side-lying rest pose: head resting on the bottom arm, the top knee bent and resting on the mat in front of the body, eyes closed, front view",
+  "lies completely still on the side with the eyes closed, breathing slowly",
+  "yoga"
  ]
 }

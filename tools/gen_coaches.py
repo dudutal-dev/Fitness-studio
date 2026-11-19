@@ -29,6 +29,11 @@ COACHES = {
     "lia": "Portrait of Lia, an energetic confident Israeli female HIIT and Pilates instructor, about 31, shoulder-length dark wavy hair held back with a plain black headband, olive skin, bright determined smile, athletic toned build, "
            "wearing a plain fitted black cropped training top with thin amber-orange piping and black high-waist leggings, barefoot, standing on a dark exercise mat with arms relaxed and one hand holding a small towel, waist-up framing. "
            "Modern boutique fitness studio with a dark rubber floor, a large mirror and warm amber and soft teal accent lighting softly blurred in the background, shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
+    "yael": "Portrait of Yael, a serene warm Israeli female yoga teacher, about 35, long black hair in a single loose braid over one shoulder, light olive skin, "
+            "soft calm smile, slender strong build with tall relaxed posture, wearing a plain fitted black sleeveless yoga top with thin amber-orange piping "
+            "and black yoga leggings, standing barefoot on a dark yoga mat, hands relaxed at her sides, waist-up framing. "
+            "Bright calm yoga studio with a light wooden floor, a large window with soft daylight, a few green plants and rolled yoga mats in the soft-focus background, "
+            "warm amber and soft teal accent lighting, shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
     "tamar": "Portrait of Tamar, a warm calm Israeli female mobility and flexibility coach, about 38, straight shoulder-length auburn-brown hair tucked behind one ear, "
              "gentle confident smile, lean supple build with relaxed open posture, wearing a plain fitted black long-sleeve training top with thin amber-orange piping "
              "and black leggings, standing barefoot on a wooden studio floor beside a rolled exercise mat, one hand resting lightly on her hip, waist-up framing. "

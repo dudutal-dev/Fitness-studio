@@ -35,10 +35,15 @@ export const COACHES = {
     bio: 'אנרגטית, חדה ומדויקת. ב-HIIT לא מבזבזת שנייה; בפילאטיס מאטה, ומקפידה על כל תנועה.',
     style: 'אנרגטי-חד', img: 'assets/coaches/lia.webp', face: 'assets/coaches/lia_face.webp',
   },
+  yael: {
+    id: 'yael', name: 'יעל', title: 'מורה ליוגה', voice: 'קול ייעודי (ElevenLabs)', track: 'yoga', f: true,
+    bio: 'שלווה, חמה ומדויקת. מאמינה שיוגה מתחילה בנשימה: מי שנושם ברוגע בתנוחה, כבר עושה אותה נכון.',
+    style: 'שלו-חם', img: 'assets/coaches/yael.webp', face: 'assets/coaches/yael_face.webp',
+  },
 };
 COACHES.noa.f = true;
 // המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה; מוביליטי — תמר; ריצה — גיא ושירה
-const OWN = ['cali', 'mob', 'run', 'hiit', 'pil'];
+const OWN = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga'];
 export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.tracks || [c.track || 'gym']).includes(OWN.includes(track) ? track : 'gym'));
 
 export const demoVideo = (coach, exId) => `assets/demos/${coach}/${exId}.mp4`;

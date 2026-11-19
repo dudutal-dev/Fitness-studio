@@ -10,7 +10,7 @@ test('load of a session: long runs, hard sessions, light sessions', () => {
   assert.equal(loadOf({ items: [{}], name: 'פלג עליון' }), 'hard');
   assert.equal(loadOf({ track: 'cali', items: [{}] }), 'hard');
   assert.equal(loadOf({ track: 'hiit', items: [{}] }), 'hard'); assert.equal(loadOf({ track: 'hiit', easy: true, items: [{}] }), 'light');
-  assert.equal(loadOf({ track: 'mob', items: [{}] }), 'light'); assert.equal(loadOf({ track: 'pil', items: [{}] }), 'light');
+  assert.equal(loadOf({ track: 'mob', items: [{}] }), 'light'); assert.equal(loadOf({ track: 'pil', items: [{}] }), 'light'); assert.equal(loadOf({ track: 'yoga', items: [{}] }), 'light');
   assert.equal(loadOf({ runOnly: true, items: [], run: { type: 'long', totalSec: 2700 } }), 'long');
   assert.equal(loadOf({ runOnly: true, items: [], run: { type: 'easy', totalSec: 3900 } }), 'long', 'an hour or more counts as long');
   assert.equal(loadOf({ runOnly: true, items: [], run: { type: 'intervals', totalSec: 1500 } }), 'hard');
