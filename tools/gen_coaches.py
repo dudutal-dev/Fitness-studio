@@ -20,6 +20,11 @@ COACHES = {
             "sleeveless training top with thin amber-orange piping and black leggings, standing next to a steel pull-up bar with one hand resting on it, waist-up framing. "
             "Dark premium calisthenics studio with steel pull-up bars and wooden gymnastic rings in the background, moody warm amber and soft teal rim lighting, "
             "shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
+    "tamar": "Portrait of Tamar, a warm calm Israeli female mobility and flexibility coach, about 38, straight shoulder-length auburn-brown hair tucked behind one ear, "
+             "gentle confident smile, lean supple build with relaxed open posture, wearing a plain fitted black long-sleeve training top with thin amber-orange piping "
+             "and black leggings, standing barefoot on a wooden studio floor beside a rolled exercise mat, one hand resting lightly on her hip, waist-up framing. "
+             "Calm premium movement studio with a light wooden floor, a few rolled mats and a foam roller in the soft-focus background, warm amber and soft teal "
+             "accent lighting, shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
 }
 
 def run(cid):
