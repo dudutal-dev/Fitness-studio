@@ -96,6 +96,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     <div class="stage"><img class="stage-bg" alt="" aria-hidden="true"><img class="poster" alt=""><video muted playsinline loop autoplay preload="auto"></video>
       <div class="hud-top"><button class="icon-btn" data-act="exit" aria-label="יציאה">${icon('close', 'width="20" height="20"')}</button>
         <div class="progress"></div><span class="clock num">0:00</span>
+        <button class="icon-btn" data-act="tv" aria-label="מצב טלוויזיה">${icon('tv', 'width="20" height="20"')}</button>
         <button class="icon-btn" data-act="voice" aria-label="קול">${icon(get().settings.voice ? 'vol' : 'mute', 'width="20" height="20"')}</button></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"></div></div>
@@ -134,6 +135,25 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     video.play().catch(() => {});
   }
 
+  // מצב טלוויזיה (מסך לרוחב): מה הבא בתור — מוצג ליד שם התרגיל, כדי שלא יהיה צריך להתקרב לטלפון
+  function tvNext() {
+    const here = cur().ii;
+    const nx = steps.slice(k + 1).find((x) => x.ii !== here);
+    return nx ? `<div class="tv-next">הבא: <b>${esc(EX[items[nx.ii].exId].name)}</b></div>` : '<div class="tv-next">התרגיל האחרון</div>';
+  }
+  // מעבר למסך לרוחב. באנדרואיד האפליקציה מסתובבת לבד; באייפון מסובבים את הטלפון (ואז המסך מתארגן לרוחב אוטומטית).
+  let tvOn = false;
+  async function tvMode(on) {
+    tvOn = on;
+    root.classList.toggle('tv', on);
+    try {
+      if (on) { await document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {}); await screen.orientation?.lock?.('landscape'); }
+      else { screen.orientation?.unlock?.(); if (document.fullscreenElement) await document.exitFullscreen?.(); }
+    } catch { /* אייפון: אין נעילת כיוון — מסובבים ידנית */ }
+    if (on && !matchMedia('(orientation: landscape)').matches) toast('מסובבים את הטלפון לרוחב, ומפעילים שיקוף מסך לטלוויזיה', 4200);
+    else if (on) toast('מצב טלוויזיה: עכשיו מפעילים שיקוף מסך מהטלפון', 3200);
+  }
+
   function paintTop() {
     const exIdx = [...new Set(steps.map((x) => x.ii))];
     $('.progress').innerHTML = exIdx.map((ii) => {
@@ -154,7 +174,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         <span class="tag">${it.role === 'finisher' ? 'סבב' : 'סט'} <span class="num">${setNo}/${it.sets}</span></span>`}
         <button class="tag teal" data-act="info">${icon('info', 'width="12" height="12"')} הסבר</button></div>
       <div class="name">${esc(e.name)}</div>
-      <div class="sub">${esc(e.equip)} · ${e.muscles.slice(0, 3).map((m) => MUSCLES[m]).join(' · ')}</div>`;
+      <div class="sub">${esc(e.equip)} · ${e.muscles.slice(0, 3).map((m) => MUSCLES[m]).join(' · ')}</div>${tvNext()}`;
   }
 
   // ───── מצבים ─────
@@ -538,6 +558,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
 
   function close() {
     clearInterval(timer); clearInterval(clock); offSpeak(); stop();
+    if (tvOn) tvMode(false);
     useCoach(null);
     pill._destroy?.(); hrRec.stop();
     try { wakeLock?.release(); } catch { /* */ }
@@ -572,6 +593,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (a === 'rest-minus') root._restAdj?.(-15);
     if (a === 'info') infoSheet(item().exId, coach);
     if (a === 'swap') swapSheet();
+    if (a === 'tv') tvMode(!tvOn);
     if (a === 'voice') {
       set((s2) => { s2.settings.voice = !s2.settings.voice; return s2; });
       if (!get().settings.voice) stop();

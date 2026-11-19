@@ -905,3 +905,28 @@ html.locked body { overflow: hidden; }
 .mob-row .dots i.f { background: var(--pri); }
 .mob-row .t-foot { text-align: end; }
 .mob-row .tag { font-size: 10px; padding: 1px 6px; }
+
+/* ───── מצב טלוויזיה: האימון החי לרוחב (טלפון מסובב, או שיקוף מסך לטלוויזיה) ─────
+   ההדגמה בצד אחד בגובה מלא, ובצד השני שעון גדול ושם התרגיל — בגודל שקוראים מרחוק. */
+.live .tv-next { display: none; }
+@media (orientation: landscape) and (min-aspect-ratio: 4/3) {
+  .live { max-width: none; flex-direction: row; }
+  .live .stage { flex: 0 0 42% !important; border-radius: 0; }
+  .live .stage video, .live .stage img.poster { top: 0; height: 100%; object-position: 50% 50%; }
+  .live .panel { flex: 1 1 0 !important; min-width: 0; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; padding: 10px max(22px, var(--safe-l, 0px)) calc(10px + var(--safe-b)); }
+  .live .hud-top { top: 10px; }
+  .live .coach-pip { top: 58px; }
+  .live .say { top: 62px; font-size: min(4.6vh, 18px); }
+  .live .title .name { font-size: min(9.5vh, 44px); }
+  .live .title .sub { display: none; }
+  .live .tv-next { display: block; margin-top: 4px; font-size: min(5vh, 20px); color: var(--mute); text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+  .live .tv-next b { color: var(--text); }
+  .live .counter { padding: 0 0 4px; }
+  .live .counter .ring { width: min(56vh, 340px) !important; height: min(56vh, 340px) !important; }
+  .live .counter .big { font-size: min(17vh, 100px); }
+  .live .counter .lbl { font-size: min(4.4vh, 18px); }
+  .live .phase-lbl { font-size: min(7vh, 30px); justify-content: center; }
+  .live .panel > .btn.xl { min-height: 0; padding-block: 10px; }
+  .live .next-up { margin-top: 8px; }
+  .live .run-big { font-size: min(26vh, 130px); }
+}

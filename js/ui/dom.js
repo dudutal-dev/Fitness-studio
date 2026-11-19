@@ -143,6 +143,7 @@ const P = {
   skip: '<path d="M5 5l9 7-9 7zM18 5v14"/>',
   vol: '<path class="d" d="M4 9v6h4l5 4V5L8 9z"/><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
   mute: '<path d="M4 9v6h4l5 4V5L8 9zM17 9l5 6M22 9l-5 6"/>',
+  tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>',
   check: '<path d="M5 12.500l4.5 4.500L19 7"/>',
   chev: '<path d="M15 6l-6 6 6 6"/>',
   trash: '<path class="d" d="M6.5 7h11l-.8 12a1.5 1.5 0 0 1-1.5 1.500H8.800A1.5 1.5 0 0 1 7.3 19z"/><path d="M4.5 7h15M9.5 7V4.500h5V7M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.500h6.400a1.5 1.5 0 0 0 1.5-1.500l.8-12M10 11v5.500M14 11v5.5"/>',
