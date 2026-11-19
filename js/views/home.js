@@ -1,4 +1,4 @@
-// מסך הבית: מאמן הולוגרפי, מדד כשירות קרבית, משימת היום, שבוע, מעקבים מהירים.
+// מסך הבית: מסך אחד בלי גלילה — האימון הבא, שורת המאמן, המעקב היומי ומדד הכושר. התראות ופירוט בחלוניות.
 import { html, esc, on, sheet, toast, greeting, icon, ib, emi, fmtDate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
@@ -68,55 +68,14 @@ export function renderHome(root) {
   const tile = (act, ic, val, unit, label, bar) => `<button class="card tight tracker" data-act="${act}"><div class="tr-top">${ic}<span class="tr-add">＋</span></div>
     <div class="v num">${val}<small> ${unit}</small></div><div class="sub t-cap">${label}</div>${bar != null ? `<div class="bar"><i style="width:${bar}%"></i></div>` : ''}</button>`;
 
-  root.innerHTML = html`
-    <div class="topbar">
-      <div class="hello"><div class="sub">${greeting()}</div><div class="h1">${esc(p.name)}</div></div>
-      <div class="top-actions">
-        ${st ? `<span class="tag orange" title="רצף ימים">${icon('flame')} <span class="num">${st}</span></span>` : ''}
-        <a href="#/coach" class="set-btn" aria-label="הגדרות">${icon('gear')}<span>הגדרות</span></a>
-      </div>
-    </div>
-
-    ${ns ? html`<div class="card mission">
-      <div class="media"><img src="${demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
-        <div class="over"><div class="eyebrow">האימון הבא · ${esc(s.plan.week.phase.name)}</div>
-        <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div></div></div>
-      <div class="body">
-        <div class="stats"><div><b>${estMinutes(ns)}</b>דקות</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>קטעים</div>` : `<div><b>${ns.items.length}</b>תרגילים</div>`}
-          ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>סבבים</div><div><b>${ns.work}/${ns.rest}</b>שנ׳</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>סטים</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>ריצה</div>` : ''}</div>
-        <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('התחל', 'התחילי')} ${ns.runOnly ? 'ריצה' : 'אימון'}</button>
-        <div class="week-cap"><span>השבוע</span><span><span class="num">${doneN}</span> מתוך <span class="num">${total}</span> אימונים</span></div>
-        <div class="week">${s.plan.week.sessions.map((x) => `<i class="d ${doneDays.has(x.day) ? 'done' : ns?.day === x.day ? 'next' : ''}"></i>`)}</div>
-      </div></div>`
-    : html`<div class="card"><div class="empty"><div class="e">${ib('trophy', 'pri', 'xl')}</div><b>השבוע הושלם!</b><div>מנוחה — השבוע הבא נטען אוטומטית.</div></div></div>`}
-    <div class="home-cta-sub">
-      ${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}
-      ${isRun(p) || isHiit(p) || isPil(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
-    : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
-    : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}
-    </div>
-
-    <div class="card coach-hero" style="margin-top:12px">
-      <div class="holo"><img src="${coach.face}" alt="${coach.name}"></div>
-      <div class="bubble">${line.text}</div>
-      <button class="speak" data-act="speak" data-key="${line.key}" aria-label="השמע את ${coach.name}"><span class="wave"><i></i><i></i><i></i><i></i></span></button>
-    </div>
-    ${hasMob(p) && retestDue(p.mob) ? `<div class="card tight rem-prompt"><div class="row">${ib('target', 'acc', 'lg')}<div style="flex:1"><b>${mobTested(p.mob) ? 'הגיע הזמן למבחן טווחים חוזר' : 'מבחן טווחים קצר'}</b><div class="sub" style="font-size:13px">${mobTested(p.mob) ? 'עברו ארבעה שבועות. שישה מבחנים קצרים יראו מה השתפר.' : 'שישה מבחנים ביתיים, כחמש דקות. לפיהם האימונים יתמקדו במה שהכי צריך.'}</div></div></div>
+  // מה שלא חייב להיות מול העיניים עבר לחלוניות: התראות ועדכונים (פעמון), ופירוט מדד הכושר (הקשה על השורה שלו)
+  const promptsHtml = html`${hasMob(p) && retestDue(p.mob) ? `<div class="card tight rem-prompt"><div class="row">${ib('target', 'acc', 'lg')}<div style="flex:1"><b>${mobTested(p.mob) ? 'הגיע הזמן למבחן טווחים חוזר' : 'מבחן טווחים קצר'}</b><div class="sub" style="font-size:13px">${mobTested(p.mob) ? 'עברו ארבעה שבועות. שישה מבחנים קצרים יראו מה השתפר.' : 'שישה מבחנים ביתיים, כחמש דקות. לפיהם האימונים יתמקדו במה שהכי צריך.'}</div></div></div>
       <button class="btn sm primary" style="margin-top:10px" data-act="mob-test">${mobTested(p.mob) ? 'למבחן החוזר' : 'לעשות את המבחן'}</button></div>` : ''}
     ${reminderPromptHtml()}
     ${backupDue(s) && !reminderPromptHtml() ? html`<div class="card tight rem-prompt"><div class="row">${ib('save', 'acc', 'lg')}<div style="flex:1"><b>כדאי לגבות את הנתונים</b><div class="sub" style="font-size:13px">${s.sessions.length + s.runs.length} אימונים שמורים רק בטלפון הזה. ${s.lastBackupAt ? 'עבר חודש מהגיבוי האחרון.' : 'עדיין לא בוצע גיבוי.'}</div></div></div>
-      <div class="row" style="margin-top:10px"><button class="btn sm primary" data-act="backup">גבה עכשיו</button><button class="btn sm ghost" data-act="backup-later">אחר כך</button></div></div>` : ''}
-
-    <div class="h2">היום</div>
-    <div class="grid2">
-      ${tile('water', ib('drop', 'acc'), (dd.water / 1000).toFixed(1), `/ ${t.waterL} ל׳`, 'מים · הקשה מוסיפה כוס', pct(dd.water, t.waterL * 1000))}
-      ${tile('food', ib('food', 'pri'), eaten.kcal.toLocaleString('he-IL'), `/ ${t.kcal.toLocaleString('he-IL')}`, `קלוריות · ${eaten.p} ג׳ חלבון`, pct(eaten.kcal, t.kcal))}
-      ${tile('weight', ib('scale'), lastW ? lastW.kg : '—', 'ק״ג', lastW ? `משקל · ${fmtDate(lastW.date)}` : 'שקילה ראשונה', null)}
-      ${tile('checkin', ib('pulse', 'ok'), dd.checkin != null ? Math.round(dd.checkin * 100) : '—', dd.checkin != null ? '%' : '', 'מוכנות יומית', dd.checkin != null ? Math.round(dd.checkin * 100) : null)}
-    </div>
-
-    <div class="h2">הכושר שלך<a class="more" href="#/progress">התקדמות</a></div>
-    <div class="card">
+      <div class="row" style="margin-top:10px"><button class="btn sm primary" data-act="backup">גבה עכשיו</button><button class="btn sm ghost" data-act="backup-later">אחר כך</button></div></div>` : ''}`.trim();
+  const eventsHtml = html`${s.events.length ? html`<div class="h2">עדכונים</div><div class="card tight list-hist">${s.events.slice(0, 3).map((e) => `<div class="it">${ib(e.type === 'pr' ? 'trophy' : e.type === 'rank' ? 'medal' : e.type === 'level' ? 'rocket' : 'chat', e.type === 'pr' || e.type === 'rank' ? 'pri' : 'acc')}<div><div style="font-weight:700;font-size:14px">${esc(e.text)}</div><div class="sub t-cap">${fmtDate(e.date)}</div></div></div>`)}</div>` : ''}`.trim();
+  const fitHtml = html`<div class="card">
       <div class="cri">
         ${ring((cri.score ?? 0) / 100, { size: 104, stroke: 10, big: cri.score ?? '—', lbl: cri.score == null ? 'עוד לא נמדד' : 'מתוך 100' })}
         <div>
@@ -125,18 +84,75 @@ export function renderHome(root) {
         </div>
       </div>
       <div class="rank-row"><span>${emi(rank.icon)} ${rank.name}</span><div class="bar"><i style="width:${rank.pct * 100}%"></i></div><span class="num">${rank.next ? `${s.xp} / ${rank.next.xp}` : s.xp} XP</span></div>
+    </div>`;
+
+  // מסך אחד, בלי גלילה: האימון הבא תופס את רוב המסך, ומתחתיו המאמן, המעקב היומי ומדד הכושר
+  root.innerHTML = html`<div class="home">
+    <div class="topbar">
+      <div class="hello"><div class="sub">${greeting()}</div><div class="h1">${esc(p.name)}</div></div>
+      <div class="top-actions">
+        ${st ? `<span class="tag orange" title="רצף ימים">${icon('flame')} <span class="num">${st}</span></span>` : ''}
+        <button class="set-btn bell" data-act="notices" aria-label="עדכונים">${icon('bell')}${promptsHtml ? '<i class="dot"></i>' : ''}</button>
+        <a href="#/coach" class="set-btn" aria-label="הגדרות">${icon('gear')}<span>הגדרות</span></a>
+      </div>
     </div>
 
-    ${s.events.length ? html`<div class="h2">עדכונים</div><div class="card tight list-hist">${s.events.slice(0, 3).map((e) => `<div class="it">${ib(e.type === 'pr' ? 'trophy' : e.type === 'rank' ? 'medal' : e.type === 'level' ? 'rocket' : 'chat', e.type === 'pr' || e.type === 'rank' ? 'pri' : 'acc')}<div><div style="font-weight:700;font-size:14px">${esc(e.text)}</div><div class="sub t-cap">${fmtDate(e.date)}</div></div></div>`)}</div>` : ''}
+    ${ns ? html`<div class="hero"><img class="bg" src="${demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
+      <div class="hero-in"><div class="eyebrow">האימון הבא · ${esc(s.plan.week.phase.name)}</div>
+        <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div>
+        <div class="stats"><div><b>${estMinutes(ns)}</b>דקות</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>קטעים</div>` : `<div><b>${ns.items.length}</b>תרגילים</div>`}
+          ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>סבבים</div><div><b>${ns.work}/${ns.rest}</b>שנ׳</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>סטים</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>ריצה</div>` : ''}</div>
+        <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('התחל', 'התחילי')} ${ns.runOnly ? 'ריצה' : 'אימון'}</button>
+        <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}
+      ${isRun(p) || isHiit(p) || isPil(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
+    : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
+    : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div>
+        <div class="week-cap"><span>השבוע</span><span><span class="num">${doneN}</span> מתוך <span class="num">${total}</span> אימונים</span></div>
+        <div class="week">${s.plan.week.sessions.map((x) => `<i class="d ${doneDays.has(x.day) ? 'done' : ns?.day === x.day ? 'next' : ''}"></i>`)}</div>
+      </div></div>`
+    : html`<div class="hero done"><div class="hero-in"><div class="e">${ib('trophy', 'pri', 'xl')}</div><div class="h1" style="font-size:24px">השבוע הושלם!</div><div class="sub">מנוחה — השבוע הבא נטען אוטומטית.</div>
+        <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}
+      ${isRun(p) || isHiit(p) || isPil(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
+    : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
+    : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div></div></div>`}
+
+    <div class="card coach-hero">
+      <div class="holo"><img src="${coach.face}" alt="${coach.name}"></div>
+      <div class="bubble">${line.text}</div>
+      <button class="speak" data-act="speak" data-key="${line.key}" aria-label="השמע את ${coach.name}"><span class="wave"><i></i><i></i><i></i><i></i></span></button>
+    </div>
+
+    <div class="today">
+      ${tile('water', ib('drop', 'acc'), (dd.water / 1000).toFixed(1), `/ ${t.waterL} ל׳`, 'מים', pct(dd.water, t.waterL * 1000))}
+      ${tile('food', ib('food', 'pri'), eaten.kcal.toLocaleString('he-IL'), `/ ${t.kcal.toLocaleString('he-IL')}`, 'קלוריות', pct(eaten.kcal, t.kcal))}
+      ${tile('weight', ib('scale'), lastW ? lastW.kg : '—', 'ק״ג', 'משקל', null)}
+      ${tile('checkin', ib('pulse', 'ok'), dd.checkin != null ? Math.round(dd.checkin * 100) : '—', dd.checkin != null ? '%' : '', 'מוכנות', dd.checkin != null ? Math.round(dd.checkin * 100) : null)}
+    </div>
+
+    <button class="card tight fit-strip" data-act="fitness">
+      ${ring((cri.score ?? 0) / 100, { size: 46, stroke: 5, big: cri.score ?? '—' })}
+      <div class="grow"><div class="row between"><b>הכושר שלך</b><span class="sub t-cap">${emi(rank.icon)} ${rank.name}</span></div>
+        <div class="bar"><i style="width:${rank.pct * 100}%"></i></div></div>
+      <span class="chev">${icon('chev', 'width="18" height="18"')}</span>
+    </button>
+    </div>
   `;
 
   const off = onSpeaking((v) => root.querySelector('.speak')?.classList.toggle('speaking', v));
   root._cleanup = off;
 
-  bindReminderPrompt(root, () => renderHome(root));
-  on(root, 'click', '[data-act]', (e, el) => {
+  const rerender = () => renderHome(root);
+  const act = (a, el) => {
     unlock();
-    const a = el.dataset.act;
+    if (a === 'notices') {
+      return sheet(`<div class="h1" style="font-size:22px">הודעות</div>${promptsHtml}${eventsHtml}${promptsHtml || eventsHtml ? '' : '<p class="sub">אין עדכונים חדשים.</p>'}<button class="btn block" style="margin-top:14px" data-close>סגור</button>`, {
+        onMount(sh, close) {
+          bindReminderPrompt(sh, () => { close(); rerender(); });
+          on(sh, 'click', '[data-act], [data-remgo]', (ev, b) => { close(); if (b.dataset.act) act(b.dataset.act, b); });
+        },
+      });
+    }
+    if (a === 'fitness') return sheet(`<div class="h1" style="font-size:22px">הכושר שלך</div><p class="sub">הציון מורכב מהמדדים שכבר נמדדו.</p>${fitHtml}<a class="btn primary block" style="margin-top:14px" href="#/progress" data-close>להתקדמות המלאה</a><button class="btn ghost block" style="margin-top:8px" data-close>סגור</button>`);
     if (a === 'speak') say(el.dataset.key, { priority: true });
     if (a === 'start') begin(ns);
     if (a === 'run') startRun(ns.run, { day: ns.day });
@@ -149,7 +165,8 @@ export function renderHome(root) {
     if (a === 'checkin') checkIn(() => renderHome(root), true);
     if (a === 'quick-mob') quickMobSheet((w) => startWorkout(w));
     if (a === 'mob-test') mobTestSheet(() => renderHome(root));
-  });
+  };
+  on(root, 'click', '[data-act]', (e, el) => act(el.dataset.act, el));
 }
 
 // רכיב שעוד לא נמדד מוצג בלי מספר, עם הסבר מתי יופיע
