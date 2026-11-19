@@ -275,6 +275,7 @@ export function renderOnboarding(root, done) {
       set((s) => {
         s.profile = profile;
         s.plan = createPlan(profile);
+        s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
         s.events = [{ type: 'coach', text: mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mixCaliCount(d), mixCaliCount(d))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
         return s;

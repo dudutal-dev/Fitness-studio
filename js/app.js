@@ -9,6 +9,7 @@ import { renderNutrition } from './views/nutrition.js';
 import { renderCoach } from './views/coach.js';
 import { startWorkout } from './views/workout.js';
 import { unlock, warmVoiceCache } from './coach/voice.js';
+import { openPlanIntro } from './views/plan-intro.js';
 import { initUpdater } from './updater.js';
 import { openGuide } from './views/guide.js';
 import { applyTheme } from './theme.js';
@@ -47,6 +48,8 @@ function route() {
     return;
   }
   if (!document.getElementById('view')) shell();
+  // מיד אחרי ההיכרות: מסך "התוכנית שלך" (אימונים ותזונה) לפני מסך הבית. מוצג פעם אחת — גם אם האפליקציה נסגרה באמצע.
+  if (s.planSeen === false && !document.querySelector('.plan-intro')) openPlanIntro((dest) => { if (dest !== 'home') location.hash = `#/${dest}`; });
   let r = (location.hash.replace('#/', '') || 'home').split('?')[0];
   if (r === 'go') {
     const ns = nextSession(s);
