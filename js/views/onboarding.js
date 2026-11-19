@@ -13,6 +13,9 @@ import { DISLIKE_TAGS } from '../data/foods.js';
 import { set, createPlan, today, lohemData, importFromLohem } from '../store.js';
 import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
+// שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
+const GATE_TAG = { ori: 'חדר כושר', noa: 'חדר כושר', maya: 'קליסתניקס', tamar: 'מוביליטי', guy: 'ריצה', shira: 'ריצה', lia: 'HIIT · פילאטיס', yael: 'יוגה' };
+const GATE_COUNT = { 5: 'חמישה', 6: 'שישה', 7: 'שבעה', 8: 'שמונה', 9: 'תשעה', 10: 'עשרה' };
 
 const GOAL_DESC = {
   combat: 'כוח + ריצה + סבולת. כושר מאוזן לכל מה שהחיים דורשים.',
@@ -89,15 +92,16 @@ export function renderOnboarding(root, done) {
 
   const views = [
     // 0 — פתיחה
-    () => html`<div class="splash">
-        <div class="duo"><img src="${COACHES.ori.img}" alt=""><img src="${COACHES.maya.img}" alt=""><img src="${COACHES.guy.img}" alt=""><img src="${COACHES.lia.img}" alt=""><img src="${COACHES.tamar.img}" alt=""></div>
-        <div class="copy">
-          <div class="eyebrow">מאמן אישי וירטואלי</div>
-          <div class="logo">${BRAND.name}</div>
-          <div class="h1" style="font-size:24px;margin-top:10px">מאמן אישי לכל מסלול, בכל רמה.</div>
-          <p class="sub" style="font-size:15px">חדר כושר, קליסתניקס, ריצה, HIIT, פילאטיס, יוגה, מוביליטי — או שילוב ביניהם. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
-          ${lohemData() ? `<button class="btn block" style="margin-top:14px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ"חוד"</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית "חוד" נשארת כמו שהיא.</p>` : ''}
-        </div></div>`,
+    () => { const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids].map((id) => `<figure><img src="${COACHES[id].img}" alt=""><figcaption><b>${COACHES[id].name}</b><span>${GATE_TAG[id]}</span></figcaption></figure>`).join('')}</div></div>`;
+      return html`<div class="gate">
+        <div class="gate-top"><div class="gate-logo">${BRAND.name}</div><div class="gate-tag">הסטודיו שלך. בכל מקום.</div></div>
+        <div class="gate-wall" aria-hidden="true">${row(['ori', 'yael', 'guy', 'lia'], 'a')}${row(['maya', 'noa', 'tamar', 'shira'], 'b')}${row(['ori', 'yael', 'maya', 'guy', 'lia', 'noa', 'tamar', 'shira'], 'one')}</div>
+        <div class="gate-copy">
+          <div class="gate-h">${GATE_COUNT[Object.keys(COACHES).length] || 'צוות'} מאמנים.<br><em>סטודיו אחד.</em></div>
+          <p class="sub">חדר כושר, קליסתניקס, ריצה, HIIT, פילאטיס, יוגה ומוביליטי — או שילוב ביניהם.</p>
+          <div class="gate-feats"><span>${icon('target')}תוכנית שמשתנה איתך</span><span>${icon('vol')}ספירת חזרות בקול</span><span>${icon('chart')}תזונה ומעקב</span></div>
+          ${lohemData() ? `<button class="btn block" style="margin-top:12px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ"חוד"</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית "חוד" נשארת כמו שהיא.</p>` : ''}
+        </div></div>`; },
     // 1 — מסלול
     () => html`<div class="eyebrow">שלב 1 · המסלול</div><div class="q">איך ${d.sex === 'f' ? 'את מתאמנת' : 'אתה מתאמן'}?</div>
       <p class="sub">אפשר לבחור מסלול אחד או לשלב. מחליפים בהגדרות בכל רגע, בלי לאבד היסטוריה.</p>
@@ -298,7 +302,7 @@ export function renderOnboarding(root, done) {
       <div class="content">${views[step]()}</div>
       ${isBuild ? '' : html`<div class="actions">
         ${step > 0 ? '<button class="btn" data-act="back">חזרה</button>' : ''}
-        <button class="btn primary block xl" data-act="next">${step === 0 ? 'בוא נתחיל' : last ? 'בנה לי תוכנית' : step === REC - 1 ? 'להמלצה' : 'המשך'}</button></div>`}
+        <button class="btn primary block xl" data-act="next">${step === 0 ? 'מתחילים' : last ? 'בנה לי תוכנית' : step === REC - 1 ? 'להמלצה' : 'המשך'}</button></div>`}
     </div>`;
     // הסעיף נשאר פתוח גם כשהמסך מצויר מחדש (למשל אחרי בחירת ניסיון)
     root.querySelector('details.lifts')?.addEventListener('toggle', (e) => { d.liftsOpen = e.target.open; });
