@@ -3,7 +3,7 @@ import { html, esc, on, sheet, toast, icon } from '../ui/dom.js';
 import { get, set, regenerateWeek, exportData, importData, resetAll } from '../store.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
 import { GOALS, INJURIES, LEVEL_NAMES, goalsFor } from '../engine/program.js';
-import { isCali } from '../engine/cali.js';
+import { isCali, isMix, hasCali, mixCaliCount } from '../engine/cali.js';
 import { switchTrack, equipChips, setEquip } from './cali-ui.js';
 import { TRACKS, goalDesc } from './onboarding.js';
 import { BRAND } from '../brand.js';
@@ -28,19 +28,19 @@ export function renderCoach(root) {
   const s = get();
   const p = s.profile;
   const st = s.settings;
-  const cali = isCali(p), track = cali ? 'cali' : 'gym';
+  const cali = isCali(p), mix = isMix(p), track = cali ? 'cali' : mix ? 'mix' : 'gym';
   if (sessionStorage.getItem('scrollTo') === 'reminders') openSec.add('reminders');
   root.innerHTML = html`<div class="page-head"><div class="h1">הגדרות</div></div>
     <div class="h2" style="margin-top:0">המאמן שלך</div>
     <div class="coach-pick ${cali ? 'solo' : ''}">${coachesFor(track).map((c) => html`
       <button class="coach-card ${p.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span>
         <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
-    <p class="sub t-foot" style="margin-top:10px">${esc(COACHES[p.coach].bio)}</p>
+    <p class="sub t-foot" style="margin-top:10px">${esc(COACHES[p.coach].bio)}${mix ? ` באימוני הקליסתניקס מאמנת ${COACHES.maya.name}.` : ''}</p>
 
     <div class="h2">המסלול שלך</div>
-    <div class="card tight"><div class="seg" data-track-seg>${Object.entries(TRACKS).map(([k, t]) => `<button data-track="${k}" class="${track === k ? 'on' : ''}">${t.name}</button>`).join('')}</div>
+    <div class="card tight"><div class="seg" data-track-seg>${['gym', 'cali', 'mix'].map((k) => `<button data-track="${k}" class="${track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
       <div class="sub t-foot" style="margin-top:8px">${esc(TRACKS[track].desc)} מעבר מסלול בונה תוכנית חדשה ומחליף מאמן; ההיסטוריה, השקילות והתזונה נשמרות.</div>
-      ${cali ? `<div style="font-weight:700;margin:12px 0 6px">הציוד שלי</div>${equipChips(p.cali.equip)}<div class="sub t-foot" style="margin-top:6px">שינוי ציוד מעדכן מיד את האימונים. השלבים בסולמות נשמרים.</div>` : ''}</div>
+      ${hasCali(p) ? `<div style="font-weight:700;margin:12px 0 6px">הציוד שלי${mix ? ' לקליסתניקס' : ''}</div>${equipChips(p.cali.equip)}<div class="sub t-foot" style="margin-top:6px">שינוי ציוד מעדכן מיד את האימונים. השלבים בסולמות נשמרים.</div>` : ''}</div>
 
     <div class="h2">הגדרות</div>
     ${sec('reminders', 'תזכורות', 'אימון, שתייה ושקילה', reminderCard())}
@@ -71,6 +71,8 @@ export function renderCoach(root) {
       <label class="field"><span>מטרה</span><div class="seg" data-seg="goal">${goalsFor(track).map((k) => `<button data-v="${k}" class="${p.goal === k ? 'on' : ''}" aria-label="${GOALS[k].name}">${icon(GOALS[k].icon)}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px" data-goal-desc><b>${GOALS[p.goal].name}</b> — ${goalDesc(p.goal, track)}</div></label>
       <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${[3, 4, 5, 6].map((v) => `<button data-v="${v}" class="${p.days === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
+      ${mix ? `<label class="field"><span>כמה מהם קליסתניקס? (השאר בחדר הכושר)</span><div class="seg" data-seg="mixCali">${Array.from({ length: p.days - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(p) === v ? 'on' : ''}">${v}</button>`).join('')}</div>
+        <div class="sub" style="font-size:12px;margin-top:4px">אחרי שינוי במספר האימונים בשבוע — לשמור, ואז לבחור כאן מחדש.</div></label>` : ''}
       <label class="field"><span>משך אימון</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${p.sessionMin === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       <label class="field"><span>פציעות / רגישויות</span><div class="chips">${Object.entries(INJURIES).map(([k, x]) => `<button class="chip no ${p.injuries.includes(k) ? 'on' : ''}" data-inj="${k}">${x.name}</button>`).join('')}</div></label>
       <div class="field" ${cali ? 'hidden' : ''}><span>כמה ${p.sex === 'f' ? 'את מרימה' : 'אתה מרים'} (משקל × חזרות) — לא חובה</span>
@@ -79,7 +81,7 @@ export function renderCoach(root) {
           <i>×</i><input class="input num" name="lift_${k}_r" type="number" inputmode="numeric" placeholder="חזרות" value="${p.lifts?.[k]?.reps ?? ''}" aria-label="${name} — חזרות"></div>`).join('')}
         <div class="sub" style="font-size:12px;margin-top:6px">קובע את משקל הפתיחה של תרגילים שעוד לא ביצעת. תרגיל שכבר יש לו היסטוריה ממשיך לפיה.</div></div>
       <button class="btn primary block" data-save>שמור ועדכן תוכנית</button>
-      <div class="sub" style="font-size:12px;margin-top:8px">${cali ? 'השלבים בסולמות: מסך התוכנית ← הסולמות שלי' : `רמה נוכחית: ${p.level} (${LEVEL_NAMES[p.level]})`} · שינוי מטרה/ימים בונה מחדש את השבוע הנוכחי.</div>
+      <div class="sub" style="font-size:12px;margin-top:8px">${cali ? 'השלבים בסולמות: מסך התוכנית ← הסולמות שלי' : `רמה נוכחית${mix ? ' בחדר הכושר' : ''}: ${p.level} (${LEVEL_NAMES[p.level]})`} · שינוי מטרה/ימים בונה מחדש את השבוע הנוכחי.</div>
     </div>`)}
 
     <a class="card tight set-row" href="#/guide" style="margin-top:12px;text-decoration:none;color:inherit;border-bottom:0"><div class="grow"><b>מדריך שימוש</b><div class="sub">מה להגדיר ואיך מתאמנים עם המאמן</div></div><span class="chev">${icon('chev', 'width="20" height="20"')}</span></a>
@@ -124,7 +126,7 @@ export function renderCoach(root) {
   });
   on(root, 'click', '[data-coach]', (e, b) => {
     unlock(); stop();
-    set((s2) => { s2.profile.coach = b.dataset.coach; if (!isCali(s2.profile)) s2.profile.gymCoach = b.dataset.coach; return s2; });
+    set((s2) => { s2.profile.coach = b.dataset.coach; if (!isCali(s2.profile)) s2.profile.gymCoach = b.dataset.coach; return isMix(s2.profile) ? regenerateWeek(s2) : s2; });
     say(`hello_${b.dataset.coach}`, { priority: true });
     syncReminders().catch(() => {});
     renderCoach(root);
@@ -132,7 +134,7 @@ export function renderCoach(root) {
   on(root, 'click', '[data-toggle]', (e, b) => { const k = b.dataset.toggle; set((s2) => { s2.settings[k] = !(s2.settings[k] ?? true); return s2; }); document.body.classList.toggle('no-captions', get().settings.captions === false); if (k === 'voice') stop(); renderCoach(root); });
   root.querySelector('[data-vol]').addEventListener('change', (e) => set((s2) => { s2.settings.volume = Number(e.target.value); return s2; }));
   on(root, 'click', '[data-test]', () => { unlock(); say('m1', { priority: true }); });
-  const draft = { goal: p.goal, days: p.days, sessionMin: p.sessionMin, injuries: [...p.injuries], sex: p.sex || 'm' };
+  const draft = { goal: p.goal, days: p.days, sessionMin: p.sessionMin, injuries: [...p.injuries], sex: p.sex || 'm', ...(mix ? { mixCali: mixCaliCount(p) } : {}) };
   on(root, 'click', '[data-seg] button', (e, b) => {
     const k = b.closest('[data-seg]').dataset.seg;
     draft[k] = ['goal', 'sex'].includes(k) ? b.dataset.v : Number(b.dataset.v);
@@ -148,6 +150,7 @@ export function renderCoach(root) {
       Object.assign(s2.profile, draft, { name: val('name') || p.name, age: Number(val('age')) || p.age, heightCm: Number(val('heightCm')) || p.heightCm,
         targetWeight: Number(val('targetWeight')) || p.targetWeight, run3k: r3, runLevel: runLevelFrom3k(r3),
         lifts: liftsFrom((k, f) => val(`lift_${k}_${f}`)) });
+      if (s2.profile.track === 'mix') s2.profile.mixCali = mixCaliCount(s2.profile); // נשאר לפחות אימון אחד מכל סוג
       s2.plan.completedDays = s2.plan.completedDays.filter((d) => d <= s2.profile.days);
       return regenerateWeek(s2);
     });

@@ -4,6 +4,7 @@ import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, emi 
 import { get, set, addXP, XP, pushEvent } from '../store.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget } from '../engine/running.js';
+import { sessionCoach } from '../engine/cali.js';
 import { say, sayNow, stop, onSpeaking, unlock, preload } from '../coach/voice.js';
 import { gpsTracker } from '../devices/gps.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
@@ -20,7 +21,7 @@ export function startRun(run, { day = null } = {}) {
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3']);
   const s = get();
   const profile = s.profile;
-  const coach = profile.coach;
+  const coach = sessionCoach(profile, null); // ריצה שייכת למסלול חדר הכושר
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
   let i = 0;

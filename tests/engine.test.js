@@ -547,3 +547,43 @@ test('calisthenics: profile wiring — goals, nutrition, fitness score, suggesti
   assert.equal(suggest('plank', hold, [{ sets: [{ reps: 40, done: true }] }], p).reps, 45);
   assert.equal(suggest('plank', hold, [{ sets: [{ reps: 60, done: true }] }], p).reps, 60);
 });
+
+test('combined track: gym and calisthenics sessions share one week', async () => {
+  const { newCali, sessionCoach, exCoach, mixCaliCount, canDo, hasCali, isCali } = await import('../js/engine/cali.js');
+  const cali = newCali({ pushups: 22, pullups: 6, squats: 35, dips: 5, plankSec: 70 }, ['bar']);
+  const base = { ...P, track: 'mix', cali, coach: 'noa', gymCoach: 'noa' };
+  for (const days of [3, 4, 5, 6]) {
+    for (let k = 1; k < days; k++) {
+      const p = { ...base, days, mixCali: k };
+      const w = buildWeek(p, {});
+      assert.equal(w.sessions.length, days);
+      assert.deepEqual(w.sessions.map((s) => s.day), Array.from({ length: days }, (_, i) => i + 1));
+      assert.equal(new Set(w.sessions.map((s) => s.name)).size, days, 'unique names');
+      const caliS = w.sessions.filter((s) => s.track === 'cali'), gymS = w.sessions.filter((s) => s.track !== 'cali');
+      assert.equal(caliS.length, k); assert.equal(gymS.length, days - k);
+      assert.equal(w.sessions[0].track, undefined, 'the week opens with a gym session');
+      for (const s of caliS) {
+        assert.equal(sessionCoach(p, s), 'maya');
+        for (const it of s.items) { assert.ok(EX[it.exId].tracks.includes('cali'), `${it.exId} in a calisthenics session`); assert.ok(canDo(it.exId, ['bar'])); }
+        assert.ok(!s.run);
+      }
+      for (const s of gymS) {
+        assert.equal(sessionCoach(p, s), 'noa');
+        for (const it of s.items) assert.ok(EX[it.exId].tracks.includes('gym'), `${it.exId} in a gym session`);
+      }
+      assert.ok(gymS.filter((s) => s.run).length <= gymS.length);
+    }
+  }
+  // ברירת מחדל: חצי מהשבוע, ותמיד נשאר אימון מכל סוג
+  assert.equal(mixCaliCount({ days: 4 }), 2); assert.equal(mixCaliCount({ days: 3 }), 1); assert.equal(mixCaliCount({ days: 4, mixCali: 9 }), 3); assert.equal(mixCaliCount({ days: 5, mixCali: 0 }), 1);
+  assert.ok(hasCali(base) && !isCali(base));
+  assert.equal(exCoach(base, 'planche'), 'maya'); assert.equal(exCoach(base, 'bench_press'), 'noa');
+  // מדד הכושר: גם סבולת וגם מיומנות; תזונה ומטרות כמו בחדר הכושר
+  const cri = combatReadiness({ profile: base, history: {}, sessions: [], runs: [], weights: [] });
+  assert.ok(cri.parts.strength > 0 && cri.parts.skill > 0 && cri.parts.endurance > 0);
+  assert.equal(targets({ ...base, goal: 'muscle' }).delta, targets({ ...P, goal: 'muscle' }).delta);
+  // אימון בלי ציוד במסלול משולב = הסולמות, בלי ציוד
+  assert.ok(buildFieldWorkout(base).items.every((i) => canDo(i.exId, [])));
+  // תוכנית חדר כושר רגילה לא משתנה ולא שואבת תרגילי קליסתניקס
+  for (const days of [3, 4, 5, 6]) for (const s of buildWeek({ ...P, days, level: 1, injuries: ['knee', 'back', 'shoulder', 'wrist'] }).sessions) for (const it of s.items) assert.ok(EX[it.exId].tracks.includes('gym'), it.exId);
+});

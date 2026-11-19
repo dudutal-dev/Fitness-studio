@@ -7,11 +7,11 @@ import { EX, EXERCISES, MUSCLES } from '../data/exercises.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { suggest, isPR, roundLoad, bestSet, evaluateLevel } from '../engine/progression.js';
 import { applyReadiness, blockedSet, LEVEL_NAMES, warmupFor, cooldownFor } from '../engine/program.js';
-import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking } from '../coach/voice.js';
+import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking, useCoach } from '../coach/voice.js';
 import { MOTIVATION_KEYS, ORDINAL_SET, MOBILITY_TIPS } from '../data/voice-lines.js';
 import { DEMO_TIMING } from '../data/demo-timing.js';
 import { startRun } from './run.js';
-import { isCali, applyCaliSession, rungState, caliLevel, canDo, LADDERS, LADDER_OF } from '../engine/cali.js';
+import { isCali, hasCali, sessionCoach, applyCaliSession, rungState, caliLevel, canDo, LADDERS, LADDER_OF } from '../engine/cali.js';
 import { pingWorkout, syncReminders } from '../reminders.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor } from '../devices/hr.js';
 import { hrPill, hrSummaryHtml } from '../devices/ui.js';
@@ -23,7 +23,10 @@ export function startWorkout(workout, { readiness = null } = {}) {
   unlock();
   const s = get();
   const profile = s.profile;
-  const coach = profile.coach;
+  // המאמן של האימון הזה (במסלול משולב: מאיה בקליסתניקס, אורי/נועה בחדר הכושר) — גם מדגים וגם מדבר
+  const coach = sessionCoach(profile, workout);
+  const caliW = workout.track === 'cali';
+  useCoach(coach);
   const w = readiness != null ? applyReadiness(workout, readiness) : structuredClone(workout);
 
   // פריטים: חימום → תרגילים → פיניש (סבב) → מתיחות
@@ -73,7 +76,7 @@ export function startWorkout(workout, { readiness = null } = {}) {
   preload(['go', 'down', 'up', 'hold', 'pull', 'press', 'release', 'rest', 'rest_10', 'rest_30', 'set_done', 'two_more', 'last_rep', 'last_set',
     'next_ex', 'rate_set', 'warm_intro', 'warm_go', 'switch_side', 'warm_done', 'cool_intro', 'cool_done', 'hold_start', 'hold_half', 'hold_done', 'workout_done', 'pr', 'hr_ready', 'hr_high', `hello_${coach}`,
     ...Array.from({ length: 20 }, (_, i) => `n${i + 1}`), ...Array.from({ length: 6 }, (_, i) => `set${i + 1}`),
-    ...(isCali(profile) ? ['slow_down', 'skill_intro', 'rung_up', 'rung_wait'] : []),
+    ...(caliW ? ['slow_down', 'skill_intro', 'rung_up', 'rung_wait'] : []),
     ...MOTIVATION_KEYS, ...items.map((it) => `ex_${it.exId}`), ...items.filter((it) => MOBILITY_TIPS[it.exId]).map((it) => `tip_${it.exId}`)]);
 
   const root = el(`<div class="live" role="dialog" aria-label="אימון חי">
@@ -445,14 +448,14 @@ export function startWorkout(workout, { readiness = null } = {}) {
         if (e.role === 'finisher') continue;
         (s2.history[e.exId] ||= []).push({ date: nowIso, sid, sets: e.sets, target: e.target });
       }
-      s2.sessions.push({ id: sid, date: nowIso, name: w.name, day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr });
+      s2.sessions.push({ id: sid, date: nowIso, name: w.name, ...(caliW ? { track: 'cali' } : {}), day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr });
       if (workout.day != null && !partial && !s2.plan.completedDays.includes(workout.day)) s2.plan.completedDays.push(workout.day);
       // קליסתניקס: עלייה/ירידה בסולמות לפי הביצוע, והשבוע נבנה מחדש עם השלבים החדשים
-      if (isCali(s2.profile) && s2.profile.cali) {
+      if (hasCali(s2.profile) && caliW) {
         ladderChanges = applyCaliSession(s2.profile.cali, exercises);
         const moved = ladderChanges.filter((c) => c.type === 'up' || c.type === 'down');
         s2.sessions[s2.sessions.length - 1].ups = ladderChanges.filter((c) => c.type === 'up').length;
-        s2.profile.level = caliLevel(s2.profile.cali);
+        if (isCali(s2.profile)) s2.profile.level = caliLevel(s2.profile.cali);
         if (moved.length) {
           regenerateWeek(s2);
           s2.events = [...moved.map((c) => ({ type: c.type === 'up' ? 'level' : 'coach', date: nowIso,
@@ -481,7 +484,7 @@ export function startWorkout(workout, { readiness = null } = {}) {
       <div class="kpis" style="margin-top:8px">
         <div class="kpi"><b>${fmtTime(dur)}</b><span>זמן</span></div>
         <div class="kpi"><b>${setsDone}</b><span>סטים</span></div>
-        ${isCali(profile) ? `<div class="kpi up"><b>${repsTotal}</b><span>חזרות</span></div>` : `<div class="kpi up"><b>${Math.round(volume).toLocaleString('he-IL')}</b><span>ק״ג נפח</span></div>`}</div>
+        ${caliW ? `<div class="kpi up"><b>${repsTotal}</b><span>חזרות</span></div>` : `<div class="kpi up"><b>${Math.round(volume).toLocaleString('he-IL')}</b><span>ק״ג נפח</span></div>`}</div>
       ${ladderChanges.length ? html`<div class="card tight" style="margin-top:12px">${ladderChanges.map((c) => `<div class="row" style="padding:5px 0;align-items:flex-start">${ib(c.type === 'up' ? 'rocket' : c.type === 'down' ? 'refresh' : c.type === 'top' ? 'crown' : 'clock', c.type === 'up' || c.type === 'top' ? 'pri' : 'acc')}<div style="flex:1;min-width:0"><b>${esc(LADDERS[c.lid].name)}: ${
     c.type === 'up' ? `עלית שלב — ${esc(EX[c.to].name)}` : c.type === 'down' ? `יורדים שלב — ${esc(EX[c.to].name)}` : c.type === 'top' ? 'ראש הסולם!' : 'היעד הושג'}</b><div class="sub" style="font-size:13px">${
     c.type === 'up' ? 'מהאימון הבא. מתחילים מהיעד המינימלי ובונים מחדש.' : c.type === 'down' ? 'שני אימונים מתחת ליעד. בונים בסיס וחוזרים — זה חלק מהדרך.' : c.type === 'top' ? 'השלב האחרון בסולם הושלם. ממשיכים לשמר ולהוסיף חזרות.'
@@ -496,6 +499,7 @@ export function startWorkout(workout, { readiness = null } = {}) {
 
   function close() {
     clearInterval(timer); clearInterval(clock); offSpeak(); stop();
+    useCoach(null);
     pill._destroy?.(); hrRec.stop();
     try { wakeLock?.release(); } catch { /* */ }
     root.remove();
@@ -566,7 +570,7 @@ export function startWorkout(workout, { readiness = null } = {}) {
     const e = EX[cur1.exId];
     if (cur1.ladder) return ladderSwap(cur1);
     // רק תרגילים של המסלול הנוכחי (יש להם הדגמה וקול של המאמן), ובקליסתניקס — רק מה שאפשר עם הציוד שיש
-    const track = isCali(profile) ? 'cali' : 'gym';
+    const track = caliW ? 'cali' : 'gym';
     const opts = EXERCISES.filter((x) => x.id !== e.id && !blocked.has(x.id) && !used.has(x.id) && x.tracks.includes(track) && (track === 'gym' || canDo(x.id, profile.cali.equip))
       && (e.alts.includes(x.id) || x.pattern === e.pattern || x.group === e.group) && x.type !== 'cardio' && x.group !== 'mobility');
     sheet(html`<div class="h1" style="font-size:22px">החלפת תרגיל</div><p class="sub">המכשיר תפוס? יש כאב? בחר חלופה שעובדת על אותם שרירים.</p>

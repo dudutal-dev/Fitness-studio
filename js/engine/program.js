@@ -1,7 +1,7 @@
 // מנוע התוכנית: בניית תוכנית שבועית לפי פרופיל, מחזוריות (בלוקים של 4 שבועות) ואוטו־רגולציה.
 import { EX, EXERCISES } from '../data/exercises.js';
 import { buildRunSession } from './running.js';
-import { isCali, buildCaliWeek, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
+import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
 
 // ───── שלבי אימון (בלוקים) ─────
 export const PHASES = [
@@ -73,6 +73,8 @@ const T = {
 };
 
 const SPLITS = {
+  1: ['fullA'],            // 1–2: רק במסלול משולב, כשרוב השבוע קליסתניקס
+  2: ['fullA', 'fullB'],
   3: ['fullA', 'fullB', 'fullC'],
   4: ['upperA', 'lowerA', 'upperB', 'lowerB'],
   5: ['upperA', 'lowerA', 'push', 'pull', 'legs'],
@@ -102,7 +104,7 @@ export const INJURIES = {
 export function blockedSet(profile) {
   const s = new Set();
   for (const inj of profile.injuries || []) for (const id of INJURIES[inj]?.block || []) s.add(id);
-  if (isCali(profile)) for (const id of caliBlocked(profile)) s.add(id);
+  if (hasCali(profile) || isCali(profile)) for (const id of caliBlocked(profile)) s.add(id);
   return s;
 }
 
@@ -119,7 +121,7 @@ function pickExercise(slot, profile, blocked, rotation, used) {
   if (!pool.length) {
     // חלופה: תרגיל מאותה קבוצה/תבנית שאינו חסום
     const ref = EX[slot.opts[0]];
-    pool = EXERCISES.filter((e) => !blocked.has(e.id) && !used.has(e.id) && (e.pattern === ref.pattern || e.group === ref.group) && e.level <= profile.level + 1)
+    pool = EXERCISES.filter((e) => e.tracks.includes('gym') && e.group !== 'mobility' && !blocked.has(e.id) && !used.has(e.id) && (e.pattern === ref.pattern || e.group === ref.group) && e.level <= profile.level + 1)
       .map((e) => e.id);
   }
   if (!pool.length) return null;
@@ -184,8 +186,10 @@ export function buildWorkout(templateId, profile, { blockIndex = 0, weekInBlock 
 export function buildWeek(profile, { blockIndex = 0, weekInBlock = 0 } = {}) {
   if (isCali(profile)) return buildCaliWeek(profile, { blockIndex, weekInBlock });
   const days = Math.min(6, Math.max(3, profile.days || 4));
-  const split = SPLITS[days];
-  const runsWanted = Math.min(days, GOALS[profile.goal]?.runs ?? 2);
+  // משולב: חלק מהימים קליסתניקס, והשאר חדר כושר (בפחות מ-3 ימי חדר כושר — אימוני גוף מלא)
+  const caliN = isMix(profile) ? mixCaliCount(profile) : 0;
+  const split = SPLITS[days - caliN];
+  const runsWanted = Math.min(split.length, GOALS[profile.goal]?.runs ?? 2);
   const runTypes = ['intervals', 'tempo', 'easy'];
   // ריצות משובצות בימים "קלים יותר" לרגליים (עליון/דחיפה/משיכה) קודם
   const order = split.map((t, i) => ({ i, lower: /lower|legs/.test(t) })).sort((a, b) => a.lower - b.lower).map((x) => x.i);
@@ -200,11 +204,19 @@ export function buildWeek(profile, { blockIndex = 0, weekInBlock = 0 } = {}) {
     }
     return { day: i + 1, ...w };
   });
+  if (caliN) {
+    // לסירוגין: חדר כושר, קליסתניקס, חדר כושר… — כך אותה קבוצת שרירים לא נטחנת באותה צורה יומיים ברצף
+    const cali = buildCaliSessions(profile, caliN, { blockIndex, weekInBlock }).map((w) => ({ ...w, name: `קליסתניקס · ${w.name}` }));
+    const gym = [...sessions], out = [];
+    while (gym.length || cali.length) { if (gym.length) out.push(gym.shift()); if (cali.length) out.push(cali.shift()); }
+    out.forEach((w, i) => { w.day = i + 1; });
+    return { blockIndex, weekInBlock, phase: phaseFor(profile, blockIndex), week: WEEK_IN_BLOCK[weekInBlock], sessions: out };
+  }
   return { blockIndex, weekInBlock, phase: phaseFor(profile, blockIndex), week: WEEK_IN_BLOCK[weekInBlock], sessions };
 }
 
 export function buildFieldWorkout(profile) {
-  if (isCali(profile)) return buildCaliFieldWorkout(profile);
+  if (hasCali(profile)) return buildCaliFieldWorkout(profile);
   return buildWorkout('field', profile, {});
 }
 

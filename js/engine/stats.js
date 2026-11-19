@@ -1,7 +1,7 @@
 // מדדים: מדד כשירות קרבית (CRI), דרגות XP, מפת שרירים שבועית, מגמת משקל.
 import { EX } from '../data/exercises.js';
 import { bestSet } from './progression.js';
-import { isCali, caliProgress } from './cali.js';
+import { isCali, hasCali, caliProgress } from './cali.js';
 
 export const RANKS = [
   { xp: 0, name: 'מתחילים', icon: 'rank1' },
@@ -87,13 +87,15 @@ export function combatReadiness({ profile, history, sessions, runs, weights }) {
   }
   let strength = ratios.length ? (ratios.reduce((a, b) => a + b, 0) / ratios.length) * 100 : null;
   // קליסתניקס: כוח = המיקום בסולמות הכוח, מיומנות = המיקום בסולמות המיומנויות הפעילות (במקום סבולת ריצה)
-  const cali = isCali(profile) && profile.cali ? caliProgress(profile.cali) : null;
-  if (cali) strength = cali.strength;
+  // במסלול משולב: כוח = ממוצע של שני המדדים, וסבולת ומיומנות נמדדות שתיהן
+  const cali = hasCali(profile) ? caliProgress(profile.cali) : null;
+  const pureCali = isCali(profile);
+  if (cali) strength = pureCali || strength == null ? cali.strength : (strength + cali.strength) / 2;
 
   // סבולת: זמן 3 ק״מ (10:30 = 100, 18:00 = 0)
   const tests = runs.filter((r) => r.type === 'test' && r.timeSec);
   const best3k = tests.length ? Math.min(...tests.map((r) => r.timeSec)) : profile.run3k;
-  const endurance = cali ? null : best3k ? Math.max(0, Math.min(100, ((18 * 60 - best3k) / (7.5 * 60)) * 100)) : null;
+  const endurance = cali && pureCali ? null : best3k ? Math.max(0, Math.min(100, ((18 * 60 - best3k) / (7.5 * 60)) * 100)) : null;
   const skill = cali ? cali.skill : null;
 
   // עקביות: אימונים ב-28 יום אחרונים מול מתוכנן

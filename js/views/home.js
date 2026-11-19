@@ -11,7 +11,7 @@ import { say, onSpeaking, unlock } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
 import { startWorkout } from './workout.js';
 import { startRun } from './run.js';
-import { isCali } from '../engine/cali.js';
+import { isCali, hasCali, hasGym, sessionCoach } from '../engine/cali.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
 
@@ -67,7 +67,7 @@ export function renderHome(root) {
     </div>
 
     ${ns ? html`<div class="card mission">
-      <div class="media"><img src="${demoPoster(p.coach, heroEx)}" alt="">
+      <div class="media"><img src="${demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
         <div class="over"><div class="eyebrow">האימון הבא · ${esc(s.plan.week.phase.name)}</div>
         <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div></div></div>
       <div class="body">
@@ -105,7 +105,7 @@ export function renderHome(root) {
       <div class="cri">
         ${ring((cri.score ?? 0) / 100, { size: 104, stroke: 10, big: cri.score ?? '—', lbl: cri.score == null ? 'עוד לא נמדד' : 'מתוך 100' })}
         <div>
-          ${meter('כוח', cri.parts.strength, 'אחרי אימון כוח')}${isCali(p) ? meter('מיומנות', cri.parts.skill, 'בחר מיומנות במסך התוכנית') : meter('סבולת', cri.parts.endurance, 'אחרי מבדק 3 ק״מ')}
+          ${meter('כוח', cri.parts.strength, 'אחרי אימון כוח')}${hasGym(p) ? meter('סבולת', cri.parts.endurance, 'אחרי מבדק 3 ק״מ') : ''}${hasCali(p) ? meter('מיומנות', cri.parts.skill, 'בחר מיומנות במסך התוכנית') : ''}
           ${meter('עקביות', cri.parts.consistency)}${meter('גוף', cri.parts.body, 'אחרי שקילה שנייה')}
         </div>
       </div>

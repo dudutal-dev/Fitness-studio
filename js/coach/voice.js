@@ -12,7 +12,10 @@ const listeners = new Set();
 export const onSpeaking = (fn) => (listeners.add(fn), () => listeners.delete(fn));
 const emit = (v, text) => listeners.forEach((f) => f(v, text));
 
-export const coachId = () => get().profile?.coach || 'ori';
+// המאמן שמדבר עכשיו: בדרך כלל המאמן שבפרופיל; במסלול משולב כל אימון מפעיל את המאמן שלו (useCoach)
+let activeCoach = null;
+export const useCoach = (id) => { activeCoach = id || null; };
+export const coachId = () => activeCoach || get().profile?.coach || 'ori';
 export const clipUrl = (clip, coach = coachId()) => `assets/voice/${coach}/${clip}.mp3`;
 export const clipDur = (clip, coach = coachId()) => VOICE_TIMING[`${coach}/${clip}`] ?? 1;
 
@@ -86,8 +89,10 @@ function load(clip, coach = coachId(), urgent = false) {
 // ההורדה רצה לבד ברקע אחרי פתיחת האפליקציה, ואפשר להפעיל אותה ידנית מההגדרות ← קול והנחיות.
 function voiceFiles() {
   const p = get().profile || {};
-  const coach = coachId(), slug = nameEntry(p)?.slug;
-  return Object.keys(VOICE_TIMING).filter((k) => k.startsWith(`${coach}/`) && (!k.includes('/names/') || (slug && k.includes(`/names/${slug}/`))))
+  const slug = nameEntry(p)?.slug;
+  // משולב: שני מאמנים — זה של חדר הכושר ומאיה
+  const coaches = p.track === 'mix' ? [p.gymCoach || p.coach || 'ori', 'maya'] : [get().profile?.coach || 'ori'];
+  return Object.keys(VOICE_TIMING).filter((k) => coaches.includes(k.split('/')[0]) && (!k.includes('/names/') || (slug && k.includes(`/names/${slug}/`))))
     .map((k) => `assets/voice/${k}.mp3`);
 }
 // כמה מהקבצים כבר שמורים במכשיר
@@ -121,7 +126,7 @@ let warmed = '';
 export async function warmVoiceCache() {
   const p = get().profile;
   if (!p || !navigator.onLine || get().settings?.voice === false) return;
-  const key = coachId() + (nameEntry(p)?.slug || '');
+  const key = (p.track || '') + (p.coach || '') + (nameEntry(p)?.slug || '');
   if (warmed === key) return;
   warmed = key;
   const st = await voiceCacheStatus();

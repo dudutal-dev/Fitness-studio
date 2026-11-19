@@ -57,7 +57,7 @@ export function suggest(exId, item, history, profile) {
   const last = history?.length ? history[history.length - 1] : null;
 
   // קליסתניקס: אין משקל — מתקדמים בחזרות/שניות עד יעד השלב, ואז עולים שלב בסולם (engine/cali.js)
-  const cali = profile?.track === 'cali';
+  const cali = profile?.track === 'cali' || !!item.ladder; // גם אימון קליסתניקס בתוך מסלול משולב
   if (cali && (ex.hold || (item.ladder && ex.type === 'time'))) {
     if (!last) return { reps: lo, w: 0, why: 'שלב חדש — מתחילים מהיעד המינימלי' };
     const best = Math.max(...last.sets.filter((s) => s.done).map((s) => s.reps), 0);

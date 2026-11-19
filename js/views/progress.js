@@ -11,7 +11,7 @@ import { weightSheet } from './home.js';
 import { pickAndImport, garminHelp } from './garmin.js';
 import { openSessionEditor, openRunEditor } from './history.js';
 import { fmtPace } from '../engine/running.js';
-import { isCali, rungState, LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, ladderOpen } from '../engine/cali.js';
+import { isCali, hasCali, rungState, LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, ladderOpen } from '../engine/cali.js';
 
 let tab = 'week';
 let liftSel = null;
@@ -22,7 +22,7 @@ export function renderProgress(root) {
   const p = s.profile;
   const cali = isCali(p);
   // קליסתניקס: סולמות במקום גרפי משקלים, ולשונית הריצה מופיעה רק אם יש ריצות (מיובאות)
-  const tabs = [['week', 'שבוע'], ['weight', 'משקל'], ['strength', cali ? 'סולמות' : 'כוח'], ...(cali && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
+  const tabs = [['week', 'שבוע'], ['weight', 'משקל'], ...(cali ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...(cali && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
   if (!tabs.some(([k]) => k === tab)) tab = 'week';
   root.innerHTML = html`<div class="page-head"><div class="eyebrow">מעקב ומדדים</div><div class="h1">ההתקדמות שלך</div></div>
     <div class="seg" style="margin-bottom:14px">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`)}</div>
@@ -78,8 +78,8 @@ const TABS = {
       <button class="btn primary block" style="margin-top:12px" data-act="weigh">+ שקילה חדשה</button>
       <p class="sub t-foot" style="margin-top:10px">המגמה (ממוצע נע) מסננת תנודות של מים ומלח — זה המספר האמיתי. קצב בריא: ${p.goal === 'cut' ? 'ירידה של 0.3–0.7 ק״ג בשבוע' : 'עלייה של 0.2–0.4 ק״ג בשבוע'}.</p>`;
   },
-  strength(s, p) {
-    if (isCali(p)) return caliTab(s, p);
+  ladders(s, p) { return caliTab(s, p); },
+  strength(s) {
     const lifts = Object.keys(s.history).filter((id) => EX[id]?.type === 'weight' && s.history[id].length);
     if (!lifts.length) return `<div class="card"><div class="empty"><div class="e">${ib('dumbbell', 'pri', 'xl')}</div>אחרי האימון הראשון יופיעו כאן גרפי כוח ושיאים</div></div>`;
     const sel = liftSel && lifts.includes(liftSel) ? liftSel : lifts.sort((a, b) => s.history[b].length - s.history[a].length)[0];

@@ -3,7 +3,15 @@
 import { EX } from '../data/exercises.js';
 import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, LADDER_OF, MAX_ACTIVE_SKILLS } from '../data/cali.js';
 
-export const isCali = (profile) => profile?.track === 'cali';
+// מסלולים: gym = חדר כושר · cali = קליסתניקס · mix = משולב (חלק מאימוני השבוע בחדר כושר וחלק קליסתניקס)
+export const isCali = (profile) => profile?.track === 'cali';            // קליסתניקס בלבד
+export const isMix = (profile) => profile?.track === 'mix' && !!profile.cali;
+export const hasCali = (profile) => (profile?.track === 'cali' || profile?.track === 'mix') && !!profile.cali;
+export const hasGym = (profile) => profile?.track !== 'cali';
+// מי מאמן: במסלול משולב כל אימון עם המאמן של המסלול שלו — מאיה בקליסתניקס, אורי/נועה בחדר הכושר
+export const sessionCoach = (profile, workout) => (profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
+// מי מדגים תרגיל מחוץ לאימון (ספרייה, סולמות)
+export const exCoach = (profile, exId) => (profile?.track === 'mix' ? (EX[exId]?.cali ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
 const DAY = 864e5;
 
 // ───── ציוד ─────
@@ -96,7 +104,7 @@ const TPL = {
   cPull: { name: 'משיכה', focus: 'גב · יד קדמית · אחיזה', skills: 'pull', slots: [
     SL('pull', 'main', { alt: 'row' }), SL('row', 'main', { ifNoPull: 'prone' }), SL('pull', 'second', { vol: true }), SL('row', 'acc', { vol: true }), SL('hang', 'core', { alt: 'core' })] },
 };
-const SPLITS = { 3: ['cFull', 'cFull', 'cFull'], 4: ['cUpper', 'cLower', 'cUpper', 'cLower'], 5: ['cPush', 'cPull', 'cLower', 'cUpper', 'cFull'], 6: ['cPush', 'cPull', 'cLower', 'cPush', 'cPull', 'cLower'] };
+const SPLITS = { 1: ['cFull'], 2: ['cFull', 'cFull'], 3: ['cFull', 'cFull', 'cFull'], 4: ['cUpper', 'cLower', 'cUpper', 'cLower'], 5: ['cPush', 'cPull', 'cLower', 'cUpper', 'cFull'], 6: ['cPush', 'cPull', 'cLower', 'cPush', 'cPull', 'cLower'] };
 export const CALI_TEMPLATES = TPL;
 
 // מנוחה: 2 דקות לתרגילים המרכזיים (ACSM 2009: 2–3 דק׳ לכוח; ה-Recommended Routine: 90 שנ׳ עד 3 דק׳), פחות לעזר ולליבה.
@@ -207,16 +215,23 @@ export function caliBlocked(profile) {
   return s;
 }
 
-export function buildCaliWeek(profile, { blockIndex = 0, weekInBlock = 0 } = {}) {
-  const days = Math.min(6, Math.max(3, profile.days || 3));
-  const sessions = SPLITS[days].map((tid, i) => ({ day: i + 1, ...buildCaliWorkout(tid, profile, { blockIndex, weekInBlock, dayIdx: i }) }));
+// n אימוני קליסתניקס לשבוע (1–6), בלי מספרי ימים — משמש גם את המסלול המשולב
+export function buildCaliSessions(profile, n, { blockIndex = 0, weekInBlock = 0 } = {}) {
+  const sessions = SPLITS[Math.min(6, Math.max(1, n))].map((tid, i) => buildCaliWorkout(tid, profile, { blockIndex, weekInBlock, dayIdx: i }));
   // שמות ייחודיים כשאותה תבנית חוזרת בשבוע
   const count = {};
   for (const s of sessions) count[s.name] = (count[s.name] || 0) + 1;
   const seen = {};
   for (const s of sessions) if (count[s.name] > 1) { seen[s.name] = (seen[s.name] || 0) + 1; s.name = `${s.name} ${'ABC'[seen[s.name] - 1]}`; }
+  return sessions;
+}
+export function buildCaliWeek(profile, { blockIndex = 0, weekInBlock = 0 } = {}) {
+  const days = Math.min(6, Math.max(3, profile.days || 3));
+  const sessions = buildCaliSessions(profile, days, { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w }));
   return { blockIndex, weekInBlock, phase: CALI_PHASE, week: CALI_WEEKS[weekInBlock % 4], sessions };
 }
+// מסלול משולב: כמה מאימוני השבוע הם קליסתניקס (ברירת מחדל: חצי, מעוגל למטה; תמיד נשאר לפחות אימון אחד מכל סוג)
+export const mixCaliCount = (profile) => { const days = Math.min(6, Math.max(3, profile.days || 4)); return Math.min(days - 1, Math.max(1, profile.mixCali ?? Math.floor(days / 2))); };
 // אימון בלי שום ציוד (בשטח, בנסיעה) — אותם סולמות, רק מה שאפשר על הרצפה
 export const buildCaliFieldWorkout = (profile) => ({ ...buildCaliWorkout('cFull', profile, { equip: [], minutes: Math.min(45, profile.sessionMin || 45) }), name: 'אימון בלי ציוד', focus: 'הסולמות שלך — רק רצפה וקיר' });
 

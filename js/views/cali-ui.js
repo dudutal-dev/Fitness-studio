@@ -24,7 +24,7 @@ export function laddersSection(p) {
   const strength = STRENGTH_LADDERS.map((lid) => ({ lid, L: LADDERS[lid], st: rungState(c, lid), lock: ladderLock(c, lid) }));
   const skills = SKILL_LADDERS.map((lid) => ({ lid, L: LADDERS[lid], st: rungState(c, lid), lock: ladderLock(c, lid), on: (c.skills || []).includes(lid) }));
   const row = ({ lid, L, st, lock }) => (lock ? html`<div class="ladder locked"><div class="ld-ico">${ib('ban', '', 'lg')}</div><div class="grow"><b>${esc(L.name)}</b><div class="sub">${esc(lockText(lock))}</div></div></div>`
-    : html`<button class="ladder" data-ladder="${lid}"><div class="ex-thumb"><img src="${demoPoster(p.coach, st.rung.id)}" alt="" loading="lazy"></div>
+    : html`<button class="ladder" data-ladder="${lid}"><div class="ex-thumb"><img src="${demoPoster('maya', st.rung.id)}" alt="" loading="lazy"></div>
       <div class="grow"><div class="ld-top"><b>${esc(L.name)}</b><span class="num">${st.i + 1}/${st.n}</span></div><div class="t">${esc(EX[st.rung.id].name)}</div>${dots(st)}</div></button>`);
   return html`
     <div class="h2">הסולמות שלי<span class="sub t-foot" style="margin-inline-start:auto">יעד: 3 סטים × היעד העליון ← עולים שלב</span></div>
@@ -32,7 +32,7 @@ export function laddersSection(p) {
     <div class="h2">מיומנויות<span class="sub t-foot" style="margin-inline-start:auto">עד ${MAX_ACTIVE_SKILLS} פעילות</span></div>
     <div class="card tight ladders">${skills.map(({ lid, L, st, lock, on: active }) => (lock
     ? html`<button class="ladder locked" data-skill-info="${lid}"><div class="ld-ico">${ib(L.icon, '', 'lg')}</div><div class="grow"><b>${esc(L.name)}</b><div class="sub">${esc(lockText(lock))}</div></div></button>`
-    : html`<div class="ladder ${active ? 'active' : ''}"><button class="ld-main" data-ladder="${lid}"><div class="ex-thumb"><img src="${demoPoster(p.coach, st.rung.id)}" alt="" loading="lazy"></div>
+    : html`<div class="ladder ${active ? 'active' : ''}"><button class="ld-main" data-ladder="${lid}"><div class="ex-thumb"><img src="${demoPoster('maya', st.rung.id)}" alt="" loading="lazy"></div>
         <div class="grow"><div class="ld-top"><b>${esc(L.name)}</b><span class="num">${st.i + 1}/${st.n}</span></div><div class="t">${esc(EX[st.rung.id].name)}</div>${dots(st)}</div></button>
         <button class="sw ${active ? 'on' : ''}" data-skill="${lid}" aria-label="${active ? 'הפסק לתרגל' : 'התחל לתרגל'} ${esc(L.name)}" aria-pressed="${active}"><i></i></button></div>`))}</div>
     <div class="sub t-foot" style="margin-top:8px">מיומנות פעילה נכנסת לתחילת האימון, כשהגוף רענן. מיומנויות עם ידיים ישרות (לברים, פלאנש, דגל) עולות שלב רק אחרי 3 שבועות לפחות בכל שלב — גידים מסתגלים לאט מהשריר.</div>`;
@@ -57,17 +57,17 @@ function ladderSheet(lid, rerender) {
   sheet(html`<div class="eyebrow">סולם · היעד: ${esc(L.goal)}</div><div class="h1" style="font-size:24px">${esc(L.name)}</div>
     ${L.about ? `<p class="sub">${esc(L.about)}</p>` : ''}
     <div class="rung-list">${st.list.map((r, i) => html`<button class="rung ${i < st.i ? 'done' : i === st.i ? 'cur' : ''}" data-info="${r.id}">
-      <span class="rn num">${i < st.i ? icon('check', 'width="14" height="14"') : i + 1}</span><div class="ex-thumb"><img src="${demoPoster(p.coach, r.id)}" alt="" loading="lazy"></div>
+      <span class="rn num">${i < st.i ? icon('check', 'width="14" height="14"') : i + 1}</span><div class="ex-thumb"><img src="${demoPoster('maya', r.id)}" alt="" loading="lazy"></div>
       <div class="grow"><div class="t">${esc(EX[r.id].name)}</div><div class="s">יעד: ${targetText(r)}${i === st.i ? ` · ${days ? `${days} ימים בשלב` : 'השלב הנוכחי'}` : ''}</div></div></button>`)}</div>
     <div class="sub t-foot" style="margin:10px 0">עולים שלב לבד, כשכל הסטים מגיעים ליעד העליון בטכניקה נקייה${L.kind === 'skill' ? ` — פעמיים ברצף, ואחרי ${L.gateDays} ימים לפחות בשלב` : ''}. אם השלב שנקבע לא מתאים, אפשר לשנות ידנית:</div>
     <div class="grid2"><button class="btn sm" data-step="-1" ${st.prev ? '' : 'disabled'}>שלב קל יותר</button><button class="btn sm" data-step="1" ${st.next ? '' : 'disabled'}>שלב קשה יותר</button></div>
     <button class="btn block" style="margin-top:10px" data-close>סגור</button>`, {
     onMount(sh, close) {
-      on(sh, 'click', '[data-info]', (e, t) => infoSheet(t.dataset.info, p.coach));
+      on(sh, 'click', '[data-info]', (e, t) => infoSheet(t.dataset.info, 'maya'));
       on(sh, 'click', '[data-step]', (e, t) => {
         const to = Number(t.dataset.step) > 0 ? st.next : st.prev;
         if (!to) return;
-        set((s) => { setRung(s.profile.cali, lid, to.id); s.profile.level = caliLevel(s.profile.cali); return regenerateWeek(s); });
+        set((s) => { setRung(s.profile.cali, lid, to.id); if (s.profile.track === 'cali') s.profile.level = caliLevel(s.profile.cali); return regenerateWeek(s); });
         toast(`${L.name}: ${EX[to.id].name}`);
         close(); rerender(); ladderSheet(lid, rerender);
       });
@@ -79,13 +79,15 @@ function ladderSheet(lid, rerender) {
 export const equipChips = (equip) => `<div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>`;
 
 // ───── מעבר בין מסלולים ─────
-// ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר.
+// ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר,
+// ובמסלול המשולב — כל אימון עם המאמן של המסלול שלו.
 export function switchTrack(track, rerender) {
   const p = get().profile;
   if (track === 'gym') {
     set((s) => {
       const q = s.profile;
-      q.track = 'gym'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym'); q.level = q.gymLevel || q.level || 2;
+      if (q.track === 'cali') q.level = q.gymLevel || q.level || 2;
+      q.track = 'gym'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
       s.plan = createPlan(q);
       return s;
     });
@@ -93,10 +95,10 @@ export function switchTrack(track, rerender) {
     return;
   }
   // כבר עבר מבחן קליסתניקס בעבר → חוזרים לאותם שלבים
-  if (p.cali) { toCali(p.cali, rerender); return; }
+  if (p.cali) { toCali(track, p.cali, rerender); return; }
   const d = { equip: [], pushups: 15, squats: 20, pullups: 0, dips: 0, plankSec: 45 };
-  const body = () => html`<div class="eyebrow">מעבר למסלול קליסתניקס</div><div class="h1" style="font-size:24px">מבדק רמה קצר</div>
-    <p class="sub">${esc(COACHES.maya.name)} תקבע שלב התחלתי בכל סולם. ההיסטוריה שלך מחדר הכושר נשמרת, ואפשר לחזור בכל רגע.</p>
+  const body = () => html`<div class="eyebrow">${track === 'mix' ? 'מסלול משולב — מוסיפים קליסתניקס' : 'מעבר למסלול קליסתניקס'}</div><div class="h1" style="font-size:24px">מבדק רמה קצר</div>
+    <p class="sub">${esc(COACHES.maya.name)} תקבע שלב התחלתי בכל סולם. ${track === 'mix' ? 'חלק מאימוני השבוע יישארו בחדר הכושר, וחלק יהיו קליסתניקס.' : 'ההיסטוריה שלך מחדר הכושר נשמרת, ואפשר לחזור בכל רגע.'}</p>
     <div style="font-weight:700;margin:12px 0 6px">איזה ציוד יש לך?</div>${equipChips(d.equip)}
     <div class="grid2" style="margin-top:12px">
       <label class="field"><span>שכיבות סמיכה ברצף</span><input class="input num" name="pushups" type="number" inputmode="numeric" value="${d.pushups}"></label>
@@ -105,7 +107,7 @@ export function switchTrack(track, rerender) {
       ${d.equip.includes('pbars') || d.equip.includes('rings') ? `<label class="field"><span>מקבילים ברצף</span><input class="input num" name="dips" type="number" inputmode="numeric" value="${d.dips}"></label>` : ''}
       <label class="field"><span>פלאנק (שניות)</span><input class="input num" name="plankSec" type="number" inputmode="numeric" value="${d.plankSec}"></label>
     </div>
-    <button class="btn primary block xl" style="margin-top:8px" data-go>בנה לי תוכנית קליסתניקס</button>
+    <button class="btn primary block xl" style="margin-top:8px" data-go>${track === 'mix' ? 'בנה לי תוכנית משולבת' : 'בנה לי תוכנית קליסתניקס'}</button>
     <button class="btn ghost block" style="margin-top:8px" data-close>ביטול</button>`;
   sheet(`<div data-tb>${body()}</div>`, {
     onMount(sh, close) {
@@ -120,32 +122,38 @@ export function switchTrack(track, rerender) {
         const hM = (p.heightCm || 175) / 100;
         const bar = d.equip.includes('bar') || d.equip.includes('rings'), pb = d.equip.includes('pbars') || d.equip.includes('rings');
         close();
-        toCali(newCali({ pushups: d.pushups, squats: d.squats, pullups: bar ? d.pullups : 0, dips: pb ? d.dips : 0, plankSec: d.plankSec, bmi: (p.weightKg || 70) / (hM * hM) }, d.equip), rerender);
+        toCali(track, newCali({ pushups: d.pushups, squats: d.squats, pullups: bar ? d.pullups : 0, dips: pb ? d.dips : 0, plankSec: d.plankSec, bmi: (p.weightKg || 70) / (hM * hM) }, d.equip), rerender);
       });
     },
   });
 }
 
-function toCali(cali, rerender) {
+// track: 'cali' (קליסתניקס בלבד) או 'mix' (משולב)
+function toCali(track, cali, rerender) {
   set((s) => {
     const q = s.profile;
+    // יוצאים ממצב שיש בו חדר כושר → זוכרים את המאמן והרמה שלו
     if (q.track !== 'cali') { q.gymCoach = q.coach; q.gymLevel = q.level; }
-    q.track = 'cali'; q.cali = cali; q.coach = 'maya'; q.goal = goalForTrack(q.goal, 'cali'); q.level = caliLevel(cali);
+    q.cali = cali;
+    if (track === 'mix') {
+      if (q.track === 'cali') q.level = q.gymLevel || q.level || 2;
+      q.track = 'mix'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
+    } else { q.track = 'cali'; q.coach = 'maya'; q.goal = goalForTrack(q.goal, 'cali'); q.level = caliLevel(cali); }
     s.plan = createPlan(q);
     return s;
   });
-  after('cali', rerender);
+  after(track, rerender);
 }
 
 function after(track, rerender) {
   const p = get().profile;
   unlock(); stop(); say(`hello_${p.coach}`, { priority: true });
-  toast(track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : `חזרת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3200);
+  toast(track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
   rerender();
 }
 
 // שינוי ציוד: השלבים נשמרים; סולמות שדורשים ציוד שאין — יוצאים מהאימונים עד שיחזור
 export function setEquip(equip) {
-  set((s) => { s.profile.cali.equip = [...equip]; s.profile.level = caliLevel(s.profile.cali); return regenerateWeek(s); });
+  set((s) => { s.profile.cali.equip = [...equip]; if (s.profile.track === 'cali') s.profile.level = caliLevel(s.profile.cali); return regenerateWeek(s); });
 }
 export { ladderOpen };
