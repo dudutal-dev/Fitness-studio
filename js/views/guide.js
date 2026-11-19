@@ -162,7 +162,7 @@ export function openGuide({ onDone, first = false } = {}) {
   let i = 0;
   const root = el(`<div class="guide" role="dialog" aria-label="מדריך שימוש">
     <div class="g-top"><div class="g-dots">${S.map(() => '<i></i>').join('')}</div><button class="g-skip" data-g="skip">${first ? 'דלג' : 'סגור ✕'}</button></div>
-    <div class="g-track">${S.map((s) => html`<section class="g-slide ${s.hero ? 'hero' : ''}" data-id="${s.id}"><div class="g-visual">${s.visual}</div>
+    <div class="g-track">${S.map((s) => html`<section class="g-slide ${s.hero ? 'g-hero' : ''}" data-id="${s.id}"><div class="g-visual">${s.visual}</div>
       <div class="g-body">${s.hero ? s.body : `<div class="eyebrow">${s.eyebrow}</div><h2>${s.title}</h2>${s.body}`}</div></section>`).join('')}</div>
     <div class="g-nav"><button class="btn" data-g="prev">הקודם</button><button class="btn primary xl" data-g="next">הבא</button></div></div>`);
   document.body.append(root);
@@ -174,22 +174,37 @@ export function openGuide({ onDone, first = false } = {}) {
     root.querySelector('[data-g="prev"]').style.display = i ? '' : 'none'; // בשקף הראשון כפתור "הבא" ברוחב מלא
     root.querySelector('[data-g="next"]').textContent = i === S.length - 1 ? (first ? 'בוא נתחיל' : 'סיום ✓') : 'הבא';
   };
+  const at = () => Math.round(Math.abs(track.scrollLeft) / (track.clientWidth || 1));
+  // מעבר בכפתור: בזמן ההחלקה המונפשת לא מסנכרנים את המיקום מהגלילה (אחרת עצירה רגעית מחזירה לשקף הקודם),
+  // ואם ההנפשה לא הגיעה ליעד (קורה באייפון, עם scroll-snap) — קופצים אליו בלי הנפשה. כך לחיצה אחת תמיד מספיקה.
+  let st, nav = 0;
   const go = (n) => {
     i = Math.max(0, Math.min(S.length - 1, n));
-    track.children[i].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+    const target = i;
+    clearTimeout(st); clearTimeout(nav);
     track.children[i].querySelector('.g-body').scrollTop = 0;
+    track.children[i].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
     paint();
+    nav = setTimeout(() => {
+      nav = 0;
+      if (i === target && at() !== target) {
+        track.style.scrollSnapType = 'none';
+        track.children[target].scrollIntoView({ behavior: 'auto', inline: 'start', block: 'nearest' });
+        requestAnimationFrame(() => { track.style.scrollSnapType = ''; });
+      }
+    }, 600);
   };
   // החלקה באצבע מעדכנת את המיקום
-  let st;
   track.addEventListener('scroll', () => {
+    if (nav) return;
     clearTimeout(st);
     st = setTimeout(() => {
-      const w = track.clientWidth;
-      const n = Math.round(Math.abs(track.scrollLeft) / w);
-      if (n !== i) { i = n; paint(); }
-    }, 80);
+      const n = at();
+      if (!nav && n !== i) { i = n; paint(); }
+    }, 120);
   }, { passive: true });
+  // נגיעה באצבע במסלול מבטלת את ההמתנה: מכאן המיקום שוב נקבע לפי הגלילה
+  track.addEventListener('touchstart', () => { clearTimeout(nav); nav = 0; }, { passive: true });
 
   const close = () => {
     set((s) => { s.guideSeen = true; return s; });

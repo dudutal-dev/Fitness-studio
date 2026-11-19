@@ -789,7 +789,7 @@ bdi { unicode-bidi: isolate; }
 .rung:not(.done):not(.cur) { opacity: 0.62; }
 
 /* ───── מדריך: שקף הפתיחה ───── */
-.g-slide.hero .g-visual { height: 35vh; max-height: 360px; min-height: 190px; padding: 6px 16px 0; overflow: hidden; }
+.g-slide.g-hero .g-visual { height: 35vh; max-height: 360px; min-height: 190px; padding: 6px 16px 0; overflow: hidden; }
 .g-trio { display: flex; align-items: flex-end; gap: 8px; width: 100%; height: 100%; }
 .g-trio figure { position: relative; flex: 1; min-width: 0; height: 84%; margin: 0; border-radius: 22px; overflow: hidden; background: var(--panel2); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35); }
 .g-trio:has(figure:nth-child(4)) { gap: 6px; }
@@ -800,9 +800,9 @@ bdi { unicode-bidi: isolate; }
 .g-trio figcaption { position: absolute; inset: auto 0 0 0; padding: 30px 6px 9px; text-align: center; color: #fff; background: linear-gradient(to top, rgba(0, 0, 0, 0.88), transparent); line-height: 1.2; }
 .g-trio figcaption b { display: block; font-size: 16px; font-weight: 900; }
 .g-trio figcaption span { font-size: 11px; color: rgba(255, 255, 255, 0.72); }
-.g-slide.hero .g-body { padding-top: 14px; padding-bottom: 12px; text-align: center; }
+.g-slide.g-hero .g-body { padding-top: 14px; padding-bottom: 12px; text-align: center; }
 .g-brand { font-size: clamp(38px, 12.5vw, 54px); font-weight: 900; line-height: 1; color: var(--pri-ink); }
-.g-slide.hero .g-body h2 { font-size: 19px; font-weight: 700; margin: 6px 0 12px; color: var(--fg); }
+.g-slide.g-hero .g-body h2 { font-size: 19px; font-weight: 700; margin: 6px 0 12px; color: var(--fg); }
 .g-feats { display: grid; gap: 8px; text-align: start; }
 .g-feats > div { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
 .g-feats span { font-size: 13px; color: var(--mute); line-height: 1.35; }
