@@ -1,13 +1,16 @@
-// LOHEM Reminders — Cloudflare Worker: שומר מנויי Push ושולח תזכורות לפי לוח זמנים (קרון כל 5 דקות).
+// LOHEM Reminders — Cloudflare Worker משותף לשלוש האפליקציות (LOHEM, סטודיו כושר, קליסתניקס):
+// שומר מנויי Push ושולח תזכורות לפי לוח זמנים (קרון כל 5 דקות), ומנהל קישורי הפעלה אישיים (lic.js, נתיבי /lic/…).
 // סודות/הגדרות: VAPID_PUBLIC (טקסט), VAPID_PRIVATE_JWK (סוד), VAPID_SUBJECT; KV: SUBS
 import { sendPush } from './webpush.js';
 import { dueReminders, pruneSent } from './schedule.js';
+import { lic } from './lic.js';
 
-const ALLOWED = ['https://dudutal-dev.github.io', 'http://localhost:8080'];
+const ALLOWED = ['https://dudutal-dev.github.io'];
+const allowed = (o) => ALLOWED.includes(o) || /^http:\/\/localhost(:\d+)?$/.test(o || '');   // localhost: פיתוח ובדיקות
 
 function cors(req) {
   const o = req.headers.get('Origin');
-  return { 'Access-Control-Allow-Origin': ALLOWED.includes(o) ? o : ALLOWED[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' };
+  return { 'Access-Control-Allow-Origin': allowed(o) ? o : ALLOWED[0], 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' };
 }
 const json = (req, data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...cors(req) } });
 const vapid = (env) => ({ publicKey: env.VAPID_PUBLIC, privateJwk: JSON.parse(env.VAPID_PRIVATE_JWK), subject: env.VAPID_SUBJECT });
@@ -27,6 +30,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/') return json(req, { ok: true, service: 'lohem-reminders', vapid: env.VAPID_PUBLIC });
+    if (url.pathname.startsWith('/lic/')) return lic(req, env, url, (data, status) => json(req, data, status));   // קישורי הפעלה
     if (req.method !== 'POST') return json(req, { error: 'method' }, 405);
     let b;
     try { b = await req.json(); } catch { return json(req, { error: 'json' }, 400); }

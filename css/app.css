@@ -859,3 +859,16 @@ bdi { unicode-bidi: isolate; }
 .pi-meal .pm-top span { color: var(--mute); font-size: 13px; }
 .pi-meal .sub { font-size: 13px; margin-top: 2px; }
 .pi-actions { padding: 10px 18px calc(14px + var(--safe-b)); display: grid; gap: 8px; border-top: 1px solid var(--line); background: var(--bg); }
+
+/* ───── קישור הפעלה: מסך נעילה ───── */
+.lic-gate { position: fixed; inset: 0; z-index: 400; display: grid; place-items: center; padding: 24px; background: var(--bg); overflow-y: auto; }
+.lic-box { width: 100%; max-width: 380px; text-align: center; }
+.lic-box img { border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+.lic-box h2 { font-size: 24px; font-weight: 900; margin: 16px 0 8px; }
+.lic-msg { color: var(--mute); font-size: 15px; margin: 0 0 14px; }
+.lic-steps { text-align: start; margin: 0 0 16px; padding: 12px 34px 12px 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); font-size: 14.5px; line-height: 1.7; }
+.lic-form { display: grid; gap: 10px; }
+.lic-form input { width: 100%; padding: 13px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); font: 15px ui-monospace, Menlo, monospace; text-align: center; }
+.lic-form input:focus { outline: 2px solid rgba(var(--pri-rgb), 0.5); border-color: var(--pri); }
+.lic-note { color: var(--mute); font-size: 12.5px; margin: 0; }
+html.locked body { overflow: hidden; }

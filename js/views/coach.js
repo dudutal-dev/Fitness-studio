@@ -7,6 +7,7 @@ import { isCali, isMix, hasCali, mixCaliCount, recommendTrack } from '../engine/
 import { switchTrack, equipChips, setEquip, recommendSheet } from './cali-ui.js';
 import { TRACKS, goalDesc } from './onboarding.js';
 import { BRAND } from '../brand.js';
+import { licenseText, bindHiddenAdmin, adminRevealed, adminUrl } from '../lic.js';
 import { runLevelFrom3k } from '../engine/running.js';
 import { say, stop, unlock, voiceCacheStatus, downloadVoice } from '../coach/voice.js';
 import { parse3k, liftsFrom } from './onboarding.js';
@@ -93,8 +94,13 @@ export function renderCoach(root) {
       <div class="grid2"><button class="btn sm" data-export>${icon('download', 'width="16" height="16"')} גיבוי</button><label class="btn sm">${icon('upload', 'width="16" height="16"')} שחזור<input type="file" accept="application/json" hidden data-import></label></div>
       <button class="btn sm danger block" style="margin-top:10px" data-reset>איפוס מלא</button>
     </div>`)}
-    <p class="sub" style="text-align:center;font-size:12px;margin-top:18px">${BRAND.name} · גרסה <span class="num">${APP_VERSION}</span> · מתעדכנת אוטומטית · דמויות, הדמיות וקולות נוצרו ב-AI (ElevenLabs)<br>לפני תחילת תוכנית אימונים מומלץ אישור רפואי.</p>`;
+    <div data-lic-admin></div>
+    <p class="sub" data-about style="text-align:center;font-size:12px;margin-top:18px">${licenseText() ? `${esc(licenseText())}<br>` : ''}${BRAND.name} · גרסה <span class="num">${APP_VERSION}</span> · מתעדכנת אוטומטית · דמויות, הדמיות וקולות נוצרו ב-AI (ElevenLabs)<br>לפני תחילת תוכנית אימונים מומלץ אישור רפואי.</p>`;
 
+  // כפתור נסתר לבעל האפליקציה: חמש הקשות על שורת הגרסה חושפות (או מסתירות) את "שליחת קישורי הפעלה"
+  const adminBtn = (on) => { root.querySelector('[data-lic-admin]').innerHTML = on ? `<a class="btn sm block" style="margin-top:16px" href="${adminUrl()}">${icon('link', 'width="16" height="16"')} שליחת קישורי הפעלה</a>` : ''; };
+  adminBtn(adminRevealed());
+  bindHiddenAdmin(root.querySelector('[data-about]'), (on) => { adminBtn(on); toast(on ? 'מסך הניהול נחשף בטלפון הזה' : 'מסך הניהול הוסתר'); });
   root.querySelectorAll('details[data-sec]').forEach((d) => d.addEventListener('toggle', () => { d.open ? openSec.add(d.dataset.sec) : openSec.delete(d.dataset.sec); }));
   // מצב קובצי הקול במכשיר + הורדה ידנית
   const vdl = (have, total, busy) => {
