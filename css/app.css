@@ -1056,3 +1056,6 @@ html.locked body { overflow: hidden; }
 .nut-off .nc-ico { width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 20px; background: rgba(var(--pri-rgb), 0.14); color: var(--pri-ink); }
 .nut-off .nc-ico svg { width: 32px; height: 32px; }
 .today.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* כפתור מוזיקת הרקע באימון: כבוי = מעומעם */
+.live .hud-top .icon-btn.off { opacity: 0.45; }

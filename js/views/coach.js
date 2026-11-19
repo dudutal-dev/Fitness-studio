@@ -66,6 +66,7 @@ export function renderCoach(root) {
       ${toggleRow('tempoCount', 'ספירה מודרכת בטמפו', '"ירידה… עלייה!" וספירת כל חזרה', st.tempoCount)}
       ${toggleRow('warmup', 'חימום ומתיחות מודרכים', '5 תנועות חימום בהתחלה, מתיחות לפי השרירים בסוף', st.warmup !== false)}
       ${toggleRow('captions', 'כתוביות באימון', 'מה שהמאמן אומר — שורה קצרה שנעלמת', st.captions !== false)}
+      ${toggleRow('music', 'מוזיקת רקע בשיעורים', 'ביוגה, בפילאטיס ובמוביליטי — בשקט, מתחת להנחיות', st.music === true)}
       <div style="margin-top:12px"><div class="row between"><b>עוצמה</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} בדיקת קול</button>
@@ -169,7 +170,7 @@ export function renderCoach(root) {
     syncReminders().catch(() => {});
     renderCoach(root);
   });
-  on(root, 'click', '[data-toggle]', (e, b) => { const k = b.dataset.toggle; set((s2) => { s2.settings[k] = !(s2.settings[k] ?? true); return s2; }); document.body.classList.toggle('no-captions', get().settings.captions === false); if (k === 'voice') stop(); renderCoach(root); });
+  on(root, 'click', '[data-toggle]', (e, b) => { const k = b.dataset.toggle; set((s2) => { s2.settings[k] = !(s2.settings[k] ?? k !== 'music'); return s2; }); document.body.classList.toggle('no-captions', get().settings.captions === false); if (k === 'voice') stop(); renderCoach(root); });
   root.querySelector('[data-vol]').addEventListener('change', (e) => set((s2) => { s2.settings.volume = Number(e.target.value); return s2; }));
   on(root, 'click', '[data-test]', () => { unlock(); say(['mob', 'run', 'hiit', 'pil', 'yoga'].includes(get().profile.track) ? 'workout_start' : 'm1', { priority: true }); });
   const draft = { goal: p.goal, days: p.days, sessionMin: p.sessionMin, injuries: [...p.injuries], sex: p.sex || 'm', ...(mix ? { mixCali: mixCaliCount(p) } : {}) };

@@ -38,6 +38,7 @@ export function unlock() {
   try { const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch { /* */ }
 }
 export const audioReady = () => !!ctx && ctx.state === 'running';
+export const audioCtx = () => (ctx && ctx.state !== 'closed' ? ctx : null);   // למוזיקת הרקע (coach/music.js)
 
 // ───── התאוששות: הקול חוזר לבד אחרי שהאפליקציה הייתה ברקע ─────
 // באייפון מנוע האודיו נעצר כשהמסך ננעל, כשעוברים לאפליקציה אחרת או כשנכנסת שיחה, ואפשר להמשיך אותו רק מתוך נגיעה.

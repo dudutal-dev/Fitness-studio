@@ -5,3 +5,4 @@ node_modules/
 assets/_src/voice_tmp/
 assets/_src/voice_orig/
 tools/__pycache__/
+assets/_src/music/

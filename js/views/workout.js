@@ -8,6 +8,7 @@ import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { suggest, isPR, roundLoad, bestSet, evaluateLevel } from '../engine/progression.js';
 import { applyReadiness, blockedSet, LEVEL_NAMES, warmupFor, cooldownFor } from '../engine/program.js';
 import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking, useCoach } from '../coach/voice.js';
+import { hasMusic, musicOn, startMusic, stopMusic } from '../coach/music.js';
 import { MOTIVATION_KEYS, ORDINAL_SET, MOBILITY_TIPS, coachSays } from '../data/voice-lines.js';
 import { DEMO_TIMING } from '../data/demo-timing.js';
 import { startRun } from './run.js';
@@ -98,6 +99,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       <div class="hud-top"><button class="icon-btn" data-act="exit" aria-label="יציאה">${icon('close', 'width="20" height="20"')}</button>
         <div class="progress"></div><span class="clock num">0:00</span>
         <button class="icon-btn" data-act="tv" aria-label="מצב טלוויזיה">${icon('tv', 'width="20" height="20"')}</button>
+        ${hasMusic(workout.track) ? `<button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>` : ''}
         <button class="icon-btn" data-act="voice" aria-label="קול">${icon(get().settings.voice ? 'vol' : 'mute', 'width="20" height="20"')}</button></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"></div></div>
@@ -558,7 +560,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   }
 
   function close() {
-    clearInterval(timer); clearInterval(clock); offSpeak(); stop();
+    clearInterval(timer); clearInterval(clock); offSpeak(); stop(); stopMusic();
     if (tvOn) tvMode(false);
     useCoach(null);
     pill._destroy?.(); hrRec.stop();
@@ -595,6 +597,12 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (a === 'info') infoSheet(item().exId, coach);
     if (a === 'swap') swapSheet();
     if (a === 'tv') tvMode(!tvOn);
+    if (a === 'music') {
+      set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
+      if (musicOn()) startMusic(workout.track); else stopMusic();
+      t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
+      toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
+    }
     if (a === 'voice') {
       set((s2) => { s2.settings.voice = !s2.settings.voice; return s2; });
       if (!get().settings.voice) stop();
@@ -690,6 +698,11 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   }
 
   // פתיחה
+  // מוזיקת רקע בשיעורים (יוגה, פילאטיס, מוביליטי) — רק למי שהפעיל; בפעם הראשונה מזכירים שיש כפתור
+  if (hasMusic(workout.track)) {
+    if (musicOn()) startMusic(workout.track);
+    else if (!get().settings.musicHint) { set((s2) => { s2.settings.musicHint = true; return s2; }); setTimeout(() => root.isConnected && toast('רוצים מוזיקת רקע? כפתור התו למעלה', 3200), 5000); }
+  }
   say(pilW ? 'pil_hello' : `hello_${coach}`, { priority: true });
   if (items[0].role === 'warmup') say('warm_intro');
   if (flowW) say('mob_intro');
