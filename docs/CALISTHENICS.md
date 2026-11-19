@@ -70,7 +70,7 @@ r/bodyweightfitness Recommended Routine · Steven Low, Overcoming Gravity (דר�
 ## נכסים
 
 - הדגמות: `tools/demos.json` — האיבר השלישי קובע מי מדגים (`cali` = מאיה, `all` = שלושת המאמנים). `python3 tools/gen_demos.py @maya [תרגילים]`.
-- קול: `tools/voice_manifest.mjs` מייצר לכל מאמן רק משפטים שהוא אומר בפועל (`coachSays`). מאיה: קול Zina.
+- קול: `tools/voice_manifest.mjs` מייצר לכל מאמן רק משפטים שהוא אומר בפועל (`coachSays`). מאיה: קול שעוצב במיוחד (ElevenLabs Voice Design) — חזק וברור; הקודם, Zina, היה חלש מדי.
 
 ## מסלול משולב והמלצת המערכת
 

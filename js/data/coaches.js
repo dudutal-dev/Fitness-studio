@@ -11,7 +11,7 @@ export const COACHES = {
     style: 'מדויק-מעודד', img: 'assets/coaches/noa.webp', face: 'assets/coaches/noa_face.webp',
   },
   maya: {
-    id: 'maya', name: 'מאיה', title: 'מאמנת קליסתניקס', voice: 'Zina (ElevenLabs)', track: 'cali', f: true,
+    id: 'maya', name: 'מאיה', title: 'מאמנת קליסתניקס', voice: 'קול ייעודי (ElevenLabs)', track: 'cali', f: true,
     bio: 'רגועה, סבלנית ומדויקת. מאמינה ששליטה בגוף נבנית שלב אחרי שלב — בלי לדלג ובלי למהר.',
     style: 'רגוע-מדויק', img: 'assets/coaches/maya.webp', face: 'assets/coaches/maya_face.webp',
   },

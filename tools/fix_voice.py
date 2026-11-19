@@ -10,7 +10,7 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 LINES = json.load(open(sys.argv[1]))
 TH = float(sys.argv[2]) if len(sys.argv) > 2 else 0.85
 ONLY = sys.argv[3:]
-VOICES = {"ori": "PBHwEnXdzx0yfhIO2UCH", "noa": "s0T0DT6EAPeX57MQpn3I", "maya": "Tbj9UQjXon5RB9MPEyc2"}
+VOICES = {"ori": "PBHwEnXdzx0yfhIO2UCH", "noa": "s0T0DT6EAPeX57MQpn3I", "maya": "tPkZ8BPQfux4koA8Wyli"}
 CHECK_F = os.path.join(ROOT, "assets", "_src", "voice_check.json")
 check = json.load(open(CHECK_F))
 TMP = os.path.join(ROOT, "assets", "_src", "voice_tmp"); os.makedirs(TMP, exist_ok=True)
