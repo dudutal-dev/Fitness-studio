@@ -1,0 +1,348 @@
+// מסך תזונה: יעדים מול מה שנאכל בפועל (יומן אכילה עם חיפוש ב-600+ מזונות), תפריט יומי לפי הקשר (בסיס/שטח/בית),
+// "לא אוכל", מזונות אישיים, מעקב שתייה, טיפים.
+import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
+import { ring } from '../ui/charts.js';
+import { get, set, daily, setDaily, g } from '../store.js';
+import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
+import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
+import { dayKey } from '../engine/stats.js';
+import { lookupBarcode, startScanner } from '../barcode.js';
+
+let tab = 'today';
+let ctx = 'base';
+let seed = new Date().getDate();
+let editDislikes = false;
+let dislikeQuery = '';
+
+const CATS = [['', 'הכל'], ['meal', 'מנות'], ['protein', 'חלבון'], ['dairy', 'חלב'], ['carb', 'פחמימה'], ['fruit', 'פירות'], ['veg', 'ירקות'], ['fat', 'שומנים'], ['sauce', 'רטבים'], ['snack', 'חטיפים ומשקאות'], ['custom', 'שלי']];
+const QTYS = [0.5, 1, 1.5, 2, 3];
+const MEAL_SLOTS = [['breakfast', 'בוקר'], ['lunch', 'צהריים'], ['dinner', 'ערב'], ['snack', 'ביניים']];
+
+function currentSlot() {
+  const h = new Date().getHours();
+  return h < 11 ? 'breakfast' : h < 16 ? 'lunch' : h < 21 ? 'dinner' : 'snack';
+}
+
+export function renderNutrition(root) {
+  const s = get();
+  const p = s.profile;
+  const custom = p.customFoods || [];
+  const plan = mealPlan(p, { ctx, seed });
+  const t = plan.targets;
+  const dd = daily();
+  const eaten = dayTotals(dd, custom);
+  const ctxs = [['base', 'בבסיס'], ['field', 'בשטח'], ['home', 'בבית']];
+  const log = (dd.foods || []).map((it, i) => ({ ...it, i, f: foodLookup(it.id, custom) })).filter((x) => x.f);
+  const left = t.kcal - eaten.kcal;
+  const actKey = activityKey(p);
+  const act = ACTIVITY[actKey];
+  const advice = trendAdvice(s.weights, p);
+  const nf = (n) => n.toLocaleString('he-IL');
+  // ארוחות שנרשמו אתמול ועדיין לא נרשמו היום — אפשר להעתיק בהקשה אחת
+  const yFoods = (s.daily[dayKey(new Date(Date.now() - 864e5))]?.foods || []).filter((it) => foodLookup(it.id, custom));
+  const repeatable = MEAL_SLOTS.map(([slot, label]) => [slot, label, yFoods.filter((it) => (it.slot || 'snack') === slot).length])
+    .filter(([slot, , n]) => n && !log.some((x) => (x.slot || 'snack') === slot));
+  const macro = (name, val, of, unit, color) => `<div class="macro"><div class="row between"><span>${name}</span><b><bdi>${val}</bdi><small> / <bdi>${of} ${unit}</bdi></small></b></div>
+    <div class="bar"><i style="width:${Math.min(100, Math.round((val / Math.max(1, of)) * 100))}%;background:${color}"></i></div></div>`;
+  const goalTag = p.goal === 'cut' ? 'גירעון' : p.goal === 'muscle' ? 'עודף' : 'תחזוקה';
+  const TABS = [['today', 'היום'], ['menu', 'תפריט'], ['prefs', 'העדפות']];
+
+  const todayTab = () => html`
+    <div class="card">
+      <div class="nut-top">
+        ${ring(eaten.kcal / t.kcal, { size: 124, stroke: 11, color: left < 0 ? 'var(--acc)' : 'var(--pri)', big: nf(Math.abs(left)), lbl: left >= 0 ? 'קק״ל נשארו' : 'קק״ל מעל היעד' })}
+        <div class="nut-macros">
+          ${macro('חלבון', eaten.p, t.protein, 'ג׳', 'var(--pri)')}
+          ${macro('פחמימה', eaten.c, t.carbs, 'ג׳', 'var(--acc)')}
+          ${macro('שומן', eaten.f, t.fat, 'ג׳', 'var(--orange)')}
+        </div>
+      </div>
+      <div class="sub t-foot center-t mt-3">נאכלו <b class="num">${nf(eaten.kcal)}</b> מתוך <b class="num">${nf(t.kcal)}</b> קק״ל · ${goalTag} · סיבים <span class="num">${eaten.fib}</span>/<span class="num">${t.fiber}</span> ג׳</div>
+      <button class="btn primary block mt-4" data-act="add-food">＋ הוספת אוכל</button>
+    </div>
+
+    <div class="card tight water-row">
+      ${ib('drop', 'acc')}
+      <div class="grow"><div class="row between"><b>מים</b><span class="num sub">${(dd.water / 1000).toFixed(1)} / ${t.waterL} ל׳</span></div>
+        <div class="bar"><i style="width:${Math.min(100, Math.round((dd.water / (t.waterL * 1000)) * 100))}%;background:var(--blue)"></i></div></div>
+      <button class="btn sm" data-add="water">＋ כוס</button>
+    </div>
+
+    ${advice ? html`<div class="card tight advice ${advice.step ? 'act' : ''}">
+      <b>${advice.onTrack ? 'הקצב שלך מתאים למטרה' : advice.step > 0 ? 'המשקל יורד מהר מהמתוכנן' : advice.step < 0 ? 'המשקל עולה מהר מהמתוכנן' : 'מגמת המשקל'}</b>
+      <div class="sub t-foot">בשבועות האחרונים: <span class="num ltr">${advice.kgWeek > 0 ? '+' : ''}${advice.kgWeek}</span> ק״ג לשבוע (<span class="num ltr">${advice.pctWeek}%</span>). הטווח המומלץ למטרה: <span class="num ltr">${advice.range[0]}%</span> עד <span class="num ltr">${advice.range[1]}%</span>.</div>
+      ${advice.step ? `<button class="btn sm block mt-3" data-adjust="${advice.step}">${advice.step > 0 ? 'העלה' : 'הורד'} את היעד ב-${Math.abs(advice.step)} קק״ל</button>` : ''}
+    </div>` : ''}
+
+    <div class="h2">מה אכלתי${log.length ? `<span class="more" data-act="clear-log">ניקוי</span>` : ''}</div>
+    ${repeatable.length ? `<div class="chips" style="margin-bottom:10px">${repeatable.map(([slot, label, n]) => `<button class="chip" data-repeat="${slot}">${icon('refresh')} ${label} כמו אתמול <small class="num">(${n})</small></button>`).join('')}</div>` : ''}
+    <div class="card tight">
+      ${log.length ? MEAL_SLOTS.map(([slot, label]) => {
+        const items = log.filter((x) => (x.slot || 'snack') === slot);
+        if (!items.length) return '';
+        const k = items.reduce((a, x) => a + x.f.kcal * x.qty, 0);
+        return html`<div class="log-slot"><div class="row between"><b>${label}</b><span class="sub num t-cap">${Math.round(k)} קק״ל</span></div>
+          ${items.map((x) => html`<button class="log-it" data-log="${x.i}"><span>${esc(x.f.name)}<small> · ${qtyLabel(x.qty)}${esc(x.f.portion)}</small></span>
+            <span class="num sub">${Math.round(x.f.kcal * x.qty)}</span></button>`)}</div>`;
+      }).join('') : `<div class="empty" style="padding:12px 4px">עוד לא נרשם אוכל היום.<br>אפשר להוסיף אוכל, או לסמן ארוחה שלמה בלשונית "תפריט".</div>`}
+    </div>`;
+
+  const menuTab = () => html`
+    <div class="seg">${ctxs.map(([k, v]) => `<button data-ctx="${k}" class="${ctx === k ? 'on' : ''}">${v}</button>`)}</div>
+    <div class="row between menu-sum"><div class="sub t-foot">התפריט: <b class="num">${nf(plan.total.kcal)}</b> קק״ל · <b class="num">${plan.total.p}</b> ג׳ חלבון<br>יעד: <span class="num">${nf(t.kcal)}</span> קק״ל · <span class="num">${t.protein}</span> ג׳ חלבון</div>
+      <button class="btn sm" data-act="shuffle">${icon('swap', 'width="16" height="16"')} תפריט אחר</button></div>
+    ${plan.meals.map((m, mi) => html`<div class="card tight meal">
+      <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}</b><span class="num sub t-foot">${m.total.kcal} קק״ל · ${m.total.p} ג׳ חלבון</span></div>
+        <button class="eat-btn" data-eat-meal="${mi}" aria-label="אכלתי את ${esc(m.name)}">${icon('check')} אכלתי</button></div>
+      ${m.items.map((it) => { const f = FOOD[it.id]; return `<div class="mi"><span>${esc(f.name)}</span><small>${qtyLabel(it.qty)}${esc(f.portion)}</small></div>`; })}
+    </div>`)}
+    <div class="sub t-foot center-t mt-3">סה״כ ביום: <span class="num">${plan.total.c}</span> ג׳ פחמימה · <span class="num">${plan.total.f}</span> ג׳ שומן · <span class="num">${plan.total.fib}</span> ג׳ סיבים (יעד ${t.fiber})</div>`;
+
+  const prefsTab = () => html`
+    <div class="h2" style="margin-top:4px">רמת פעילות</div>
+    <div class="seg" data-activity>${Object.entries(ACTIVITY).map(([k, a]) => `<button data-v="${k}" class="${actKey === k ? 'on' : ''}">${a.name}</button>`).join('')}</div>
+    <div class="sub t-foot mt-2">${esc(act.full)}: ${esc(act.desc)}. קובע את יעד הקלוריות.</div>
+
+    <div class="h2">מה אני לא אוכל<span class="more" data-act="edit">${editDislikes ? 'סיום' : 'עריכה'}</span></div>
+    <div class="card tight">
+      ${editDislikes ? html`<div class="sub" style="margin-bottom:8px">קטגוריות:</div>
+        <div class="chips">${Object.entries(DISLIKE_TAGS).map(([k, v]) => `<button class="chip no ${p.dislikes.includes(k) ? 'on' : ''}" data-dis="${k}">${v}</button>`)}</div>
+        <div class="sub" style="margin:14px 0 8px">מאכלים ספציפיים:</div>
+        <input class="input" data-dq placeholder="חיפוש מאכל…" value="${esc(dislikeQuery)}" style="height:44px;margin-bottom:10px">
+        <div class="chips" id="dislikeChips">${dislikeChips(p)}</div>`
+      : html`<div class="chips">${[...p.dislikes.map((k) => DISLIKE_TAGS[k]), ...(p.dislikedFoods || []).map((id) => FOOD[id]?.name)].filter(Boolean).map((x) => `<span class="chip no on">${esc(x)}</span>`).join('') || '<span class="sub">אוכל הכל</span>'}</div>`}
+    </div>
+
+    <div class="h2">מידע</div>
+    ${plan.noVeg ? html`<details class="card acc"><summary>בלי ירקות — ככה משלימים</summary><div class="acc-body">${NO_VEG_TIPS.map(tip)}</div></details>` : ''}
+    <details class="card acc"><summary>טיפים לחייל</summary><div class="acc-body">${ARMY_TIPS.map(tip)}</div></details>
+    <details class="card acc method"><summary>איך זה מחושב</summary><div class="acc-body">
+      ${p.track === 'cali' ? `<div class="m-row"><b>קליסתניקס</b><span>${p.goal === 'muscle' ? 'העודף הקלורי נשאר קטן בכוונה: כל קילו נוסף הוא קילו שצריך להרים במתח ובמקבילים.' : p.goal === 'cut' ? 'ירידה איטית שומרת על הכוח. כל קילו שומן שיורד מקל ישירות על מתח, לברים ועמידת ידיים.' : 'איזון קלורי עם חלבון גבוה: בונים כוח בלי לעלות במשקל, כי הכוח כאן נמדד ביחס למשקל הגוף.'}</span></div>` : ''}
+      <div class="m-row"><b>קלוריות</b><span>BMR לפי Mifflin-St Jeor (<span class="num">${t.bmr}</span>) × מקדם פעילות ${t.activity.factor} = <span class="num">${t.tdee}</span>${t.delta ? ` ${t.delta > 0 ? '+' : '−'} <span class="num">${Math.abs(t.delta)}</span> (${p.goal === 'cut' ? 'ירידה של ~0.5% ממשקל הגוף בשבוע' : 'עודף של ~10% — עלייה של 0.25–0.5% בשבוע'})` : ' (תחזוקה)'}${t.adjust ? ` ${t.adjust > 0 ? '+' : '−'} <span class="num">${Math.abs(t.adjust)}</span> (כיול לפי מגמת המשקל שלך)` : ''}</span></div>
+      <div class="m-row"><b>חלבון</b><span>${t.perKg} ג׳ לק״ג${t.refW < Math.round(p.weightKg) ? ` (לפי משקל ייחוס ${t.refW} ק״ג)` : ''} — ISSN: 1.4–2.0 למתאמנים, יותר בגירעון; 20–40 ג׳ בכל ארוחה</span></div>
+      <div class="m-row"><b>שומן</b><span>25% מהקלוריות (טווח מומלץ 20–35%), לא פחות מ-0.5 ג׳ לק״ג</span></div>
+      <div class="m-row"><b>פחמימה</b><span>יתרת הקלוריות — <span class="num">${(t.carbs / (p.weightKg || 70)).toFixed(1)}</span> ג׳ לק״ג (ACSM: 5–7 לאימון בינוני, 3–5 לקל)</span></div>
+      <div class="m-row"><b>סיבים</b><span>14 ג׳ לכל 1,000 קק״ל (IOM)</span></div>
+      <div class="m-row"><b>שתייה</b><span>${p.sex === 'f' ? '1.6' : '2.0'} ל׳ ממשקאות (EFSA) + 0.5 ל׳ לשעת אימון (ACSM); בחום ובשטח יותר</span></div>
+      <div class="m-row"><b>כיול</b><span>אחרי שבועיים של שקילות, היעד מושווה לקצב השינוי בפועל ומוצע תיקון של 150 קק״ל</span></div>
+      <div class="m-row"><b>ערכי מזון</b><span>מאגר התזונה הלאומי של משרד הבריאות — ${FOODS.length} מאכלים, משקל מנה מטבלת המשקלים של המאגר</span></div>
+      ${t.adjust ? '<button class="btn sm block mt-3" data-adjust="reset">איפוס הכיול האישי</button>' : ''}
+      <details style="margin-top:8px"><summary class="sub" style="cursor:pointer;min-height:44px;display:flex;align-items:center">מקורות (${NUTRITION_REFS.length})</summary>
+        <ol class="refs">${NUTRITION_REFS.map((r) => `<li><a href="${r.u}" target="_blank" rel="noopener">${esc(r.t)}</a></li>`).join('')}</ol></details>
+    </div></details>
+    <p class="sub t-cap mt-3">ההמלצות כלליות ואינן תחליף לייעוץ של דיאטנית/רופא.</p>`;
+
+  root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
+    <div class="seg tabs" data-tabs>${TABS.map(([k, v]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${v}</button>`).join('')}</div>
+    ${tab === 'menu' ? menuTab() : tab === 'prefs' ? prefsTab() : todayTab()}`;
+
+  const rerender = () => renderNutrition(root);
+  on(root, 'click', '[data-repeat]', (e, b) => {
+    const slot = b.dataset.repeat;
+    const items = yFoods.filter((it) => (it.slot || 'snack') === slot).map((it) => ({ id: it.id, qty: it.qty, slot, at: Date.now() }));
+    setDaily({ foods: [...(daily().foods || []), ...items] });
+    toast(`${items.length} פריטים נרשמו`, 1400); rerender();
+  });
+  on(root, 'click', '[data-tab]', (e, b) => { tab = b.dataset.tab; rerender(); });
+  on(root, 'click', '[data-adjust]', (e, b) => {
+    const v = b.dataset.adjust;
+    set((s2) => { s2.profile.kcalAdjust = v === 'reset' ? 0 : (s2.profile.kcalAdjust || 0) + Number(v); return s2; });
+    toast(v === 'reset' ? 'הכיול אופס' : 'יעד הקלוריות עודכן'); rerender();
+  });
+  on(root, 'click', '[data-activity] button', (e, b) => { set((s2) => { s2.profile.activityLevel = b.dataset.v; return s2; }); rerender(); });
+  on(root, 'click', '[data-ctx]', (e, b) => { ctx = b.dataset.ctx; rerender(); });
+  on(root, 'click', '[data-act="shuffle"]', () => { seed++; rerender(); });
+  on(root, 'click', '[data-act="edit"]', () => { editDislikes = !editDislikes; rerender(); });
+  on(root, 'click', '[data-act="add-food"]', () => foodSearchSheet(rerender));
+  on(root, 'click', '[data-act="clear-log"]', () => { setDaily({ foods: [] }); rerender(); });
+  on(root, 'click', '[data-log]', (e, b) => logItemSheet(Number(b.dataset.log), rerender));
+  on(root, 'click', '[data-eat-meal]', (e, b) => {
+    const m = plan.meals[Number(b.dataset.eatMeal)];
+    const slot = m.id === 'breakfast' ? 'breakfast' : m.id === 'lunch' ? 'lunch' : m.id === 'dinner' ? 'dinner' : 'snack';
+    const foods = [...(daily().foods || []), ...m.items.map((it) => ({ id: it.id, qty: it.qty, slot, at: Date.now() }))];
+    setDaily({ foods });
+    toast(`✓ ${m.name} נרשמה ביומן`, 1500);
+    rerender();
+  });
+  on(root, 'click', '[data-dis]', (e, b) => { set((s2) => { toggle(s2.profile.dislikes, b.dataset.dis); return s2; }); rerender(); });
+  on(root, 'click', '[data-food]', (e, b) => { set((s2) => { s2.profile.dislikedFoods ||= []; toggle(s2.profile.dislikedFoods, b.dataset.food); return s2; }); b.classList.toggle('on'); });
+  root.querySelector('[data-dq]')?.addEventListener('input', (e) => { dislikeQuery = e.target.value; root.querySelector('#dislikeChips').innerHTML = dislikeChips(get().profile); });
+  on(root, 'click', '[data-add]', (e, b) => {
+    const d2 = daily();
+    setDaily({ water: d2.water + 250 });
+    rerender();
+  });
+}
+
+function dislikeChips(p) {
+  const list = dislikeQuery ? searchFoods(dislikeQuery, [], { limit: 60 }) : FOODS.filter((f) => f.cat !== 'meal').slice(0, 40);
+  return list.map((f) => `<button class="chip no ${(p.dislikedFoods || []).includes(f.id) ? 'on' : ''}" data-food="${f.id}">${esc(f.name)}</button>`).join('')
+    + (dislikeQuery ? '' : '<span class="sub" style="font-size:12px;align-self:center">…חפש כדי לראות עוד</span>');
+}
+
+// ───── מועדפים ואחרונים ─────
+const favFoods = () => get().profile.favFoods || [];
+const favLabel = (id) => (favFoods().includes(id) ? `${icon('star')} במועדפים — הסר` : `${icon('star')} הוסף למועדפים`);
+// מה שנרשם ב-14 הימים האחרונים, מהחדש לישן, בלי כפילויות
+function recentFoods() {
+  const days = Object.keys(get().daily).sort().slice(-14).reverse();
+  const seen = new Set();
+  for (const d of days) for (const it of [...(get().daily[d].foods || [])].reverse()) seen.add(it.id);
+  return [...seen];
+}
+
+// ───── חיפוש והוספת מזון ─────
+export function foodSearchSheet(onDone) {
+  let q = '', cat = '', slot = currentSlot();
+  const custom = () => get().profile.customFoods || [];
+  sheet(html`<div class="eyebrow">יומן אכילה</div><div class="h1" style="font-size:22px">מה ${g('אכלת', 'אכלת')}?</div>
+    <div class="seg" data-slot style="margin:10px 0">${MEAL_SLOTS.map(([k, v]) => `<button data-sl="${k}" class="${slot === k ? 'on' : ''}">${v}</button>`).join('')}</div>
+    <input class="input" data-q placeholder="חיפוש: שניצל, קוטג׳, במבה…" autocomplete="off">
+    <div class="chips scroll" style="margin-block:10px">${CATS.map(([k, v]) => `<button class="chip ${k === cat ? 'on' : ''}" data-cat="${k}">${v}</button>`).join('')}</div>
+    <div id="fres" class="food-res"></div>
+    <div class="grid2" style="margin-top:12px"><button class="btn sm" data-scan>${icon('scan')} סריקת ברקוד</button><button class="btn sm" data-custom>＋ מזון חדש</button></div>`, {
+    onMount(sh, close) {
+      const row = (f, mark = '') => html`<button class="food-row" data-pick="${f.id}">
+          <span><b>${mark}${esc(f.name)}</b><small>${esc(f.portion)}${f.custom ? ' · שלי' : ''}</small></span>
+          <span class="num"><b>${Math.round(f.kcal)}</b><small>${Math.round(f.p)} ג׳ חלבון</small></span></button>`;
+      const paint = () => {
+        let out = '';
+        if (!q && !cat) {
+          // בלי חיפוש: קודם מועדפים, אחר כך מה שנאכל לאחרונה — רישום חוזר בשתי הקשות
+          const favs = favFoods().map((id) => foodLookup(id, custom())).filter(Boolean);
+          const rec = recentFoods().filter((id) => !favFoods().includes(id)).map((id) => foodLookup(id, custom())).filter(Boolean).slice(0, 8);
+          if (favs.length) out += `<div class="food-sec">${icon('star')} מועדפים</div>` + favs.map((f) => row(f)).join('');
+          if (rec.length) out += `<div class="food-sec">${icon('clock')} אחרונים</div>` + rec.map((f) => row(f)).join('');
+          if (out) out += '<div class="food-sec">כל המאכלים</div>';
+        }
+        const res = searchFoods(q, custom(), { cat: cat || null, limit: 50 });
+        out += res.map((f) => row(f)).join('');
+        sh.querySelector('#fres').innerHTML = out || '<div class="empty" style="padding:14px">לא נמצא. אפשר להוסיף "מזון שלא ברשימה" למטה.</div>';
+      };
+      const inp = sh.querySelector('[data-q]');
+      inp.addEventListener('input', () => { q = inp.value; paint(); });
+      on(sh, 'click', '[data-cat]', (e, b) => { cat = b.dataset.cat; sh.querySelectorAll('[data-cat]').forEach((x) => x.classList.toggle('on', x === b)); paint(); });
+      on(sh, 'click', '[data-sl]', (e, b) => { slot = b.dataset.sl; sh.querySelectorAll('[data-sl]').forEach((x) => x.classList.toggle('on', x === b)); });
+      on(sh, 'click', '[data-pick]', (e, b) => { const f = foodLookup(b.dataset.pick, custom()); close(); qtySheet(f, slot, onDone); });
+      sh.querySelector('[data-custom]').addEventListener('click', () => { close(); customFoodSheet(slot, onDone, q); });
+      sh.querySelector('[data-scan]').addEventListener('click', () => { close(); scanSheet(slot, onDone); });
+      paint();
+    },
+  });
+}
+
+function qtySheet(f, slot, onDone) {
+  let qty = 1;
+  const line = () => `<b class="num">${Math.round(f.kcal * qty)}</b> קק״ל · <b class="num">${Math.round(f.p * qty)}</b>ג׳ חלבון · <b class="num">${Math.round(f.c * qty)}</b>ג׳ פחמ׳ · <b class="num">${Math.round(f.f * qty)}</b>ג׳ שומן`;
+  sheet(html`<div class="h1" style="font-size:22px">${esc(f.name)}</div><div class="sub">מנה: ${esc(f.portion)}</div>
+    ${f.src ? `<div class="src-line">מקור: מאגר משרד הבריאות — ${f.src.map((x) => `${esc(x.name)} (${x.g} ג׳)`).join(' + ')}</div>` : f.custom ? '<div class="src-line">מזון אישי (ערכים שהזנת)</div>' : ''}
+    <div class="sub" style="margin:14px 0 6px">כמות</div>
+    <div class="seg" data-qty>${QTYS.map((v) => `<button data-qv="${v}" class="${v === qty ? 'on' : ''}">${v === 0.5 ? '½' : v === 1.5 ? '1½' : v}</button>`).join('')}</div>
+    <div class="card tight" style="margin-top:12px" id="qline">${line()}</div>
+    <button class="btn primary block xl" style="margin-top:14px" data-ok>הוסף ליומן</button>
+    <button class="btn ghost block" style="margin-top:6px" data-fav>${favLabel(f.id)}</button>`, {
+    onMount(sh, close) {
+      sh.querySelector('[data-fav]').addEventListener('click', (e) => {
+        set((s2) => { const a = (s2.profile.favFoods ||= []); const i = a.indexOf(f.id); i >= 0 ? a.splice(i, 1) : a.unshift(f.id); return s2; });
+        e.currentTarget.innerHTML = favLabel(f.id);
+      });
+      on(sh, 'click', '[data-qv]', (e, b) => { qty = Number(b.dataset.qv); sh.querySelectorAll('[data-qv]').forEach((x) => x.classList.toggle('on', x === b)); sh.querySelector('#qline').innerHTML = line(); });
+      sh.querySelector('[data-ok]').addEventListener('click', () => {
+        setDaily({ foods: [...(daily().foods || []), { id: f.id, qty, slot, at: Date.now() }] });
+        toast(`✓ ${f.name} נרשם`, 1300);
+        close(); onDone?.();
+      });
+    },
+  });
+}
+
+function logItemSheet(i, onDone) {
+  const dd = daily();
+  const it = dd.foods[i];
+  const f = foodLookup(it.id, get().profile.customFoods || []);
+  sheet(html`<div class="h1" style="font-size:22px">${esc(f.name)}</div><div class="sub">${qtyLabel(it.qty)}${esc(f.portion)} · ${Math.round(f.kcal * it.qty)} קק״ל</div>
+    <div class="sub" style="margin:14px 0 6px">שינוי כמות</div>
+    <div class="seg">${QTYS.map((v) => `<button data-qv="${v}" class="${v === it.qty ? 'on' : ''}">${v === 0.5 ? '½' : v === 1.5 ? '1½' : v}</button>`).join('')}</div>
+    <button class="btn danger block" style="margin-top:14px" data-del>הסר מהיומן</button>
+    <button class="btn ghost block" style="margin-top:8px" data-close>סגור</button>`, {
+    onMount(sh, close) {
+      on(sh, 'click', '[data-qv]', (e, b) => { const foods = [...daily().foods]; foods[i] = { ...foods[i], qty: Number(b.dataset.qv) }; setDaily({ foods }); close(); onDone?.(); });
+      sh.querySelector('[data-del]').addEventListener('click', () => { const foods = daily().foods.filter((_, j) => j !== i); setDaily({ foods }); close(); onDone?.(); });
+    },
+  });
+}
+
+// ───── סריקת ברקוד ─────
+function scanSheet(slot, onDone) {
+  let stopCam = null, busy = false;
+  const closeSheet = sheet(html`<div class="eyebrow">מוצר ארוז</div><div class="h1" style="font-size:22px">סריקת ברקוד</div>
+    <div class="scan-box"><video muted playsinline></video><i class="scan-line"></i><div class="scan-msg" data-msg>מפעיל מצלמה…</div></div>
+    <p class="sub t-foot" style="margin:10px 0">מכוונים את הברקוד אל הקו. אפשר גם להקליד את המספר שמתחתיו.</p>
+    <div class="row"><input class="input num" data-code inputmode="numeric" placeholder="7290000000000" maxlength="14" style="flex:1;min-width:0"><button class="btn" data-find>חפש</button></div>
+    <p class="sub t-cap" style="margin-top:10px">הערכים מגיעים מהמאגר הפתוח Open Food Facts; נשלח אליו רק מספר הברקוד. כדאי להשוות לתווית לפני השמירה.</p>`, {
+    onClose() { stopCam?.(); },
+    onMount(sh) {
+      const msg = (x) => { const m = sh.querySelector('[data-msg]'); if (m) m.textContent = x; };
+      const found = async (code) => {
+        if (busy) return;
+        busy = true;
+        // מוצר שכבר נסרק ונשמר — ישר לבחירת כמות
+        const known = (get().profile.customFoods || []).find((f) => f.barcode === code);
+        if (known) { closeSheet(); qtySheet(known, slot, onDone); return; }
+        msg(`נמצא ברקוד ${code} — מחפש…`);
+        try {
+          const r = await lookupBarcode(code);
+          closeSheet();
+          if (!r.found) { toast('המוצר לא נמצא במאגר — אפשר להזין מהתווית'); customFoodSheet(slot, onDone, { barcode: code }); return; }
+          if (!r.complete) toast('המוצר נמצא, אבל בלי ערכים מלאים — להשלים מהתווית');
+          customFoodSheet(slot, onDone, r);
+        } catch {
+          busy = false;
+          msg(navigator.onLine ? 'החיפוש נכשל — לנסות שוב' : 'אין חיבור לרשת — החיפוש דורש אינטרנט');
+        }
+      };
+      sh.querySelector('[data-find]').addEventListener('click', () => {
+        const code = sh.querySelector('[data-code]').value.replace(/\D/g, '');
+        if (code.length < 8) { toast('מספר ברקוד קצר מדי'); return; }
+        found(code.length === 12 ? `0${code}` : code);
+      });
+      if (!navigator.mediaDevices?.getUserMedia) { msg('אין גישה למצלמה בדפדפן הזה — אפשר להקליד את המספר'); return; }
+      startScanner(sh.querySelector('video'), (code) => { vibrate(40); found(code); })
+        .then((stop) => { stopCam = stop; if (!document.body.contains(sh)) stop(); else msg(''); })
+        .catch(() => msg('אין הרשאה למצלמה — אפשר להקליד את המספר'));
+    },
+  });
+}
+
+// prefill: מחרוזת (שם) או אובייקט ממאגר הברקודים { name, portion, kcal, p, c, f, fib, barcode }
+function customFoodSheet(slot, onDone, prefill = '') {
+  const pre = typeof prefill === 'string' ? { name: prefill } : prefill || {};
+  const val = (v) => (v == null ? '' : esc(v));
+  sheet(html`<div class="eyebrow">${pre.barcode ? `ברקוד ${esc(pre.barcode)}` : 'מזון אישי'}</div><div class="h1" style="font-size:22px">${pre.found ? 'לבדוק ולשמור' : 'הוספת מזון חדש'}</div>
+    <p class="sub">${pre.found ? 'הערכים הגיעו ממאגר פתוח שמשתמשים ממלאים — כדאי להשוות לתווית.' : 'יישמר אצלך ויופיע בחיפוש בפעם הבאה. אפשר להעתיק ערכים מהתווית שעל האריזה.'}</p>
+    <label class="field"><span>שם</span><input class="input" name="name" value="${val(pre.name)}"></label>
+    <label class="field"><span>מנה (למשל: יחידה, 100 ג׳)</span><input class="input" name="portion" value="${val(pre.portion || 'מנה')}"></label>
+    <div class="grid2">
+      <label class="field"><span>קלוריות</span><input class="input num" name="kcal" type="number" inputmode="numeric" value="${val(pre.kcal)}"></label>
+      <label class="field"><span>חלבון (ג׳)</span><input class="input num" name="p" type="number" inputmode="decimal" value="${val(pre.p)}"></label>
+      <label class="field"><span>פחמימות (ג׳)</span><input class="input num" name="c" type="number" inputmode="decimal" value="${val(pre.c)}"></label>
+      <label class="field"><span>שומן (ג׳)</span><input class="input num" name="f" type="number" inputmode="decimal" value="${val(pre.f)}"></label>
+    </div>
+    <button class="btn primary block xl" data-save>שמור והוסף ליומן</button>`, {
+    onMount(sh, close) {
+      sh.querySelector('[data-save]').addEventListener('click', () => {
+        const v = (n) => sh.querySelector(`[name=${n}]`).value.trim();
+        const name = v('name'), kcal = Number(v('kcal'));
+        if (!name || !kcal) { toast('צריך לפחות שם וקלוריות'); return; }
+        const food = { id: `c_${Date.now()}`, name, portion: v('portion') || 'מנה', kcal, p: Number(v('p')) || 0, c: Number(v('c')) || 0, f: Number(v('f')) || 0, fib: Number(pre.fib) || 0, cat: 'custom', tags: [], ctx: ['base', 'home', 'field'], custom: true, ...(pre.barcode ? { barcode: pre.barcode } : {}) };
+        set((s2) => { (s2.profile.customFoods ||= []).push(food); return s2; });
+        setDaily({ foods: [...(daily().foods || []), { id: food.id, qty: 1, slot, at: Date.now() }] });
+        toast(`✓ ${name} נשמר ונרשם`);
+        close(); onDone?.();
+      });
+    },
+  });
+}
+
+const tip = (x) => `<div class="tip"><div class="ti">${em(x.icon, 'acc')}</div><div><b>${esc(x.title)}</b><span>${esc(x.text)}</span>${x.ref ? `<small class="ref">מקור: ${esc(x.ref)}</small>` : ''}</div></div>`;
+function toggle(arr, v) { const i = arr.indexOf(v); i >= 0 ? arr.splice(i, 1) : arr.push(v); }

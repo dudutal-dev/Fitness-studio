@@ -1,0 +1,613 @@
+{
+ "back_squat": [
+  "standing upright in a squat rack with a loaded olympic barbell resting on the upper back, feet shoulder-width, side view",
+  "performs one slow controlled barbell back squat: descends until thighs are parallel to the floor, then drives back up to standing"
+ ],
+ "leg_press": [
+  "seated in a 45-degree leg press machine with feet on the platform, legs extended (knees soft), side view",
+  "performs one controlled leg press rep: lowers the platform bending the knees to 90 degrees, then pushes it back up"
+ ],
+ "rdl": [
+  "standing tall holding a loaded barbell at the hips with straight arms, side view",
+  "performs one romanian deadlift: hinges at the hips with a flat back, slides the bar down the thighs to mid-shin, then squeezes glutes back to standing"
+ ],
+ "deadlift": [
+  "standing tall holding a loaded barbell after a completed deadlift lockout, side view",
+  "lowers the barbell to the floor with a flat back by hinging hips and bending knees, briefly touches the floor, then lifts it back up to full lockout"
+ ],
+ "db_lunge": [
+  "standing upright holding a dumbbell in each hand at the sides, side view",
+  "performs one forward lunge: steps forward, lowers until the back knee nearly touches the floor, then pushes back to standing"
+ ],
+ "bulgarian_split": [
+  "standing in a split stance with the rear foot elevated on a flat bench, holding dumbbells at the sides, side view",
+  "performs one bulgarian split squat: lowers straight down until the front thigh is parallel, then drives back up"
+ ],
+ "leg_ext": [
+  "seated in a leg extension machine, knees bent at 90 degrees, hands on the handles, side view",
+  "extends both knees lifting the pad until legs are straight, squeezes, then slowly lowers back down"
+ ],
+ "leg_curl": [
+  "lying face down on a lying leg curl machine with the pad behind the ankles, legs straight, side view",
+  "curls the heels toward the glutes, squeezes the hamstrings, then slowly lowers back to straight legs"
+ ],
+ "calf_raise": [
+  "standing on a step platform in a standing calf raise machine, heels slightly lowered, side view",
+  "rises up high onto the toes, pauses at the top, then slowly lowers the heels below the platform"
+ ],
+ "hip_thrust": [
+  "sitting on the floor with upper back against a flat bench, padded barbell across the hips, knees bent, side view",
+  "drives the hips up until the torso is parallel to the floor, squeezes the glutes, then lowers back down"
+ ],
+ "pullup": [
+  "hanging from a high pull-up bar mounted well above head height, with an overhand grip, arms fully extended, feet clearly off the ground with knees slightly bent and ankles crossed, front three-quarter view",
+  "performs one strict pull-up: pulls until the chin clears the bar, then lowers slowly to a full hang",
+  "all"
+ ],
+ "lat_pulldown": [
+  "seated at a lat pulldown machine holding a wide bar overhead with straight arms, front three-quarter view",
+  "pulls the bar down to the upper chest squeezing the shoulder blades, then lets it rise slowly back up"
+ ],
+ "cable_row": [
+  "seated at a low cable row machine, feet on the platform, holding a V-handle with arms extended, side view",
+  "rows the handle to the stomach pulling the elbows back and squeezing the back, then extends the arms slowly"
+ ],
+ "bb_row": [
+  "hinged forward about 45 degrees with a flat back, holding a loaded barbell with straight arms below the knees, side view",
+  "rows the barbell to the lower chest, squeezes the shoulder blades, then lowers it with control"
+ ],
+ "db_row": [
+  "one knee and one hand on a flat bench, back flat, holding a dumbbell in the other hand with the arm extended, side view",
+  "rows the dumbbell up to the hip keeping the elbow close, then lowers it slowly"
+ ],
+ "face_pull": [
+  "standing facing a high cable pulley holding a rope attachment with arms extended at face height, side view",
+  "pulls the rope toward the face splitting the ends apart with elbows high, then returns slowly"
+ ],
+ "bench_press": [
+  "lying on a flat bench under a loaded barbell, arms locked out holding the bar above the chest, side view",
+  "lowers the barbell slowly to the mid chest, then presses it back up to full lockout"
+ ],
+ "incline_db_press": [
+  "lying on an incline bench holding two dumbbells pressed above the upper chest, side view",
+  "lowers the dumbbells to chest level with elbows at 45 degrees, then presses them back up"
+ ],
+ "cable_fly": [
+  "standing in the middle of a cable crossover station, one foot forward, holding handles with arms open wide at chest height, front view",
+  "brings the hands together in a wide hugging arc in front of the chest, squeezes, then opens slowly"
+ ],
+ "pushup": [
+  "in a high plank push-up position on the gym floor, arms straight, body in a straight line, side view",
+  "lowers the chest close to the floor keeping the body rigid, then pushes back up",
+  "all"
+ ],
+ "dips": [
+  "in a straight-arm support position on top of two parallel dip bars of a dip station, one bar gripped in each hand at the sides of the hips, arms locked, body upright, feet off the floor, side view",
+  "performs one parallel bar dip: bends the elbows and lowers the body between the two bars until the shoulders are just below the elbows, then presses back up to locked arms",
+  "all"
+ ],
+ "ohp": [
+  "standing holding a loaded barbell at the front of the shoulders, side view",
+  "presses the barbell straight overhead to lockout, then lowers it back to the shoulders"
+ ],
+ "lateral_raise": [
+  "standing holding light dumbbells at the sides, front view",
+  "raises both arms out to the sides to shoulder height with a slight elbow bend, then lowers slowly"
+ ],
+ "rear_delt_fly": [
+  "seated facing the pad of a reverse pec-deck machine, arms extended forward holding the handles, side three-quarter view",
+  "opens the arms back in a wide arc squeezing the rear shoulders, then returns slowly"
+ ],
+ "bb_curl": [
+  "standing holding a barbell with an underhand grip, arms extended at the thighs, side view",
+  "curls the bar up to the shoulders keeping elbows pinned, then lowers slowly"
+ ],
+ "hammer_curl": [
+  "standing holding dumbbells at the sides with palms facing in, front three-quarter view",
+  "curls both dumbbells up with a neutral grip, then lowers slowly"
+ ],
+ "rope_pushdown": [
+  "standing facing a high cable pulley holding a rope attachment, elbows bent at 90 degrees at the sides, side view",
+  "pushes the rope down until the arms are straight, spreading the ends apart, then returns slowly"
+ ],
+ "oh_tri_ext": [
+  "seated on a bench holding one dumbbell with both hands straight overhead, side view",
+  "lowers the dumbbell behind the head by bending the elbows, then extends back up"
+ ],
+ "plank": [
+  "holding a forearm plank on a gym mat, body in a perfectly straight line, side view",
+  "holds the forearm plank steadily, breathing, with tiny core-bracing adjustments",
+  "all"
+ ],
+ "hanging_leg_raise": [
+  "hanging from a high pull-up bar mounted well above head height, arms straight, feet clearly off the ground, legs straight, side view",
+  "raises the straight legs up to hip height in a controlled manner, then lowers slowly without swinging",
+  "all"
+ ],
+ "woodchop": [
+  "standing sideways to a high cable pulley holding the handle with both hands above one shoulder, front view",
+  "pulls the handle diagonally down across the body to the opposite hip rotating the torso, then returns"
+ ],
+ "ab_wheel": [
+  "kneeling on a mat holding an ab wheel on the floor under the shoulders, side view",
+  "rolls the wheel forward extending the body while bracing the core, then rolls back to the start"
+ ],
+ "kb_swing": [
+  "standing with feet wide holding a kettlebell with both hands in front of the hips, side view",
+  "performs one kettlebell swing: hinges and hikes the bell back, then snaps the hips to swing it to chest height, and lets it swing back"
+ ],
+ "burpee": [
+  "standing upright on the gym floor, side view",
+  "performs one burpee: squats down, jumps feet back to a plank, does a push-up, jumps feet forward and explodes into a jump with arms overhead",
+  "all"
+ ],
+ "farmer_carry": [
+  "standing tall holding a heavy dumbbell in each hand at the sides, front three-quarter view",
+  "walks forward with heavy dumbbells, tall posture, braced core, steady steps"
+ ],
+ "box_jump": [
+  "standing in front of a plyometric box, side view",
+  "swings the arms and jumps explosively onto the box, lands softly in a squat, then steps back down"
+ ],
+ "battle_rope": [
+  "standing in an athletic half squat holding the ends of two thick battle ropes, front three-quarter view",
+  "creates fast powerful alternating waves with the battle ropes"
+ ],
+ "rower": [
+  "seated on an indoor rowing machine at the catch position, knees bent, arms extended, side view",
+  "performs one rowing stroke: drives with the legs, leans back slightly, pulls the handle to the ribs, then returns to the catch"
+ ],
+ "sled_push": [
+  "leaning into a loaded push sled, hands on the vertical poles, on gym turf, side view",
+  "drives the heavy sled forward with powerful steps, low body angle"
+ ],
+ "treadmill_run": [
+  "running on a modern treadmill, mid-stride, side view",
+  "runs at a steady fast pace on the treadmill with good running form"
+ ],
+ "jumping_jacks": [
+  "standing upright with arms at the sides, feet together, side three-quarter view",
+  "performs one jumping jack: jumps feet wide while raising arms overhead, then jumps back to feet together with arms down",
+  "all"
+ ],
+ "arm_circles": [
+  "standing tall with both arms extended straight out to the sides at shoulder height, front view",
+  "makes controlled big circles with both straight arms, a shoulder warm-up",
+  "all"
+ ],
+ "leg_swings": [
+  "standing on one leg holding a squat rack upright with one hand for balance, side view",
+  "swings the free straight leg forward and backward in a controlled dynamic hip warm-up",
+  "all"
+ ],
+ "inchworm": [
+  "standing tall with feet together, side view",
+  "slowly bends forward and places both hands on the floor in front of the feet, walks the hands forward step by step into a push-up plank, then walks the hands back to the feet and slowly stands up. Feet stay on the floor the whole time, no jumping, no flips",
+  "all"
+ ],
+ "bw_squat": [
+  "standing with feet shoulder-width apart, arms relaxed, side view",
+  "does one slow air squat as a warm-up drill, sitting the hips back and down with arms forward, then rising back to standing, fitness training",
+  "all"
+ ],
+ "high_knees": [
+  "standing tall in a gym in an athletic ready position, arms bent at 90 degrees, front three-quarter view, fully clothed in the black t-shirt and black shorts",
+  "jogs lightly in place with high knee lifts and arm swings as a cardio warm-up in the gym",
+  "all"
+ ],
+ "quad_stretch": [
+  "standing on one leg holding the other ankle behind the glutes, knees together, one hand on a rack for balance, side view",
+  "holds a standing quadriceps stretch calmly, breathing slowly, small natural movements",
+  "all"
+ ],
+ "hamstring_stretch": [
+  "sitting on a gym mat with one leg straight forward and the other bent, reaching toward the toes of the straight leg, side view",
+  "holds a seated hamstring stretch calmly, breathing slowly and reaching slightly further",
+  "all"
+ ],
+ "hip_flexor_stretch": [
+  "kneeling on one knee on a gym mat in a low lunge: right foot forward with the front knee bent 90 degrees, left knee resting on the mat behind, torso upright, hands on the front knee, side view",
+  "holds a kneeling hip flexor stretch calmly, gently pressing the hips forward while breathing",
+  "all"
+ ],
+ "chest_stretch": [
+  "standing beside a squat rack upright, one forearm placed flat against the upright at shoulder height, side view",
+  "holds a chest stretch by gently rotating the torso away from the arm, breathing slowly",
+  "all"
+ ],
+ "shoulder_stretch": [
+  "standing tall pulling one straight arm across the chest with the other arm, front three-quarter view",
+  "holds a cross-body shoulder stretch calmly, breathing slowly",
+  "all"
+ ],
+ "child_pose": [
+  "kneeling on a gym mat sitting back on the heels, torso folded forward, arms stretched forward on the mat, side view",
+  "holds the child's pose stretch, breathing slowly and deeply, back relaxing",
+  "all"
+ ],
+ "air_squat": [
+  "standing upright on the gym floor with feet shoulder-width apart and both arms extended straight forward at shoulder height, no equipment, side view",
+  "performs one slow controlled bodyweight squat: descends until the thighs are parallel to the floor keeping the heels down and the arms forward, then stands back up",
+  "all"
+ ],
+ "bw_lunge": [
+  "standing upright on the gym floor in strict side profile view (seen from the side, facing right), feet together, hands on the hips, no equipment",
+  "performs one forward lunge seen from the side: takes a long step forward with one leg, lowers until the back knee nearly touches the floor with the front knee bent 90 degrees, then pushes back to standing with feet together",
+  "all"
+ ],
+ "glute_bridge": [
+  "lying on the back on a gym mat with knees bent, feet flat on the floor and arms resting on the floor at the sides, no equipment, side view",
+  "performs a glute bridge strength exercise: lifts the pelvis off the mat until shoulders, pelvis and knees form a straight line, pauses briefly, then lowers back down to the mat",
+  "all"
+ ],
+ "mountain_climber": [
+  "in a high plank position on the gym floor, arms straight, body in a straight line, no equipment, side view",
+  "performs mountain climbers at a steady pace: drives one knee toward the chest, returns it, then the other knee, and ends back in the high plank",
+  "all"
+ ],
+ "wall_pushup": [
+  "standing facing a wall, leaning forward with straight arms, palms flat on the wall at chest height, body in a straight inclined line, side view",
+  "performs one wall push-up: bends the elbows bringing the chest to the wall, then pushes back to straight arms",
+  "cali"
+ ],
+ "incline_pushup": [
+  "in an incline push-up position with hands on the edge of a sturdy bench, arms straight, body in a straight line, feet on the floor, side view",
+  "performs one incline push-up: lowers the chest to the bench edge keeping the body rigid, then pushes back up",
+  "cali"
+ ],
+ "knee_pushup": [
+  "in a push-up position on the knees on a mat, arms straight, straight line from knees to head, feet lifted, side view",
+  "performs one knee push-up: lowers the chest close to the floor, then pushes back up",
+  "cali"
+ ],
+ "diamond_pushup": [
+  "in a push-up position with the hands close together under the chest forming a diamond shape with thumbs and index fingers, arms straight, three-quarter front view",
+  "performs one diamond push-up: lowers the chest to the hands keeping elbows close to the body, then pushes back up",
+  "cali"
+ ],
+ "archer_pushup": [
+  "in a very wide push-up position, arms straight and far apart, body in a straight line, front three-quarter view",
+  "performs one archer push-up: lowers toward the right hand bending the right elbow while the left arm stays straight out to the side, then pushes back up to the center",
+  "cali"
+ ],
+ "pseudo_planche_pushup": [
+  "in a push-up position with the hands placed next to the waist, fingers turned outward, shoulders leaning far forward past the hands, arms straight, side view",
+  "performs one pseudo planche push-up: lowers the chest to the floor while keeping the forward lean, then pushes back up",
+  "cali"
+ ],
+ "one_arm_pushup": [
+  "in a one-arm push-up position: feet spread wide apart, only the right hand on the floor under the right shoulder with the right arm straight, the left arm folded behind the lower back and not touching the floor, body straight, front three-quarter view",
+  "performs one slow one-arm push-up on the right arm only: lowers the chest close to the floor, then pushes back up, the left hand stays behind the back the whole time",
+  "cali"
+ ],
+ "pike_pushup": [
+  "in a pike position on the floor: hands and feet on the floor, hips raised high, body forming an inverted V, arms straight, head between the arms, side view",
+  "performs one pike push-up: bends the elbows lowering the top of the head toward the floor in front of the hands, then pushes back up",
+  "cali"
+ ],
+ "elevated_pike_pushup": [
+  "in a pike position with both feet on a sturdy wooden box, hands on the floor, hips stacked above the shoulders, arms straight, side view",
+  "performs one feet-elevated pike push-up: lowers the head toward the floor, then presses back up to straight arms",
+  "cali"
+ ],
+ "wall_hspu_negative": [
+  "in a handstand with the back against a wall, arms straight and locked, heels touching the wall, body straight, side view",
+  "slowly lowers down by bending the elbows with full control until the head gently touches a mat, holding tension",
+  "cali"
+ ],
+ "wall_hspu": [
+  "in a handstand with the back against a wall, arms straight and locked, heels touching the wall, body straight, side view",
+  "performs one handstand push-up against the wall: lowers until the head lightly touches the mat, then presses back up to locked arms",
+  "cali"
+ ],
+ "support_hold": [
+  "holding a straight-arm support between two parallel dip bars at hip height (one bar in each hand, bars on both sides of the body), arms locked, shoulders pressed down, feet clearly off the floor and hanging in the air, legs straight together, front three-quarter view",
+  "holds the support position steadily in the air with locked arms, feet off the floor, breathing",
+  "cali"
+ ],
+ "dip_negative": [
+  "in a straight-arm support position on top of two parallel dip bars, arms locked, body upright, side view",
+  "slowly lowers the body by bending the elbows over several seconds until the shoulders are slightly below the elbows",
+  "cali"
+ ],
+ "ring_dips": [
+  "in a straight-arm support position on a pair of wooden gymnastic rings hanging from straps, arms locked, rings close to the hips, body upright, front three-quarter view",
+  "performs one ring dip: lowers under control until the shoulders are below the elbows, then presses back up to locked arms",
+  "cali"
+ ],
+ "dead_hang": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, body straight and still, side three-quarter view",
+  "holds a still dead hang with engaged shoulders, breathing calmly, barely moving",
+  "cali"
+ ],
+ "scap_pull": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, shoulders relaxed up by the ears, rear three-quarter view",
+  "performs one scapular pull: keeping the arms completely straight, pulls the shoulder blades down so the body rises a few centimetres, pauses, then relaxes back down",
+  "cali"
+ ],
+ "pullup_negative": [
+  "at the top of a pull-up with the chin above a steel pull-up bar, elbows fully bent, overhand grip, feet off the floor, side three-quarter view",
+  "slowly lowers the body with control over several seconds until the arms are completely straight",
+  "cali"
+ ],
+ "lsit_pullup": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, both legs held straight out in front, horizontal and parallel to the floor in an L-sit, side view",
+  "performs one L-sit pull-up: pulls up until the chin is over the bar while keeping the legs straight and horizontal, then lowers under control",
+  "cali"
+ ],
+ "archer_pullup": [
+  "at the top of an archer pull-up on a steel pull-up bar with a very wide grip: the chin above the bar right beside the right hand, the right arm fully bent, the left arm completely straight and extended sideways along the bar, feet off the floor, front view",
+  "lowers slowly down to a wide straight-arm hang, then pulls back up to the right side until the chin is above the bar beside the right hand while the left arm stays straight",
+  "cali"
+ ],
+ "door_row": [
+  "standing in an open doorway gripping both sides of the door frame at chest height, feet close to the threshold, leaning back with straight arms and a straight body, side view",
+  "performs one doorframe row: pulls the chest to the door frame with elbows close to the body, then slowly leans back to straight arms",
+  "cali"
+ ],
+ "table_row": [
+  "lying on the back under a sturdy low horizontal bar set at hip height, gripping the bar with straight arms, knees bent and feet flat on the floor, hips lifted, side view",
+  "performs one bent-knee inverted row: pulls the chest up to the bar squeezing the shoulder blades, then lowers slowly",
+  "cali"
+ ],
+ "inverted_row": [
+  "hanging under a low horizontal steel bar fixed at waist height (about one metre above the floor), body below the bar, hands gripping the bar shoulder-width, arms straight, body in a perfectly straight line facing up, only the heels touching the floor, side view",
+  "performs one inverted row: pulls the chest up to touch the bar keeping the body rigid like a plank, then lowers back to straight arms",
+  "cali"
+ ],
+ "elevated_row": [
+  "hanging under a low horizontal steel bar fixed at waist height (about one metre above the floor), body below the bar, arms straight, heels resting on top of a wooden box so the straight body is horizontal, parallel to the floor and facing up, side view",
+  "performs one feet-elevated inverted row: pulls the chest up to the bar, pauses, then lowers back to straight arms",
+  "cali"
+ ],
+ "archer_row": [
+  "hanging under a low horizontal steel bar fixed at waist height (about one metre above the floor), body below the bar, very wide grip, arms straight, straight body leaning back at 45 degrees with only the heels on the floor, front three-quarter view",
+  "performs one archer row: pulls the chest up toward the right hand, right elbow bending while the left arm stays straight, then lowers back down",
+  "cali"
+ ],
+ "prone_pull": [
+  "lying face down on a mat, both arms stretched straight forward along the floor in front of the head, chest slightly lifted, legs straight, exactly two arms, side view",
+  "performs one prone pull-down: bends both elbows and draws them back to the ribs, squeezing the shoulder blades together, pauses, then reaches both arms forward again",
+  "cali"
+ ],
+ "assisted_squat": [
+  "standing facing a vertical steel post of a rig, holding it with both hands at chest height, feet shoulder-width, side view",
+  "performs one assisted squat: sits down slowly into a deep squat while lightly holding the post, then stands back up",
+  "cali"
+ ],
+ "bw_bulgarian": [
+  "standing in a split stance with the rear foot elevated on a wooden box behind, hands on the hips, torso upright, side view",
+  "performs one bodyweight bulgarian split squat: lowers straight down until the front thigh is parallel to the floor, then drives back up",
+  "cali"
+ ],
+ "shrimp_squat": [
+  "standing on the left leg, the right knee bent with the right foot pulled up behind the hip and held by the right hand, left arm reaching forward for balance, side view",
+  "performs one shrimp squat: bends the standing leg deeply and lowers straight down until the right knee gently touches the floor behind the standing foot, then stands back up",
+  "cali"
+ ],
+ "box_pistol": [
+  "standing on the left leg on the floor directly in front of a knee-high wooden box that is behind her, the right leg lifted straight out in front, arms reaching forward, side view",
+  "performs one single-leg squat to the box: bends the standing knee and slowly lowers the hips back and down until sitting on the box behind her, then stands back up on the same single leg",
+  "cali"
+ ],
+ "pistol_squat": [
+  "at the bottom of a pistol squat: squatting all the way down on the left leg with the left heel flat on the floor and the hips close to the heel, the right leg held straight out in front just above the floor, arms reaching forward for balance, side view",
+  "stands all the way up on the single left leg keeping the right leg lifted in front, then lowers slowly back down into the deep single-leg squat",
+  "cali"
+ ],
+ "single_leg_bridge": [
+  "lying on the back on a mat, one knee bent with the foot flat on the floor, the other leg straight and lifted in the air, hips on the floor, arms at the sides, side view",
+  "performs one single-leg glute bridge: lifts the hips until shoulder, hip and knee form a straight line, pauses, then lowers",
+  "cali"
+ ],
+ "single_leg_rdl": [
+  "standing upright on one leg with a soft knee, the other foot just off the floor, arms hanging down, side view",
+  "performs one single-leg romanian deadlift: hinges forward at the hip with a flat back while the free leg rises straight behind until torso and leg are horizontal, then returns to standing",
+  "cali"
+ ],
+ "nordic_negative": [
+  "kneeling upright on a mat with the ankles anchored under a low padded bar behind, body straight from knees to head, hands ready in front of the chest, side view",
+  "slowly falls forward with a straight body, resisting with the hamstrings as long as possible, then catches the floor with the hands",
+  "cali"
+ ],
+ "nordic_curl": [
+  "kneeling upright on a mat with the ankles anchored under a low padded bar behind, body straight from knees to head, hands in front of the chest, side view",
+  "performs one nordic hamstring curl: lowers the straight body slowly toward the floor, then pulls back up to kneeling using the hamstrings",
+  "cali"
+ ],
+ "dead_bug": [
+  "lying on the back on a mat, arms extended straight up toward the ceiling, hips and knees bent at 90 degrees with shins parallel to the floor, side view",
+  "performs one dead bug rep: slowly extends the right arm overhead and the left leg straight out just above the floor, then returns and switches sides",
+  "cali"
+ ],
+ "hollow_hold": [
+  "lying on the back on a mat in a gymnastics hollow body hold: lower back pressed flat into the floor, shoulder blades lifted just slightly off the floor, arms extended straight overhead beside the ears, legs straight and together with the heels only 20 centimetres above the floor, a shallow banana curve, not a sit-up and not a V shape, side view",
+  "holds the shallow hollow body position completely still, breathing",
+  "cali"
+ ],
+ "lying_leg_raise": [
+  "lying flat on the back on a mat, arms at the sides, legs straight and together just above the floor, side view",
+  "performs one lying leg raise: raises the straight legs to vertical, then lowers them slowly until just above the floor",
+  "cali"
+ ],
+ "dragon_flag_negative": [
+  "lying on a flat bench gripping the bench behind the head with both hands, body straight and vertical balanced on the upper back and shoulders, legs pointing to the ceiling, side view",
+  "slowly lowers the perfectly straight body like a plank toward the bench over several seconds, only the shoulders touching the bench",
+  "cali"
+ ],
+ "dragon_flag": [
+  "lying on a flat bench gripping the bench behind the head with both hands, one person, body straight and vertical balanced on the upper back and shoulders, legs together pointing to the ceiling, side view",
+  "performs one dragon flag: lowers the perfectly straight body like a plank until it is nearly horizontal above the bench, only the shoulders touching the bench, then raises it back up to vertical",
+  "cali"
+ ],
+ "hanging_knee_raise": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, legs hanging straight down, side view",
+  "performs one hanging knee raise: lifts the knees up to the chest curling the pelvis, then lowers slowly without swinging",
+  "cali"
+ ],
+ "toes_to_bar": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, legs hanging straight down, side view",
+  "performs one toes-to-bar: raises the straight legs all the way up until the toes touch the bar, then lowers slowly without swinging",
+  "cali"
+ ],
+ "lsit_foot": [
+  "sitting on the floor with legs straight in front, hands flat on the floor beside the hips, arms locked, hips lifted off the floor with only the heels touching the floor, side view",
+  "holds the position steadily pressing the floor away, shoulders down, breathing",
+  "cali"
+ ],
+ "lsit_tuck": [
+  "supporting the whole body on straight locked arms on two low wooden parallettes on the floor, knees tucked to the chest, feet off the floor, side view",
+  "holds the tuck L-sit steadily with locked arms and shoulders pressed down",
+  "cali"
+ ],
+ "lsit_one_leg": [
+  "supporting the body on straight locked arms on two low wooden parallettes, one leg extended straight forward horizontally and the other knee tucked to the chest, feet off the floor, side view",
+  "holds the one-leg L-sit steadily with locked arms",
+  "cali"
+ ],
+ "lsit": [
+  "holding a full L-sit on two low wooden parallettes: arms straight and locked, both legs straight forward and horizontal, parallel to the floor, toes pointed, side view",
+  "holds the L-sit steadily, legs horizontal, shoulders pressed down, breathing",
+  "cali"
+ ],
+ "wall_walk": [
+  "in a push-up position with the feet against the base of a wall, arms straight, side view",
+  "performs one wall walk: walks the feet up the wall while walking the hands back until nearly in a chest-to-wall handstand, then walks back down under control",
+  "cali"
+ ],
+ "wall_handstand": [
+  "holding a chest-to-wall handstand: arms straight, chest facing the wall, toes lightly touching the wall, body in a straight vertical line, side view",
+  "holds the chest-to-wall handstand steadily, pushing tall through the shoulders",
+  "cali"
+ ],
+ "handstand_kickup": [
+  "standing in a lunge with arms raised overhead, about to place the hands on the floor, a wall a short distance in front, side view",
+  "kicks up gently into a handstand, balances for a moment with a straight body, then steps back down to the lunge",
+  "cali"
+ ],
+ "handstand": [
+  "holding a freestanding handstand in the middle of the floor: arms straight, body in a perfectly straight vertical line, legs together, toes pointed, side view",
+  "holds the freestanding handstand, balancing with tiny finger and wrist adjustments",
+  "cali"
+ ],
+ "chest_to_bar": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, side three-quarter view",
+  "performs one powerful chest-to-bar pull-up: pulls explosively until the upper chest touches the bar, then lowers under control to straight arms",
+  "cali"
+ ],
+ "bar_dip": [
+  "in a straight-arm support on top of a single straight horizontal steel pull-up bar, bar at hip level, arms locked, body leaning slightly forward, legs hanging straight, side view",
+  "performs one straight-bar dip: lowers until the lower chest touches the bar, then presses back up to locked arms",
+  "cali"
+ ],
+ "muscleup_negative": [
+  "in a straight-arm support on top of a single straight horizontal steel pull-up bar, bar at hip level, arms locked, side view",
+  "slowly lowers down through the muscle-up transition: chest close to the bar, elbows travelling behind, then continues down toward a hang",
+  "cali"
+ ],
+ "muscle_up": [
+  "at the top of a bar muscle-up: supporting the body above a single horizontal steel pull-up bar on straight locked arms, the bar at hip level, the whole torso above the bar, legs hanging straight below, side three-quarter view",
+  "slowly lowers down in front of the bar through the transition until hanging below the bar with straight arms, then pulls up explosively and presses back up over the bar to the locked-arm support",
+  "cali"
+ ],
+ "skin_the_cat": [
+  "hanging from a steel pull-up bar with straight arms, overhand grip slightly wider than shoulders, feet off the floor, side view",
+  "performs one skin the cat: tucks the knees and passes the legs between the arms, rotating slowly backward to a comfortable shoulder stretch, then returns the same way",
+  "cali"
+ ],
+ "back_lever_tuck": [
+  "holding a tuck back lever on a steel pull-up bar: arms straight behind the body, back horizontal, face looking down at the floor, knees tucked tightly to the chest, side view",
+  "holds the tuck back lever steadily with straight arms",
+  "cali"
+ ],
+ "back_lever_adv_tuck": [
+  "holding an advanced tuck back lever on a steel pull-up bar: arms straight behind the body, flat horizontal back, face down, hips bent 90 degrees and knees bent, side view",
+  "holds the advanced tuck back lever steadily",
+  "cali"
+ ],
+ "back_lever_straddle": [
+  "holding a back lever on a steel pull-up bar with both hands gripping the bar: both arms straight, the whole body straight and horizontal, face looking down at the floor, toes pointed, the two legs straight and opened apart sideways in a straddle, side view",
+  "holds the straddle back lever steadily, body rigid and horizontal, both hands on the bar",
+  "cali"
+ ],
+ "back_lever": [
+  "holding a full back lever on a steel pull-up bar: arms straight, the whole body perfectly straight and horizontal, face looking down at the floor, legs together, toes pointed, side view",
+  "holds the full back lever steadily, body rigid and horizontal",
+  "cali"
+ ],
+ "front_lever_tuck": [
+  "holding a tuck front lever on a steel pull-up bar: arms straight, back horizontal, face looking up at the ceiling, knees tucked tightly to the chest, side view",
+  "holds the tuck front lever steadily with straight arms",
+  "cali"
+ ],
+ "front_lever_adv_tuck": [
+  "holding an advanced tuck front lever on a steel pull-up bar: arms straight, flat horizontal back, face up, hips bent 90 degrees and knees bent, side view",
+  "holds the advanced tuck front lever steadily",
+  "cali"
+ ],
+ "front_lever_straddle": [
+  "holding a straddle front lever on a steel pull-up bar: arms straight, body horizontal and face up, legs straight and spread wide apart, side three-quarter view",
+  "holds the straddle front lever steadily",
+  "cali"
+ ],
+ "front_lever": [
+  "holding a full front lever on a steel pull-up bar: arms straight, the whole body perfectly straight and horizontal, face looking up at the ceiling, legs together, toes pointed, side view",
+  "holds the full front lever steadily, body rigid and horizontal",
+  "cali"
+ ],
+ "planche_lean": [
+  "in a straight-arm plank on the floor leaning far forward so the shoulders are well in front of the hands, arms locked, upper back rounded, toes on the floor, side view",
+  "holds the planche lean steadily with locked elbows",
+  "cali"
+ ],
+ "frog_stand": [
+  "balancing in a frog stand (crow pose): hands flat on the floor, elbows bent, knees resting on the backs of the upper arms, feet off the floor, looking forward, side view",
+  "holds the frog stand balance steadily with small finger adjustments",
+  "cali"
+ ],
+ "planche_tuck": [
+  "holding a tuck planche on the floor: arms straight and locked, whole body off the floor, knees tucked to the chest, hips at shoulder height, shoulders leaning forward, side view",
+  "holds the tuck planche steadily",
+  "cali"
+ ],
+ "planche_adv_tuck": [
+  "holding an advanced tuck planche on the floor: arms straight and locked, flat horizontal back, hips bent 90 degrees, feet off the floor, side view",
+  "holds the advanced tuck planche steadily",
+  "cali"
+ ],
+ "planche_straddle": [
+  "holding a straddle planche on the floor: arms straight, body horizontal above the floor, legs straight and spread wide apart, only the hands touching the floor, side three-quarter view",
+  "holds the straddle planche steadily",
+  "cali"
+ ],
+ "planche": [
+  "holding a full planche on the floor: arms straight and locked, the whole body perfectly straight and horizontal above the floor, legs together, only the hands touching the floor, side view",
+  "holds the full planche steadily, body rigid and horizontal",
+  "cali"
+ ],
+ "flag_tuck": [
+  "holding a tuck human flag on a vertical steel pole: bottom arm pushing and top arm pulling, both straight, body out to the side with the knees tucked, hips at shoulder height, front view",
+  "holds the tuck human flag steadily",
+  "cali"
+ ],
+ "flag_straddle": [
+  "holding a straddle human flag on a vertical steel pole: both arms straight, body horizontal out to the side, legs straight and spread apart, front view",
+  "holds the straddle human flag steadily",
+  "cali"
+ ],
+ "human_flag": [
+  "holding a full human flag on a vertical steel pole: both arms straight, the whole body perfectly straight and horizontal out to the side like a flag, legs together, front view",
+  "holds the full human flag steadily, body rigid",
+  "cali"
+ ],
+ "wrist_prep": [
+  "kneeling on all fours on a mat, palms flat on the floor with fingers pointing forward, arms straight, side view",
+  "gently rocks the body forward and backward over the wrists, warming up the wrists",
+  "cali"
+ ],
+ "scap_pushup": [
+  "in a high plank push-up position with straight locked arms, side view",
+  "performs scapular push-ups: keeping the arms straight, lets the chest sink between the shoulder blades, then pushes the floor away spreading the shoulder blades",
+  "cali"
+ ]
+}

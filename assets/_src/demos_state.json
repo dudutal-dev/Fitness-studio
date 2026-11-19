@@ -1,0 +1,830 @@
+{
+ "ori/back_squat": {
+  "img": "Q8GgpJuT7NYqgpCWAzay",
+  "vid": "d2Y6clwB3yh6jL44kNHs"
+ },
+ "noa/back_squat": {
+  "img": "3V8RuAOJ1kbqKUhUk5Gj",
+  "vid": "yXWPHKNaoy53A0m1FjjS"
+ },
+ "ori/leg_press": {
+  "img": "MQCFgvJXUemwlxCKCyxA",
+  "vid": "D0ST4pyFBz4N88LUfnFP"
+ },
+ "noa/leg_press": {
+  "img": "WLnvDsBj1LR7sEZxgBAl",
+  "vid": "F13aRw9w1EpVTyeldjJR"
+ },
+ "ori/rdl": {
+  "img": "OAMa1dON2wwcugtlxT6m",
+  "vid": "zk74w6vtbL1sYkb1MRT5"
+ },
+ "noa/rdl": {
+  "img": "UvjwWHdNMKFTs2NpvueT",
+  "vid": "HlpDi1UP7Br5Ca52Btnw"
+ },
+ "ori/deadlift": {
+  "img": "5UI08otgrJKy2SZIZeya",
+  "vid": "vIhqSroEhpliPIcmhqKI"
+ },
+ "noa/deadlift": {
+  "img": "9deKWXxHD5rdLJHOG0px",
+  "vid": "8TXDAeCC1PNG8z5MMoeD"
+ },
+ "ori/db_lunge": {
+  "img": "YXfUkU2f1VeGYTep1oEO",
+  "vid": "AvTO8s2oNmbPwU0zbKdB"
+ },
+ "noa/db_lunge": {
+  "img": "RAlHp53DIqYrp0A13JO4",
+  "vid": "MYEwKf3ON36GqOJempMM"
+ },
+ "ori/bulgarian_split": {
+  "img": "hoBA122f9OaTcSUm8Yir",
+  "vid": "NXwHK2b8wpjNY6ARHNjg"
+ },
+ "noa/bulgarian_split": {
+  "img": "Z0vJVM6QMs7uwcniFD4Y",
+  "vid": "3HqxQPctW7Wqavby1sH5"
+ },
+ "ori/leg_ext": {
+  "img": "G1rRBxI5SGzdJdqzAtkr",
+  "vid": "kkH4cZgCyFPT786vI6Gm"
+ },
+ "noa/leg_ext": {
+  "img": "oAs1My1886ccITCntOqH",
+  "vid": "ofoMJg30Me5cObdxQ6xB"
+ },
+ "ori/leg_curl": {
+  "img": "BhV5fJxnQ63pIEbchjgw",
+  "vid": "ju4iHH52hv7LjPLufZxg"
+ },
+ "noa/leg_curl": {
+  "img": "uMz3AEGh78Wznzw4uCNK",
+  "vid": "RoKKdF1TTqVrLENrVOTv"
+ },
+ "ori/calf_raise": {
+  "img": "n7qKs2kDRqB2tEaQcNlv",
+  "vid": "8LUeXDHGh4JOMbcsGkgr"
+ },
+ "noa/calf_raise": {
+  "img": "xGaKMcyrERllK91a1G1j",
+  "vid": "0dkBkV9fDXKReGHXcw2X"
+ },
+ "ori/hip_thrust": {
+  "img": "0hUqKnq3z8c3f0jHeb1N",
+  "vid": "tjij2APoKSvzSLlNx88V"
+ },
+ "noa/hip_thrust": {
+  "img": "VblQv2gvPKM1YXBTKJBy",
+  "vid": "NWYp5bmPb6vmX4TVdNGD"
+ },
+ "ori/pullup": {
+  "img": "Eb97xeUIWVpKV5R0rJom",
+  "vid": "HUQSmZnWZerRClveDijh"
+ },
+ "noa/pullup": {
+  "img": "Fs0Zk1lRgK765zMP6rnQ",
+  "vid": "96VG6UqKjlrvttsZqHWL"
+ },
+ "ori/lat_pulldown": {
+  "img": "SXKLOSQmUK219EWSWQMI",
+  "vid": "fseNrZRoBGeQQh3Dtq3C"
+ },
+ "noa/lat_pulldown": {
+  "img": "zYQKj872A8zYtECklc5J",
+  "vid": "WqzssJwPHBgvePDruMfm"
+ },
+ "ori/cable_row": {
+  "img": "BDfVjgdYeP2WeZVOWuXa",
+  "vid": "9kIDzfz86i3culMDLRXj"
+ },
+ "noa/cable_row": {
+  "img": "uZgIyHRpCYmrUZd39FSM",
+  "vid": "KaNKgxSdZmW1uqJjW5p1"
+ },
+ "ori/bb_row": {
+  "img": "Dapes2VQz1XcDxXGGA6s",
+  "vid": "9TzENK3LwEoXSA53qZuI"
+ },
+ "noa/bb_row": {
+  "img": "752FJLjNUJ80XL3xY3x0",
+  "vid": "IzwjLNYobupGFXkRtsig"
+ },
+ "ori/db_row": {
+  "img": "gvpGPUSRikigklQXB2y1",
+  "vid": "gklckxeMlq5KYcxyuhVn"
+ },
+ "noa/db_row": {
+  "img": "Tu1ekmQMObA9fyNTR7xI",
+  "vid": "i1COaKHL19mJzpA6W600"
+ },
+ "ori/face_pull": {
+  "img": "879zSZzgSGRflgHcNVdV",
+  "vid": "ikQIYmzKdzrQPO4Ne4SL"
+ },
+ "noa/face_pull": {
+  "img": "sq4Cv0ggDrw6qXPXNFfI",
+  "vid": "4Cq3gNhqO7YN6rMowOUw"
+ },
+ "ori/bench_press": {
+  "img": "vrss49At50tcBmrc43F3",
+  "vid": "e6Z2dSdWU1AC2s9QusUE"
+ },
+ "noa/bench_press": {
+  "img": "re5zMmzaYfeNGBJ6DQ4m",
+  "vid": "rWhMiAuUY8YNZBN27Vd1"
+ },
+ "ori/incline_db_press": {
+  "img": "OrLHQ2m1VwkjeUjLvDoQ",
+  "vid": "itTZLnGsq6I6ahfyDSib"
+ },
+ "noa/incline_db_press": {
+  "img": "dNZRcPp4waEKR70XUe9h",
+  "vid": "HFp761rcvaLAvE917MZb"
+ },
+ "ori/cable_fly": {
+  "img": "2GsQQ2xG6Midb3cFbmRX",
+  "vid": "IqmcRIvkllfNjy5KJND5"
+ },
+ "noa/cable_fly": {
+  "img": "4tGb5EqGkbxw6AB3Yc6I",
+  "vid": "OD5n9qcaXss2Oy7arHEq"
+ },
+ "ori/pushup": {
+  "img": "41evysvCN5wUAALnW9MC",
+  "vid": "3zdYtMXz9Go221CCT5Zg"
+ },
+ "noa/pushup": {
+  "img": "w5CrZyZuTo083VapwkQi",
+  "vid": "2YMsddXcu0zxCy8hUbNN"
+ },
+ "ori/dips": {
+  "img": "kCuG8zKOPDLJbwt2t015",
+  "vid": "uGSskXFMAJeqK0QHSacX"
+ },
+ "noa/dips": {
+  "img": "UMoEfNFNVM3rNFdTDWNe",
+  "vid": "Zfsnwj9sRFKNH6dDoMP3"
+ },
+ "ori/ohp": {
+  "img": "lD6aIKFSZwf3PjDLzga1",
+  "vid": "DGBJVta1rTiULVH8PNkS"
+ },
+ "noa/ohp": {
+  "img": "vweKgLbynuauNRqTYmiV",
+  "vid": "8fLsONYM9XzViNLlXWvE"
+ },
+ "ori/lateral_raise": {
+  "img": "ni2kFlTobpuTmELoSHbP",
+  "vid": "b4hxPGdg2XjmzDIyPl7p"
+ },
+ "noa/lateral_raise": {
+  "img": "iNoixyqwpWBOuukSWM0w",
+  "vid": "W5zzI4qdjvlGt28yB4oj"
+ },
+ "ori/rear_delt_fly": {
+  "img": "5cSnimLJIe8aHlDDKL9E",
+  "vid": "ZXndHDSeLXNEFuX4OBmc"
+ },
+ "noa/rear_delt_fly": {
+  "img": "xa7onL32MGmQp1jq4oeg",
+  "vid": "NGSd9C0lrGHLVfglNQKW"
+ },
+ "ori/bb_curl": {
+  "img": "B8Myomu4SXqUjdZUdDrW",
+  "vid": "RI6fAq1i1nUtJlNMOPOA"
+ },
+ "noa/bb_curl": {
+  "img": "chUin961Hs2TBvX66AT5",
+  "vid": "wk0JsBjteWIGgiL91TN5"
+ },
+ "ori/hammer_curl": {
+  "img": "RtdaHyoXkM9OjVRN4r3n",
+  "vid": "jhaFbOhI4iJTBNGrRwK7"
+ },
+ "noa/hammer_curl": {
+  "img": "8ROvahxnNeunFTQ16t7c",
+  "vid": "KFMs5dl5SdX3jwLpTLLy"
+ },
+ "ori/rope_pushdown": {
+  "img": "6Vz0uYA6NJZgvH3wbLdn",
+  "vid": "E4K2MIZ1xxmXVvlAYwgw"
+ },
+ "noa/rope_pushdown": {
+  "img": "7M3LP8BQ5jOZjXMzGrga",
+  "vid": "Khq8B8hQbsERYmO9CggJ"
+ },
+ "ori/oh_tri_ext": {
+  "img": "8KgsASinsirtaiHl3381",
+  "vid": "BHcoGqksV805UqiYsQ8F"
+ },
+ "noa/oh_tri_ext": {
+  "img": "1tK6iFyYosl05Ye7CERY",
+  "vid": "e6dlUnIOmlVgnAn475G3"
+ },
+ "ori/plank": {
+  "img": "HQy9vtomGUuL44PmNhBU",
+  "vid": "S5zyDaojmXkH92cwJVKq"
+ },
+ "noa/plank": {
+  "img": "feeidR7mabdLPSHFAQB7",
+  "vid": "iOdDgF69TGUVLi2nmben"
+ },
+ "ori/hanging_leg_raise": {
+  "img": "DLZelt4jiu11FzjgTr9I",
+  "vid": "K82BbbcuU3RihHOWpaAP"
+ },
+ "noa/hanging_leg_raise": {
+  "img": "AYw4jDAWkAClA6v9PV0q",
+  "vid": "pnAyIuNZX8MrwKR2fOU4"
+ },
+ "ori/woodchop": {
+  "img": "4VuxwrPYAGt7Jz0ACArm",
+  "vid": "buuDWTIae7cBTGQS0wT0"
+ },
+ "noa/woodchop": {
+  "img": "kxOBSZJX6bPWMBwKwRFj",
+  "vid": "WQ9Zp0QFjkFPJXkJOfJL"
+ },
+ "ori/ab_wheel": {
+  "img": "OXperJ3s6MrL6bkRHn7J",
+  "vid": "iG7opaqYK4R8OOeoOCSl"
+ },
+ "noa/ab_wheel": {
+  "img": "tw5quHUuRZ1oafFtchEF",
+  "vid": "n9H5NKdQNWtxIolgTfCP"
+ },
+ "ori/kb_swing": {
+  "img": "YR9DVm0npiEDj1VxWWFR",
+  "vid": "M9JYaRuoiabekM2yQWTc"
+ },
+ "noa/kb_swing": {
+  "img": "axUKXmLjazWBSSitibdo",
+  "vid": "QpY59wSR5tZ7wYF8vRF6"
+ },
+ "ori/burpee": {
+  "img": "5nRmgx2iya73KtsFHrvJ",
+  "vid": "4qgBb5U7zuQyyPH7hwsS"
+ },
+ "noa/burpee": {
+  "img": "qyaZxu0gkcE6KVg6psq6",
+  "vid": "VXqlOHllHRFRYsG1uEnI"
+ },
+ "ori/farmer_carry": {
+  "img": "PbHJ5WtT8XlViXylnWRB",
+  "vid": "ibXuTjoGK3jwWtSPuhRt"
+ },
+ "noa/farmer_carry": {
+  "img": "ih37E9F6epiJkvf2ivfW",
+  "vid": "RoWN7UoZHXSOA99D6gnr"
+ },
+ "ori/box_jump": {
+  "img": "M9nGkPv8I2OZHm5u0cDT",
+  "vid": "doi2uSEs2QALXVEgB5Iq"
+ },
+ "noa/box_jump": {
+  "img": "QxBsRmzzYjbozydscKZX",
+  "vid": "RgJljNjEqhTGIdSjOCad"
+ },
+ "ori/battle_rope": {
+  "img": "DQbVlJQqv8BFqW6lOiYl",
+  "vid": "hzxMMNhAoMDtU689aOxH"
+ },
+ "noa/battle_rope": {
+  "img": "0WfchsEzeqLNrql31vi3",
+  "vid": "LZzqjlHyBGPos13mQkkC"
+ },
+ "ori/rower": {
+  "img": "uZgus1KB1nyuWMSiBEJf",
+  "vid": "n0BpyqPSvUlrvzoJTxeV"
+ },
+ "noa/rower": {
+  "img": "9tCTzZQdNdDWxaLp2NJY",
+  "vid": "sQM57DKvNYFkFMjLtaXh"
+ },
+ "ori/sled_push": {
+  "img": "IoKdiZ5xE42sUSkyTOWG",
+  "vid": "hN0yq3QhKm9fFwoV5b7p"
+ },
+ "noa/sled_push": {
+  "img": "oLZU6pOkQh8FtVrCyR8z",
+  "vid": "qEusmmRMsrJt82KUwQEx"
+ },
+ "ori/treadmill_run": {
+  "img": "COWbMyQvHz1EDV5XQ9fg",
+  "vid": "eEawPuiA66kToJxp6Scw"
+ },
+ "noa/treadmill_run": {
+  "img": "uTiUxLrfb1A0bCTKyUYv",
+  "vid": "9W8h8qQbZmliLBQt5bQ3"
+ },
+ "ori/jumping_jacks": {
+  "img": "rRAXlOEmIIU2cVnj9pVP",
+  "vid": "4VZl2ZorFC7ZqRPTfdux"
+ },
+ "noa/jumping_jacks": {
+  "img": "myprfaxzctbaNhPZIcMH",
+  "vid": "cmX8yQJPsGvMWP69UQfU"
+ },
+ "ori/arm_circles": {
+  "img": "uB3AottBVUDl0B6f8Ow5",
+  "vid": "CGfWwEl5RruaroYuw7Ng"
+ },
+ "noa/arm_circles": {
+  "img": "hxBckFB4542qKn7TfRiA",
+  "vid": "Vd4145dRPjE9Yap81ZsY"
+ },
+ "ori/leg_swings": {
+  "img": "JU4E6CrTSBFZ5kgqNokr",
+  "vid": "PufrM3eqGFemBcWOVXUc"
+ },
+ "noa/leg_swings": {
+  "img": "kHZHDV6jSmkEmtC6towU",
+  "vid": "DrGePe03nCRVDh6UDbOR"
+ },
+ "ori/inchworm": {
+  "img": "yPye2c0GbF1koKvyemYF",
+  "vid": "ty1CsMnAUS5gITCK6Wfv"
+ },
+ "noa/inchworm": {
+  "img": "DrUfyB51KHfzF2YlMyPm",
+  "vid": "IPYc542pCm3rf1Ca8rew"
+ },
+ "ori/bw_squat": {
+  "img": "2w4plCK6NAeZgRHsVYNQ",
+  "vid": "nSk0zmuyneGva0cAjtFf"
+ },
+ "noa/bw_squat": {
+  "img": "sTYlVvojuetnG5ZpXNJC",
+  "vid": "wrTNOBciE6ZTydM9avTm"
+ },
+ "noa/high_knees": {
+  "img": "K7WuJC18smUJwPK9KUin",
+  "vid": "ZOUAKOORCxeyuK4ZuEkl"
+ },
+ "ori/quad_stretch": {
+  "img": "iLWjxROPO2uuyW5Zn2KQ",
+  "vid": "RwQqXyuktznW4HHK5uRa"
+ },
+ "noa/quad_stretch": {
+  "img": "gmpDhGTcvmkMN6wvVtv8",
+  "vid": "mbpRKvb2wQNfsPNVzSjm"
+ },
+ "ori/hamstring_stretch": {
+  "img": "RgpOmmbeoxiTwibXAqux",
+  "vid": "fOkfsa9n8tWBJNgJuJlv"
+ },
+ "noa/hamstring_stretch": {
+  "img": "XcWioAF3jQDa24R6pTFs",
+  "vid": "Jk5kAljZlZO0Ng5nWfCf"
+ },
+ "ori/hip_flexor_stretch": {
+  "img": "fG5pykBl2c7UPJevIli0",
+  "vid": "kOQ6IUuUe8a564PCBmEg"
+ },
+ "ori/chest_stretch": {
+  "img": "Kp4UxkOkqbSLs2gvidcG",
+  "vid": "SK3Ao8ZCsmxdv0rN7OBL"
+ },
+ "noa/chest_stretch": {
+  "img": "OESepn2ZDJ3osrmH8qOI",
+  "vid": "F1c0z70TICiLSHn5Cyhd"
+ },
+ "ori/shoulder_stretch": {
+  "img": "TmsOFmYgTJGOrEmmUtRr",
+  "vid": "hQFQX36FyZp8s3NdBfpT"
+ },
+ "noa/shoulder_stretch": {
+  "img": "ZYFQwYWTeAEEtHQKHfgu",
+  "vid": "Yn9h2brdpCeQ4lcKh4Nk"
+ },
+ "ori/child_pose": {
+  "img": "nXnfmWoXSdX15wtBnWDE",
+  "vid": "jOGVKmUHSe99J8xtyyXO"
+ },
+ "noa/child_pose": {
+  "img": "wbsNJGtpnqF6bH4Mkdjx",
+  "vid": "muqEZl5gctdzKOQUwsho"
+ },
+ "ori/high_knees": {
+  "img": "ZHmPVPYDh7KscCmRteRu",
+  "vid": "xt78d92yCOIo6r0LMeRo"
+ },
+ "noa/hip_flexor_stretch": {
+  "img": "M3qNJktdoVOynoUZkKV8",
+  "vid": "o3PwCw0oOFLVKVRpKEIU"
+ },
+ "ori/air_squat": {
+  "img": "kVnBdfAJn5xr3m23qzOF",
+  "vid": "jmKJc1FmfG8rQeOfXEuw"
+ },
+ "noa/air_squat": {
+  "img": "6DZhUMd5jQ50vLLL5pLz",
+  "vid": "CtjzsUTVl3TtJVYFjcmc"
+ },
+ "ori/bw_lunge": {
+  "img": "O5jkWGi96NgLRkl8s9RQ",
+  "vid": "uslmRrNkgMgiamaEU6Y6"
+ },
+ "ori/glute_bridge": {
+  "img": "FuH8mog23qbSaxMcBhzm",
+  "vid": "kVOk5b1jR9bEnhDfn9Ko"
+ },
+ "noa/glute_bridge": {
+  "img": "6vwgKR0RbM9gA3I8UzNi",
+  "vid": "1ZYBpprVlNdsaqB5CrHU"
+ },
+ "ori/mountain_climber": {
+  "img": "Ibn9fsLyUzclVDlITNiB",
+  "vid": "Vehu9jcPwOIlaRFTneT7"
+ },
+ "noa/mountain_climber": {
+  "img": "aDVlswiigvnPbCX3zi13",
+  "vid": "pMeTkLdBYBAVeBBKX0li"
+ },
+ "noa/bw_lunge": {
+  "img": "nPUBMTLQAkazqMaPeUwk",
+  "vid": "ROow88IM3MhR3giI8GY9"
+ },
+ "maya/pushup": {
+  "img": "8ISR5yjZ8s9KewL88DKK",
+  "vid": "sdV8BMFGJWbaTedLt4sy"
+ },
+ "maya/front_lever": {
+  "img": "vStZQvnMZLvtOlzTZvOt",
+  "vid": "bcC0dNmQBR7XIEWEuD1s"
+ },
+ "maya/planche": {
+  "img": "yLPFnxmkY771qm4AdjCB",
+  "vid": "BxUEDfaFzf5qkQADHqFD"
+ },
+ "maya/human_flag": {
+  "img": "NnUEktGekVjE0hV8ZYRI",
+  "vid": "HzLsD9J9AoD2ZoXFfhZ1"
+ },
+ "maya/pullup": {
+  "img": "MOKhBo0q23DszsZp95E9",
+  "vid": "O7iPo45YDdRRUCkTzsb9"
+ },
+ "maya/plank": {
+  "img": "LDo1A72kJhFprKba4vEL",
+  "vid": "VguUnIenoh3Ap0kRU0hu"
+ },
+ "maya/hanging_leg_raise": {
+  "img": "VT1gMp1SNRjjDFkdTNQZ",
+  "vid": "ZZDyw2v894sQ4RoyC8bF"
+ },
+ "maya/burpee": {
+  "img": "nDWUbxjMnG6kvItIPzLR",
+  "vid": "VU4nXhr0YKsC1gtFXPvQ"
+ },
+ "maya/jumping_jacks": {
+  "img": "jkok4G1DY2pLYWmrFVo8",
+  "vid": "18ji4Tk1D3m7bKFz2Wli"
+ },
+ "maya/arm_circles": {
+  "img": "RHzpGWMCI4dKMhJRIuR6",
+  "vid": "lA4BjcGX8MIDzZLrIJep"
+ },
+ "maya/leg_swings": {
+  "img": "nVipa0MBzb9XLc05vFkq",
+  "vid": "N7UXDh34VNCAQDrk6N3k"
+ },
+ "maya/inchworm": {
+  "img": "nevJ8AL5apLjVGMBlPUT",
+  "vid": "mAgf96l38vxBbdVCW2UQ"
+ },
+ "maya/bw_squat": {
+  "img": "meOhhOb3RSagI5igXMJt",
+  "vid": "5CeoXTBkBhNTYGh8smlx"
+ },
+ "maya/high_knees": {
+  "img": "IE7uf48RP6NIECWJONlv",
+  "vid": "iCUrUr5kRjNlTudz0A5A"
+ },
+ "maya/quad_stretch": {
+  "img": "zbwTrsdMWCoTPxHHMf1x",
+  "vid": "5iDU5oyumDdvFjHTIUxc"
+ },
+ "maya/hamstring_stretch": {
+  "img": "upv6ZhlAV9bF4lNx9NK1",
+  "vid": "ZUOIB4blvHtXuzxVKUGI"
+ },
+ "maya/hip_flexor_stretch": {
+  "img": "eFx0OxWU9sPWuYkJIszs",
+  "vid": "JgkL8RGLOOzTH9jUcKNi"
+ },
+ "maya/chest_stretch": {
+  "img": "2Hv3IvpydBnseeVk9A9a",
+  "vid": "fqdBgU0VW7GFLBACCWAV"
+ },
+ "maya/shoulder_stretch": {
+  "img": "2ofxR9fnGkf4SmUONKzH",
+  "vid": "m5AMLCoYjl3W0ypqocFL"
+ },
+ "maya/child_pose": {
+  "img": "fPtIu3gAD5jhAkKT90Ev",
+  "vid": "1WjfrjZdkXez0XWT7ye4"
+ },
+ "maya/air_squat": {
+  "img": "OJTqnh0mCqjkuFy5cyls",
+  "vid": "QhQyggtHqlAiSz6cECAD"
+ },
+ "maya/bw_lunge": {
+  "img": "HdMxIVWfjkSkPPvPzwBx",
+  "vid": "hH4vaWXuFwF6LTTJOQzk"
+ },
+ "maya/glute_bridge": {
+  "img": "s3PE3MZy8TlCQSuKKOgG",
+  "vid": "vzi9EjCLyju3SFeZuZAi"
+ },
+ "maya/mountain_climber": {
+  "img": "dbvSPfCT2qArVxCpKvru",
+  "vid": "Mo7m7IHKlTT88S4S7FBG"
+ },
+ "maya/wall_pushup": {
+  "img": "wSqUydkZZdWNcPokdxYr",
+  "vid": "EJub3qAw2aMYMbMPGeWl"
+ },
+ "maya/incline_pushup": {
+  "img": "xHonbQNFuaomAjJ6CSYZ",
+  "vid": "BQ4oZeGyRKiClpd0H4Ox"
+ },
+ "maya/knee_pushup": {
+  "img": "TXaH9ihFvTY8Dq3Pg5kP",
+  "vid": "yWEAHVQlBBjwbgtdG4Au"
+ },
+ "maya/diamond_pushup": {
+  "img": "k784l9N9ZRF0tM8Ch8m7",
+  "vid": "ksg8lNnBUw5M6MCxBQua"
+ },
+ "maya/archer_pushup": {
+  "img": "BbkAJI7vcRRPOMt1SbKR",
+  "vid": "TeMKLHxd1BfzsBYFtRkj"
+ },
+ "maya/pseudo_planche_pushup": {
+  "img": "77cZKEHiZxtA9jNooFgR",
+  "vid": "9CEQ4cHlV3kFYkWqx2er"
+ },
+ "maya/pike_pushup": {
+  "img": "H5y8NjleBtgfACBXm9ZB",
+  "vid": "kNTj9lyqSR9CnhBa5U1w"
+ },
+ "maya/elevated_pike_pushup": {
+  "img": "JzIehjFNXXZTzneJljlI",
+  "vid": "CUmBF3BAhBrNU3du2tKW"
+ },
+ "maya/wall_hspu_negative": {
+  "img": "Ibqrza4tFu7PxovN5Bfv",
+  "vid": "iyqn0CFWULZwacUhLvMo"
+ },
+ "maya/wall_hspu": {
+  "img": "B3oFg9LvKmxukCYtu2Tp",
+  "vid": "maxsr1rBKHKKsbDCyHu7"
+ },
+ "maya/dip_negative": {
+  "img": "9I5QEHvMtSZrvISWUTJR",
+  "vid": "t03scsp8uRP1NwHA7lsd"
+ },
+ "maya/ring_dips": {
+  "img": "0bqThOJbRcgCYjSJ3BJI",
+  "vid": "ViSq1Grr5LwnyNXs4C72"
+ },
+ "maya/dead_hang": {
+  "img": "mYhpriq4CvNg5vsozqd1",
+  "vid": "48XwoFIVvJnLiy0AJgmd"
+ },
+ "maya/scap_pull": {
+  "img": "UF82vgpI5kkvf2txIvMT",
+  "vid": "x8ixFXbBcg0OPEPekS6U"
+ },
+ "maya/pullup_negative": {
+  "img": "FgC5aJw0COnehhGrqYAO",
+  "vid": "MJrHhl2LinbSy6NytoaJ"
+ },
+ "maya/lsit_pullup": {
+  "img": "TTGiEP3RvT9zLeDRKW6z",
+  "vid": "eJjpxwIerlrV6y6FiXq8"
+ },
+ "maya/door_row": {
+  "img": "cejxq5eTEPZbfUGYIoX8",
+  "vid": "VMoY8eLjskqKW83IwXYB"
+ },
+ "maya/table_row": {
+  "img": "qxvk5jLlZFXwgXZo9w4W",
+  "vid": "aiklAA2Zjh27xjLQldjT"
+ },
+ "maya/assisted_squat": {
+  "img": "7IB6hqBS1yC5VgXCSYkg",
+  "vid": "zjhdYpoWT6bOGVbgfpWw"
+ },
+ "maya/bw_bulgarian": {
+  "img": "iXvXvl6XiBxi2mxPnY3l",
+  "vid": "77bokUKG1n2wQVbUCSIL"
+ },
+ "maya/single_leg_bridge": {
+  "img": "9P3AehRVZwXpHwgsgH2Y",
+  "vid": "rkEMzP1AeufMJWopyWlp"
+ },
+ "maya/single_leg_rdl": {
+  "img": "UqADmyK9TyecaOdqzWrb",
+  "vid": "abcUd3o6e4HgSeRe69HR"
+ },
+ "maya/nordic_negative": {
+  "img": "t0Bgp0gc4REow7IMj3F3",
+  "vid": "CNJXmslECu6pigeqxbdq"
+ },
+ "maya/nordic_curl": {
+  "img": "WtWf90fwUnXJCZJfxqyu",
+  "vid": "NR97WxALRMMe95OsXNhD"
+ },
+ "maya/dead_bug": {
+  "img": "XoTyGcDWabCkPa8Cop6I",
+  "vid": "8BT57SNGOCXSB6XIX97t"
+ },
+ "maya/lying_leg_raise": {
+  "img": "kTfe1ioIdJeYtqMM74DO",
+  "vid": "aJY94vR2mdupzoDI71GJ"
+ },
+ "maya/dragon_flag_negative": {
+  "img": "gQIRVxnlpvHugNOYu5qO",
+  "vid": "4KX8pwALskEqGLgO7z7J"
+ },
+ "maya/hanging_knee_raise": {
+  "img": "uCxT5G8PKgRUosRoSokC",
+  "vid": "Q9LGgqBFGAZxGNrzEbEn"
+ },
+ "maya/toes_to_bar": {
+  "img": "8zGYOusljkSDLzsUHVx5",
+  "vid": "KdriTPEwBge4K59FAmYH"
+ },
+ "maya/lsit_foot": {
+  "img": "1XwDfInL3FLelDaO41IQ",
+  "vid": "dA0IufCA0nzz2D8zgnxo"
+ },
+ "maya/lsit_tuck": {
+  "img": "zjsRuEbE5yqfMBmxn9zZ",
+  "vid": "HsXBzUfYxsiuKcwnwuRt"
+ },
+ "maya/lsit_one_leg": {
+  "img": "xvbAh4MEd5IwaKKYDeaU",
+  "vid": "MZomtlhRU28te1u3UCCh"
+ },
+ "maya/lsit": {
+  "img": "0SLaG8h9MHfQ16pdLn7U",
+  "vid": "sYZuwLTmzbwsNAWob9gI"
+ },
+ "maya/wall_walk": {
+  "img": "f3IkfcO0LWXp8m0P8khq",
+  "vid": "N8OomdRpfPhJZCmO9afV"
+ },
+ "maya/wall_handstand": {
+  "img": "9ZGS7s8bsE8ZAeSSaoMY",
+  "vid": "iGNdTJFkOTtdUsdZfHkn"
+ },
+ "maya/handstand_kickup": {
+  "img": "fm1RLQ7UYZbLJEmaUQqS",
+  "vid": "iqTsgqtFBe4QvUjKUQ3e"
+ },
+ "maya/handstand": {
+  "img": "buoHD4Qs3uRrAdcJXgm5",
+  "vid": "OT0ltqveOAso578sXv5C"
+ },
+ "maya/chest_to_bar": {
+  "img": "9CI1ytFZ8g7KBK743sN6",
+  "vid": "ijxbYaai9qR9chLyypkV"
+ },
+ "maya/bar_dip": {
+  "img": "hi04DUdG1C7QwqOO0234",
+  "vid": "RH2cctqXVEgQfzIWJzBd"
+ },
+ "maya/muscleup_negative": {
+  "img": "XC6JhXt07KopOG3H3wIs",
+  "vid": "0GJLEV6Gz19o6RFAmcLb"
+ },
+ "maya/skin_the_cat": {
+  "img": "2A1HMRjCIhkxctjGQrpu",
+  "vid": "5K3YditRHQOLkfCW3rEg"
+ },
+ "maya/back_lever_tuck": {
+  "img": "UkmIgUgq7ctIvDzxtbp5",
+  "vid": "g3C5tFzmXE2Fy4y6zL6W"
+ },
+ "maya/back_lever_adv_tuck": {
+  "img": "6aEwiFJ0QydQjetGiQuX",
+  "vid": "kZzmIVNUM8GxFraFRBTO"
+ },
+ "maya/back_lever": {
+  "img": "y0hA83r7w3Ob457CZL3d",
+  "vid": "Z52n6sxaJTeBEv2MOv0y"
+ },
+ "maya/front_lever_tuck": {
+  "img": "1s69a5nGFFBgx2St6o0i",
+  "vid": "tp4xT8AwRdMlLaTl0Tc7"
+ },
+ "maya/front_lever_adv_tuck": {
+  "img": "Rr7mqnJQLgQUQPLGx2q6",
+  "vid": "t4xjsBVf4lXEs6Cf5ATz"
+ },
+ "maya/front_lever_straddle": {
+  "img": "g7ukWGBFdsR5lfdM7fOP",
+  "vid": "rAfa5MK6xUzYlhSYzL7k"
+ },
+ "maya/planche_lean": {
+  "img": "U9RdMMLPXzv4OByGw32w",
+  "vid": "yMWNjUHkNYtKOudZGXgv"
+ },
+ "maya/frog_stand": {
+  "img": "agwxFAsSwqpWgC8nyJjD",
+  "vid": "OFAwGJTpLfo9EqGNh2lf"
+ },
+ "maya/planche_tuck": {
+  "img": "b1RzboNakKAngdFl2L3n",
+  "vid": "oQszPj964PIPuN07TZqt"
+ },
+ "maya/planche_adv_tuck": {
+  "img": "WYwKyPgtgopWK3W1CjTp",
+  "vid": "CfFzc94Ru8WLEsTBjgUU"
+ },
+ "maya/planche_straddle": {
+  "img": "N9ILkSLbqM4KDfFqZ2iG",
+  "vid": "UyG2Zl6qlysKf8trH2bW"
+ },
+ "maya/flag_tuck": {
+  "img": "SMyAQZFeM9g1VVBuQRbb",
+  "vid": "LJjND5BU2hnfjWXWeoc4"
+ },
+ "maya/flag_straddle": {
+  "img": "8QBiHi3426cc8QzOxdTd",
+  "vid": "TMMwXAdoKwIT2u7zQcMu"
+ },
+ "maya/wrist_prep": {
+  "img": "1FE7v8UnPRd3Dr3Uu55B",
+  "vid": "m7HPZqYJOSaZx1StTRVX"
+ },
+ "maya/scap_pushup": {
+  "img": "rAhS4RHxS0H1HHHcrdE5",
+  "vid": "QzSw5m0kqliQkV4P20eE"
+ },
+ "maya/one_arm_pushup": {
+  "img": "MCrrQLO9WMJioO7wBhAQ",
+  "vid": "Vt71BY5K7qLS8E3w8Zyj"
+ },
+ "maya/support_hold": {
+  "img": "KjLS1Dk06RKOSmzKCPvb",
+  "vid": "XzeTo1mtzoaRPQlWCVnS"
+ },
+ "maya/inverted_row": {
+  "img": "RcKhXAnxlCSEDpsebQz6",
+  "vid": "ATswhjnwLbYsNaQKn6fb"
+ },
+ "maya/elevated_row": {
+  "img": "oZCb9mjekVv4i8pU0SZa",
+  "vid": "fzTwIOQ64BaJ3ZRu5SQt"
+ },
+ "maya/archer_row": {
+  "img": "7pljiygk4gZAjaENRzMr",
+  "vid": "mNSP9DOwX4u6QMHFzg91"
+ },
+ "maya/prone_pull": {
+  "img": "pvvWmkMar6aRKrqbST0f",
+  "vid": "cVp3hX45nM9eHKhr4WQE"
+ },
+ "maya/shrimp_squat": {
+  "img": "EMEG9upioWclcdyCe1o4",
+  "vid": "VEU9wA9rn0svhwWgk8mL"
+ },
+ "maya/box_pistol": {
+  "img": "XvGCy4476SyULT6fRpAF",
+  "vid": "5i0hFwOJIVJkkH2VlAUi"
+ },
+ "maya/hollow_hold": {
+  "img": "00SImQke5Ce9ORMIfjpz",
+  "vid": "1c008VJmoNWHUtQNkVTs"
+ },
+ "maya/archer_pullup": {
+  "img": "MOOUBLsM2Ylr8WXSmCdx",
+  "vid": "RtD5mtdOfqg7YKxwhmYe"
+ },
+ "maya/pistol_squat": {
+  "img": "qXal2zuQgUbQGB0Fl9KB",
+  "vid": "Hk1rFtMkD5R4zmSOvKGT"
+ },
+ "maya/dragon_flag": {
+  "img": "E6qjBRKrhdffJdG8VEJY",
+  "vid": "ABiRRs7QJOEwzdRMXAs7"
+ },
+ "maya/muscle_up": {
+  "img": "LAEDzhyDqZD5Ab5AXUAk",
+  "vid": "7mJXzxTcf4w5xLr7qVgR"
+ },
+ "maya/dips": {
+  "img": "vZP67YqKDQZlMAEgSgWn",
+  "vid": "3apY9QHsKTccI6JlR16W"
+ },
+ "maya/back_lever_straddle": {
+  "img": "z1GEsAh8veJfN4FHCS2B",
+  "vid": "g65J76tC7ABygnrDDUyr"
+ }
+}
