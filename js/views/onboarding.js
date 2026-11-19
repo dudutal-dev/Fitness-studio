@@ -306,7 +306,7 @@ export function renderOnboarding(root, done) {
       if (t > hold) for (const r of rows) {
         const half = r.el.scrollWidth / 2; if (!r.el.offsetWidth || half < 50) continue;
         if (r.x == null) r.x = r.el.scrollLeft || (r.dir < 0 ? half : 0);
-        r.x += r.dir * dt * 0.022;
+        r.x += r.dir * dt * 0.034;
         if (r.x >= half) r.x -= half; else if (r.x <= 0) r.x += half;
         r.el.scrollLeft = r.x;
       }
