@@ -213,7 +213,7 @@ $('#newForm').onsubmit = async e => { e.preventDefault();
   shareLink(BASE[app] + '?k=' + r.token, name, app, Date.now() + days * 86400e3); };
 // הודעת השיתוף: למי, לאיזו אפליקציה, עד מתי, ושזה לטלפון אחד
 function shareLink(link, name, app, exp) {
-  const text = `${name ? name + ', ' : ''}זה קישור אישי לאפליקציית ${HE[app]}. הוא מופעל על טלפון אחד בלבד, ובתוקף עד ${day(exp)}.\nבאייפון: פותחים בספארי, מוסיפים למסך הבית, ונכנסים מהאייקון.\n${link}`;
+  const text = `${name ? name + ', ' : ''}זה קישור אישי לאפליקציית ${HE[app]}. הוא מופעל על טלפון אחד בלבד, ובתוקף עד ${day(exp)}.\nאחרי שפותחים את הקישור, מוסיפים את האפליקציה למסך הבית ונכנסים מהאייקון:\n• אייפון, ספארי: כפתור השיתוף למטה ← "הוסף למסך הבית"\n• אייפון, Chrome: כפתור השיתוף למעלה, בקצה שורת הכתובת ← "הוסף למסך הבית"\n• אנדרואיד: תפריט ⋮ למעלה ← "התקנת האפליקציה"\n${link}`;
   return navigator.share ? navigator.share({ text }).catch(() => {}) : navigator.clipboard.writeText(text).then(() => say('הקישור הונפק והועתק'), () => say('הקישור הונפק'));
 }
 $('#refresh').onclick = load;

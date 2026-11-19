@@ -1,5 +1,6 @@
 // כרטיס התזכורות במסך המאמן + הצעה במסך הבית.
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
+import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
 import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
@@ -13,7 +14,7 @@ export function reminderCard() {
   if (!r.enabled) {
     return html`<div class="card">
       <div><div><b>תזכורות מהמאמן</b><div class="sub t-foot">אימון, שתייה ושקילה — גם כשהאפליקציה סגורה</div></div></div>
-      ${needsInstall() ? html`<div class="g-tip" style="margin-top:12px">${ib('phone', 'acc', 'sm')}<div>באייפון, תזכורות עובדות רק כשהאפליקציה <b>מותקנת במסך הבית</b>: שיתוף ⬆️ ← "הוסף למסך הבית", ואז לפתוח משם ולהפעיל כאן.</div></div>`
+      ${needsInstall() ? html`<div class="g-tip" style="margin-top:12px">${ib('phone', 'acc', 'sm')}<div>באייפון, תזכורות עובדות רק כשהאפליקציה <b>מותקנת במסך הבית</b>. ${installOneLine(platform()) || installOneLine('ios-safari')} אחר כך פותחים משם ומפעילים כאן.</div></div>`
         : !pushSupported() ? '<div class="sub" style="margin-top:10px">הדפדפן הזה לא תומך בתזכורות. אפשר להשתמש בלוח השנה</div>'
         : '<button class="btn primary block" style="margin-top:12px" data-rem="on">הפעל תזכורות</button>'}
       <button class="btn sm ghost block" style="margin-top:8px" data-rem="ics">או: הוסף ללוח השנה</button>

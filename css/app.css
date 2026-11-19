@@ -872,3 +872,6 @@ bdi { unicode-bidi: isolate; }
 .lic-form input:focus { outline: 2px solid rgba(var(--pri-rgb), 0.5); border-color: var(--pri); }
 .lic-note { color: var(--mute); font-size: 12.5px; margin: 0; }
 html.locked body { overflow: hidden; }
+
+.lic-steps li b { display: block; font-size: 15px; }
+.lic-steps li span { display: block; color: var(--mute); font-size: 13px; line-height: 1.4; margin-bottom: 6px; }

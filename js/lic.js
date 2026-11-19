@@ -4,6 +4,7 @@
 // בלי אינטרנט: קישור שאושר ב-21 הימים האחרונים ממשיך לעבוד, כדי שאפשר יהיה להתאמן גם בלי קליטה.
 import { APP_ID, APP_IN } from './app-id.js';
 import { WORKER, isIOS, isStandalone } from './reminders.js';
+import { installSteps } from './install.js';
 
 const K = `${APP_ID}.lic`, KC = `${APP_ID}.licCfg`, KD = `${APP_ID}.dev`, KH = `${APP_ID}.hand`;
 const GRACE = 21 * 864e5, RECHECK = 6 * 3600e3;
@@ -47,7 +48,7 @@ function gate() {   // מסך הנעילה: מופיע רק כשהאכיפה פ�
   gateEl.innerHTML = `<div class="lic-box"><img src="assets/icons/icon-192.png" alt="" width="76" height="76">
     <h2>נדרש קישור הפעלה</h2>
     <p class="lic-msg">${why ? WHY[why] || WHY.bad : wait && kParam ? 'הקישור התקבל. כדי להפעיל אותו, מוסיפים את האפליקציה למסך הבית ופותחים אותה משם:' : `כדי להשתמש ${APP_IN} צריך קישור הפעלה אישי.`}</p>
-    ${wait ? `<ol class="lic-steps"><li>לוחצים על כפתור השיתוף בתחתית המסך.</li><li>בוחרים <b>"הוסף למסך הבית"</b>.</li><li>פותחים את האפליקציה מהאייקון החדש${kParam ? ' — היא תופעל לבד' : ''}.</li></ol>` : ''}
+    ${wait ? `<ol class="lic-steps">${installSteps().map(([t, d]) => `<li><b>${t}</b><span>${d}</span></li>`).join('')}</ol>${kParam ? '<p class="lic-note" style="margin:-6px 0 14px">אחרי הפתיחה מהאייקון האפליקציה תופעל לבד.</p>' : ''}` : ''}
     <form class="lic-form" ${wait && kParam && !why ? 'hidden' : ''}>
       <input dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="P.xxxxxxxx.xxxx" aria-label="קישור או קוד הפעלה">
       <button class="btn primary block">הפעלה</button>
