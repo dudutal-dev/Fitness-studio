@@ -33,16 +33,21 @@ def demo(job):
     return job
 
 def icons():
+    """אייקון האפליקציה: עיגול ענבר עם ברק (כמו כפתור האימון במרכז סרגל הניווט) על רקע כחול-לילה.
+    הרקע ממלא את כל הריבוע (אייפון מעגל פינות לבד), והסמל בתוך האזור הבטוח של אייקון maskable."""
     os.makedirs(f"{OUT}/icons", exist_ok=True)
+    S = 2048  # ציור גדול והקטנה — קצוות חלקים
+    im = Image.new("RGB", (S, S), (15, 22, 29)); d = ImageDraw.Draw(im)
+    c = S / 2
+    for r, col in ((0.50, (19, 28, 37)), (0.40, (24, 35, 46))):   # הילה עדינה מאחורי העיגול
+        d.ellipse([c - S * r, c - S * r, c + S * r, c + S * r], fill=col)
+    R = S * 0.30
+    d.ellipse([c - R, c - R, c + R, c + R], fill=(255, 138, 76))
+    bolt = [(13, 2.5), (5, 13.5), (11, 13.5), (10, 21.5), (18, 10.5), (12, 10.5)]  # אותו ברק כמו באייקון bolt שבממשק (24×24)
+    k = R * 1.30 / 24
+    d.polygon([(c + (x - 11.5) * k, c + (y - 12) * k) for x, y in bolt], fill=(15, 22, 29))
     for size in (192, 512):
-        im = Image.new("RGB", (size, size), (6, 8, 11)); d = ImageDraw.Draw(im)
-        u = size / 100
-        d.rounded_rectangle([8*u, 8*u, 92*u, 92*u], radius=22*u, fill=(14, 18, 24), outline=(200, 255, 60), width=max(2, int(2.2*u)))
-        lime = (200, 255, 60)
-        for i, y in enumerate((30, 46, 62)):  # שלושה שברונים (סמל דרגה) — עליה בדרגה
-            col = lime if i < 2 else (34, 230, 208)
-            d.line([(26*u, (y+10)*u), (50*u, y*u), (74*u, (y+10)*u)], fill=col, width=int(8*u), joint="curve")
-        im.save(f"{OUT}/icons/icon-{size}.png")
+        im.resize((size, size), Image.LANCZOS).save(f"{OUT}/icons/icon-{size}.png")
 
 if __name__ == "__main__":
     coaches(); icons()
