@@ -31,18 +31,48 @@ export function unlock() {
   try {
     if (navigator.audioSession) navigator.audioSession.type = 'playback'; // אייפון: להשמיע גם כשהמתג על שקט
   } catch { /* */ }
-  const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
-  if (!ctx) {
-    ctx = new AC();
-    gain = ctx.createGain();
-    gain.connect(ctx.destination);
-  }
+  if (!ctx) newContext();
   if (ctx.state !== 'running') ctx.resume().catch(() => {});
   // באפר שקט — "פותח" את האודיו בספארי
   try { const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch { /* */ }
 }
 export const audioReady = () => !!ctx && ctx.state === 'running';
+
+// ───── התאוששות: הקול חוזר לבד אחרי שהאפליקציה הייתה ברקע ─────
+// באייפון מנוע האודיו נעצר כשהמסך ננעל, כשעוברים לאפליקציה אחרת או כשנכנסת שיחה, ואפשר להמשיך אותו רק מתוך נגיעה.
+// בלי הטיפול הזה הקליפ הבא "מתנגן" אל מנוע עצור, לא מסתיים אף פעם, וכל התור נתקע עד שסוגרים ופותחים את האפליקציה.
+const AC = window.AudioContext || window.webkitAudioContext;
+function newContext() {
+  ctx = new AC();
+  gain = ctx.createGain();
+  gain.connect(ctx.destination);
+  const mine = ctx;
+  ctx.onstatechange = () => { if (ctx === mine && ctx.state === 'running' && !current && queue.length) next(); };
+}
+// כל נגיעה במסך מחזירה את המנוע לפעולה אם נעצר (זו הדרך היחידה שאייפון מרשה)
+function wake() {
+  if (!ctx) return;
+  if (ctx.state === 'closed') newContext();
+  if (ctx.state !== 'running') ctx.resume().catch(() => {});
+}
+for (const ev of ['pointerdown', 'touchend', 'click', 'keydown']) addEventListener(ev, wake, { capture: true, passive: true });
+// חזרה מהרקע: מנסים להמשיך (באנדרואיד ובמחשב זה מספיק), ובודקים שהמנוע באמת מתקדם.
+// לפעמים אחרי המתנה ארוכה אייפון מדווח "פועל" אבל השעון של המנוע עומד — אז מחליפים אותו בחדש; הקליפים שכבר נטענו נשארים.
+function onReturn() {
+  if (!ctx || document.hidden) return;
+  if (ctx.state !== 'running') { ctx.resume().catch(() => {}); return; }
+  const t0 = ctx.currentTime, old = ctx;
+  setTimeout(() => {
+    if (ctx !== old || document.hidden || old.state !== 'running' || old.currentTime > t0) return;
+    stopCurrent(); queue = []; emit(false);
+    try { old.close(); } catch { /* */ }
+    newContext();
+  }, 400);
+}
+document.addEventListener('visibilitychange', onReturn);
+addEventListener('pageshow', onReturn);
+addEventListener('focus', onReturn);
 
 // טעינת קליפים: עד 4 במקביל (עשרות פענוחים בבת אחת נכשלים באייפון), עם ניסיון חוזר.
 // קליפ שנכשל לא נשמר כ"ריק" — בפעם הבאה שצריך אותו הוא נטען שוב, כך שכשל רגעי ברשת לא משתיק אותו לכל האימון.
@@ -201,7 +231,17 @@ async function next() {
     const buf = await (e.critical ? Promise.race([loading, new Promise((r) => setTimeout(() => r(null), 350))]) : loading);
     if (current?.entry !== e) return; // נקטע בזמן הטעינה
     if (buf) {
-      if (ctx.state !== 'running') ctx.resume().catch(() => {});
+      if (ctx.state !== 'running') {
+        // המנוע עצור (האפליקציה חזרה מהרקע ועוד לא נגעו במסך): לא מנגנים אל תוך מנוע עצור — זה מה שתקע את התור.
+        // מנסים להמשיך; משפט רגיל מחכה לנגיעה הבאה, ועל ספירה מדלגים. משפט שחיכה יותר מדי נזרק כרגיל.
+        try { await Promise.race([ctx.resume(), new Promise((r) => setTimeout(r, 250))]); } catch { /* */ }
+        if (current?.entry !== e) return;
+        if (ctx.state !== 'running') {
+          if (!e.critical) queue.unshift(e);
+          current = null; emit(false);
+          return;
+        }
+      }
       const src = ctx.createBufferSource();
       src.buffer = buf;
       gain.gain.value = get().settings.volume ?? 0.9;
@@ -209,6 +249,8 @@ async function next() {
       src.onended = done;
       current.src = src;
       src.start();
+      // רשת ביטחון: אם הקליפ לא הסתיים בזמן (המנוע נעצר באמצע), משחררים את התור
+      setTimeout(done, (buf.duration + 1.5) * 1000);
       log.push({ clip: e.clip, t: performance.now(), dur: buf.duration, critical: !!e.critical });
       if (log.length > 600) log.splice(0, 300);
       return;
