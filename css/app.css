@@ -971,8 +971,18 @@ html.locked body { overflow: hidden; }
   .live .phase-lbl { font-size: min(6vh, 28px); justify-content: center; }
   .live .panel > .btn.xl { min-height: 0; padding-block: 10px; }
   .live .next-up { margin-top: 8px; }
-  .live .run-big { font-size: min(24vh, 120px); }
+  /* ריצה לרוחב: הכול נכנס בגובה המסך, בלי גלילה */
+  .live .panel { justify-content: safe center; }
+  .live .run-kind { font-size: min(6vh, 24px); margin-top: 0; }
+  .live .run-big { font-size: min(18vh, 110px); }
+  .live .run-stats { margin: 6px 0 4px; }
+  .live .run-stats > div { padding: 4px; }
+  .live .run-stats b { font-size: min(6.5vh, 26px); }
+  .live #gpsst { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .live .panel .row .btn.xl { min-height: 44px; height: 44px; padding-block: 0; font-size: 16px; }
+  .live .panel .row[style*="margin-top"] { margin-top: 6px !important; }
 }
+@media (orientation: landscape) and (min-aspect-ratio: 4/3) and (max-height: 340px) { .live #gpsst, .live #lbl { display: none; } }
 
 /* ───── מסך הבית: מסך אחד, בלי גלילה ─────
    האימון הבא תופס את כל הגובה שנשאר; מתחתיו שורת המאמן, המעקב היומי (ארבעה אריחים בשורה) ומדד הכושר. */

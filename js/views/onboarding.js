@@ -158,14 +158,14 @@ export function renderOnboarding(root, done) {
       <p class="sub">אפשר לסמן כמה, ואפשר גם כלום — התוכנית תיבנה ממה שיש: רצפה, קיר, כיסא ושולחן יציב מספיקים. משנים בכל רגע בהגדרות.</p>
       <div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${d.equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>
       <p class="sub" style="margin-top:12px">${d.equip.length ? d.equip.map((id) => EQUIP[id].desc).join(' · ') : 'בלי ציוד: משיכות ייעשו כחתירה מתחת לשולחן או במשקוף. מתח הוא הציוד הראשון שכדאי להוסיף.'}</p>`
-      : html`<div class="eyebrow">שלב 2 · המאמן שלך</div><div class="q">מי יאמן אותך?</div>
+      : html`<div class="eyebrow">שלב 2 · המאמן שלך</div><div class="q">${mix() ? 'מי יאמן אותך בחדר הכושר?' : 'מי יאמן אותך?'}</div>
       <p class="sub">המאמן ילווה אותך בכל אימון: ידגים כל תרגיל, יספור חזרות, ימדוד מנוחות ויעודד. אפשר להחליף בכל רגע.</p>
       <div class="coach-pick">${coachesFor('gym').map((c) => html`
         <button class="coach-card ${d.coach === c.id ? 'on' : ''}" data-coach="${c.id}">
           <img src="${c.img}" alt="${c.name}"><span class="check">✓</span>
           <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
       <p class="sub" style="margin-top:14px">${esc(COACHES[d.coach].bio)}</p>
-      ${mix() ? html`<div class="card tight" style="margin-top:6px"><div class="row"><img src="${COACHES.maya.face}" alt="" style="width:46px;height:54px;object-fit:cover;border-radius:12px"><div><b>${COACHES.maya.name} תאמן אותך בקליסתניקס</b><div class="sub" style="font-size:13px">${esc(COACHES.maya.bio)}</div></div></div></div>
+      ${mix() ? html`<div class="card tight" style="margin-top:6px"><div class="row"><img src="${COACHES.maya.face}" alt="" style="width:46px;height:54px;object-fit:cover;border-radius:12px"><div><div class="eyebrow">ובאימוני הקליסתניקס</div><b>${COACHES.maya.name}</b><div class="sub" style="font-size:13px">במסלול המשולב יש שני מאמנים: ${COACHES[d.coach].name} בחדר הכושר, ו${COACHES.maya.name} באימוני הקליסתניקס. ${esc(COACHES.maya.bio)}</div></div></div></div>
       <div class="q" style="font-size:20px;margin-top:16px">איזה ציוד יש לך לקליסתניקס?</div>
       <p class="sub">אפשר לסמן כמה, ואפשר גם כלום.</p>
       <div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${d.equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>` : ''}`),

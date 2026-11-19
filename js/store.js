@@ -61,7 +61,7 @@ export const g = (m, f) => (state.profile?.sex === 'f' ? f : m);
 export const today = () => dayKey();
 
 export function daily(date = today()) {
-  return state.daily[date] || { water: 0, protein: 0, checkin: null };
+  return { water: 0, protein: 0, checkin: null, ...state.daily[date] };   // גם רשומה חלקית (גיבוי ישן) מקבלת ברירות מחדל
 }
 export function setDaily(patch, date = today()) {
   set((s) => { s.daily[date] = { ...{ water: 0, protein: 0, checkin: null }, ...s.daily[date], ...patch }; return s; });
