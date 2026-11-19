@@ -946,25 +946,32 @@ html.locked body { overflow: hidden; }
    ההדגמה בצד אחד בגובה מלא, ובצד השני שעון גדול ושם התרגיל — בגודל שקוראים מרחוק. */
 .live .tv-next { display: none; }
 @media (orientation: landscape) and (min-aspect-ratio: 4/3) {
-  .live { max-width: none; flex-direction: row; }
-  .live .stage { flex: 0 0 42% !important; border-radius: 0; }
-  .live .stage video, .live .stage img.poster { top: 0; height: 100%; object-position: 50% 50%; }
-  .live .panel { flex: 1 1 0 !important; min-width: 0; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; padding: 10px max(22px, var(--safe-l, 0px)) calc(10px + var(--safe-b)); }
-  .live .hud-top { top: 10px; }
-  .live .coach-pip { top: 58px; }
-  .live .say { top: 62px; font-size: min(4.6vh, 18px); }
-  .live .title .name { font-size: min(9.5vh, 44px); }
+  /* לרוחב: ההדגמה נקייה בצד (9:16, בגובה מלא), ולידה שתי עמודות — התרגיל והמאמן, והשעון עם הכפתור. שום דבר לא מונח על ההדגמה */
+  .live { max-width: none; flex-direction: row; --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px);
+    --vw: calc(100vh * 0.5625); --rest: calc(100vw - var(--vw) - var(--sl) - var(--sr)); --col: calc(var(--rest) * 0.42);
+    padding-left: var(--sl); padding-right: var(--sr); box-sizing: border-box; }
+  @supports (height: 100dvh) { .live { --vw: calc(100dvh * 0.5625); } }
+  .live .stage { flex: 0 0 var(--vw) !important; border-radius: 0; overflow: visible; background: none; }
+  .live .stage::after, .live .stage img.stage-bg { display: none; }
+  .live .stage video, .live .stage img.poster { top: 0; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  .live .hud-top { top: 10px; right: calc(100% + 14px); left: auto; width: calc(var(--rest) - 28px); }
+  .live .title { top: 62px; bottom: auto; right: calc(100% + 18px); left: auto; width: calc(var(--col) - 30px); }
+  .live .title .name { font-size: min(9.5vh, 44px); text-shadow: none; }
   .live .title .sub { display: none; }
-  .live .tv-next { display: block; margin-top: 4px; font-size: min(5vh, 20px); color: var(--mute); text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+  .live .tv-next { display: block; margin-top: 6px; font-size: min(5vh, 20px); color: var(--mute); }
   .live .tv-next b { color: var(--text); }
+  .live .coach-pip { top: auto; left: auto; bottom: calc(12px + var(--safe-b)); right: calc(100% + 18px); }
+  .live .say { top: auto; left: auto; bottom: calc(12px + var(--safe-b)); right: calc(100% + 74px); width: calc(var(--col) - 86px); font-size: min(4.6vh, 17px);
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; background: var(--panel2); backdrop-filter: none; -webkit-backdrop-filter: none; padding-block: 0; border-block: 6px solid transparent; }
+  .live .panel { flex: 1 1 0 !important; min-width: 0; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; padding: 58px var(--col) calc(10px + var(--safe-b)) 18px; }
   .live .counter { padding: 0 0 4px; }
-  .live .counter .ring { width: min(56vh, 340px) !important; height: min(56vh, 340px) !important; }
-  .live .counter .big { font-size: min(17vh, 100px); }
+  .live .counter .ring { width: min(46vh, 300px) !important; height: min(46vh, 300px) !important; }
+  .live .counter .big { font-size: min(15vh, 92px); }
   .live .counter .lbl { font-size: min(4.4vh, 18px); }
-  .live .phase-lbl { font-size: min(7vh, 30px); justify-content: center; }
+  .live .phase-lbl { font-size: min(6vh, 28px); justify-content: center; }
   .live .panel > .btn.xl { min-height: 0; padding-block: 10px; }
   .live .next-up { margin-top: 8px; }
-  .live .run-big { font-size: min(26vh, 130px); }
+  .live .run-big { font-size: min(24vh, 120px); }
 }
 
 /* ───── מסך הבית: מסך אחד, בלי גלילה ─────
