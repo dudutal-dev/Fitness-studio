@@ -80,7 +80,7 @@ export function renderOnboarding(root, done) {
       <div class="q" style="font-size:20px;margin-top:14px">וציוד למשקל גוף?</div>
       <p class="sub">בבית, בפארק או בחצר. אפשר לסמן כמה, ואפשר גם כלום.</p>
       <div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${d.equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>
-      <div class="card tight" style="margin-top:14px"><b>בסוף ההיכרות נמליץ על מסלול.</b><div class="sub">לפי המטרה, הימים, הציוד והפציעות. ההחלטה נשארת אצלך.</div></div>`
+      <div class="card tight" style="margin-top:14px"><b>בסוף ההיכרות נמליץ על מסלול.</b><div class="sub">לפי המטרה, הימים, הציוד והפציעות. ההחלטה נשארת אצלך — ואת המאמן בוחרים שם, כשיודעים באיזה מסלול מדובר.</div></div>`
       : cali() ? html`<div class="eyebrow">שלב 2 · המאמנת והציוד</div><div class="q">${esc(COACHES.maya.name)} תאמן אותך</div>
       <div class="coach-solo"><img src="${COACHES.maya.img}" alt="${COACHES.maya.name}"><div><b>${COACHES.maya.name}</b><span>${COACHES.maya.title}</span><p class="sub">${esc(COACHES.maya.bio)}</p>
         <button class="btn sm teal" data-coach="maya">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
@@ -101,9 +101,9 @@ export function renderOnboarding(root, done) {
       <div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${d.equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>` : ''}`),
     // 3 — פרטים
     () => html`<div class="eyebrow">שלב 3 · נכיר</div><div class="q">נעים להכיר</div>
-      <label class="field"><span>${COACHES[d.coach].name} ${fem() ? 'תפנה' : 'יפנה'} אליך בלשון</span><div class="seg" data-seg="sex">
+      <label class="field"><span>${undecided() ? 'פנייה אליך בלשון' : `${COACHES[d.coach].name} ${fem() ? 'תפנה' : 'יפנה'} אליך בלשון`}</span><div class="seg" data-seg="sex">
         <button data-v="m" class="${d.sex === 'm' ? 'on' : ''}">זכר</button><button data-v="f" class="${d.sex === 'f' ? 'on' : ''}">נקבה</button></div></label>
-      <label class="field"><span>שם (${COACHES[d.coach].name} ${fem() ? 'תקרא' : 'יקרא'} לך בשם)</span><input class="input" name="name" value="${esc(d.name)}" placeholder="איך לקרוא לך?" autocomplete="given-name"></label>
+      <label class="field"><span>${undecided() ? 'שם (כך יקראו לך באימונים)' : `שם (${COACHES[d.coach].name} ${fem() ? 'תקרא' : 'יקרא'} לך בשם)`}</span><input class="input" name="name" value="${esc(d.name)}" placeholder="איך לקרוא לך?" autocomplete="given-name"></label>
       <div class="grid2">
         <label class="field"><span>גיל</span><input class="input num" name="age" type="number" inputmode="numeric" value="${d.age}"></label>
         <label class="field"><span>גובה (ס״מ)</span><input class="input num" name="heightCm" type="number" inputmode="numeric" value="${d.heightCm}"></label>
