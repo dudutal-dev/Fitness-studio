@@ -799,5 +799,70 @@
   "running on the red track, mid-stride with one foot off the ground, relaxed shoulders, arms bent at 90 degrees, side view",
   "runs at a steady relaxed pace with good running form while the camera tracks alongside at the same speed, the runner staying centered in the frame",
   "run"
+ ],
+ "h_squat_jump": [
+  "standing in a deep bodyweight squat with thighs parallel to the floor, arms swung back, side view",
+  "performs one squat jump: explodes straight up off the floor with the arms swinging up, lands softly and sinks back into the squat",
+  "hiit"
+ ],
+ "h_jump_lunge": [
+  "in a deep lunge position with the left foot forward and the right knee just above the floor, torso upright, side view",
+  "performs jumping lunges: jumps up and switches legs in the air, landing softly in a lunge with the other foot forward, then switches back",
+  "hiit"
+ ],
+ "h_reverse_lunge": [
+  "standing upright with feet hip-width apart and hands on the hips, side view",
+  "performs one reverse lunge: steps one foot far back and lowers until the back knee almost touches the floor, then pushes back up to standing",
+  "hiit"
+ ],
+ "h_wall_sit": [
+  "in a wall sit against a plain wall: back flat on the wall, thighs parallel to the floor, knees at 90 degrees, arms crossed over the chest, side view",
+  "holds the wall sit steadily, breathing",
+  "hiit"
+ ],
+ "h_skater": [
+  "balancing on the right leg in a low athletic stance with the left leg crossed behind and the left hand reaching toward the floor, front view",
+  "performs skater jumps: leaps sideways to land softly on the left leg with the right leg crossing behind, then leaps back to the right",
+  "hiit"
+ ],
+ "h_butt_kicks": [
+  "jogging in place with one heel kicked up toward the glutes, arms bent, side view",
+  "runs in place kicking the heels up to the glutes at a quick light rhythm",
+  "hiit"
+ ],
+ "h_fast_feet": [
+  "standing in a low athletic stance with knees bent, on the balls of the feet, arms bent, front view",
+  "runs in place with very fast short steps staying low, feet barely leaving the floor",
+  "hiit"
+ ],
+ "h_step_jack": [
+  "standing with the right foot stepped out to the side and both arms raised overhead, front view",
+  "performs low-impact step jacks without jumping: steps the foot back to the centre lowering the arms, then steps the other foot out to the side raising the arms overhead",
+  "hiit"
+ ],
+ "h_march": [
+  "standing tall with the right knee lifted to hip height and the left arm bent forward, side view",
+  "marches briskly in place lifting the knees to hip height one after the other with the opposite arm swinging",
+  "hiit"
+ ],
+ "h_plank_jack": [
+  "in a high plank position with straight arms and feet together, side view from a slight front angle",
+  "performs plank jacks: jumps both feet out wide and back together while holding the plank, hips staying level",
+  "hiit"
+ ],
+ "h_plank_tap": [
+  "in a high plank position with straight arms and feet slightly apart, front three-quarter view",
+  "lifts one hand to tap the opposite shoulder, places it back, then taps with the other hand, hips staying still",
+  "hiit"
+ ],
+ "h_bicycle": [
+  "lying on her back on a mat with hands behind the head, shoulders lifted, the right knee pulled in and the left leg extended just above the floor, side view",
+  "performs bicycle crunches slowly: rotates the torso bringing the elbow toward the opposite knee while the other leg extends, then switches sides",
+  "hiit"
+ ],
+ "h_russian_twist": [
+  "sitting on a mat with knees bent and heels on the floor, torso leaning back slightly with a long back, hands clasped in front of the chest, front view",
+  "rotates the torso to touch the hands to the floor beside one hip, then rotates to the other side",
+  "hiit"
  ]
 }

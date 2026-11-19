@@ -15,6 +15,7 @@ export const GROUPS = {
 import { CALI_EXERCISES } from './cali-exercises.js';
 import { MOB_EXERCISES } from './mob-exercises.js';
 import { STRETCH_REGION } from './mob.js';
+import { HIIT_EXERCISES, HIIT_SHARED, HIIT_WARM, HIIT_COOL } from './hiit-exercises.js';
 
 const E = (o) => ({ unilateral: false, compound: false, inc: 2.5, tempo: [2, 0, 1], alts: [], ...o });
 
@@ -202,6 +203,8 @@ export const EXERCISES = [
   ...CALI_EXERCISES.map(E),
   // ───── מוביליטי וגמישות (js/data/mob-exercises.js) ─────
   ...MOB_EXERCISES.map(E),
+  // ───── HIIT (js/data/hiit-exercises.js) ─────
+  ...HIIT_EXERCISES.map(E),
 ];
 
 // סדר שלבי החזרה: רוב התרגילים מתחילים בירידה (אקסצנטרי). בתרגילים שמתחילים מלמטה/ממצב מתוח — מתחילים במאמץ (קונצנטרי).
@@ -219,8 +222,12 @@ const SHARED = ['pushup', 'pullup', 'dips', 'plank', 'hanging_leg_raise', 'air_s
 for (const e of EXERCISES) {
   if (NEEDS[e.id]) e.needs = NEEDS[e.id];
   // תרגילי המוביליטי של תמר שייכים רק למסלול שלה; שש המתיחות הוותיקות משותפות לכל המסלולים
-  e.tracks = e.mob ? ['mob'] : e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali', ...(STRETCH_REGION[e.id] ? ['mob'] : [])] : ['gym'];
+  e.tracks = e.hiit ? ['hiit'] : e.mob ? ['mob'] : e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali', ...(STRETCH_REGION[e.id] ? ['mob'] : [])] : ['gym'];
   if (STRETCH_REGION[e.id]) { e.region = STRETCH_REGION[e.id]; e.kind = 'static'; }
+  // תרגילים קיימים שגם ליה משתמשת בהם ב-HIIT (במעגל, בחימום ובמתיחות)
+  const hs = HIIT_SHARED.find((x) => x[0] === e.id);
+  if (hs) { e.cat = hs[1]; e.impact = hs[2]; if (hs[3]) e.low = hs[3]; }
+  if ((hs || HIIT_WARM.includes(e.id) || HIIT_COOL.includes(e.id)) && !e.tracks.includes('hiit')) e.tracks = [...e.tracks, 'hiit'];
   e.first = CON_FIRST.includes(e.id) ? 'con' : 'ecc';
   e.cueCon = PULL.includes(e.id) ? 'pull' : PRESS.includes(e.id) ? 'press' : 'up';
   e.cueEcc = e.neg ? 'slow_down' : PULL.includes(e.id) || PRESS.includes(e.id) ? 'release' : 'down'; // שלילי: "לאט למטה..."

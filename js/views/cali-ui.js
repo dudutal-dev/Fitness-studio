@@ -84,12 +84,27 @@ export const equipChips = (equip) => `<div class="chips">${Object.entries(EQUIP)
 // ───── מעבר בין מסלולים ─────
 // ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר,
 // ובמסלול המשולב — כל אימון עם המאמן של המסלול שלו.
+const NO_GYM = ['cali', 'mob', 'run', 'hiit'];   // מסלולים בלי מאמן ורמה של חדר כושר
 export function switchTrack(track, rerender) {
   const p = get().profile;
+  // יוצאים מ-HIIT: זוכרים את הרמה שלו לפעם הבאה
+  if (p.track === 'hiit' && track !== 'hiit') set((s) => { s.profile.hiitLevel = s.profile.level; return s; });
+  if (track === 'hiit') {
+    set((s) => {
+      const q = s.profile;
+      if (!['cali', 'mob', 'run', 'hiit'].includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+      q.level = q.hiitLevel || Math.min(3, q.gymLevel || q.level || 2);
+      q.track = 'hiit'; q.coach = 'lia'; q.goal = goalForTrack(q.goal, 'hiit'); q.hiitMin ??= 20;
+      s.plan = createPlan(q);
+      return s;
+    });
+    after('hiit', rerender);
+    return;
+  }
   if (track === 'run') {
     set((s) => {
       const q = s.profile;
-      if (!['cali', 'mob', 'run'].includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+      if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.runBase ??= q.run3k ? 30 : 15;
       q.track = 'run'; q.coach = q.runCoach || 'guy'; q.goal = goalForTrack(q.goal, 'run'); q.level = q.runLevel || runLevelFrom3k(q.run3k);
       s.plan = createPlan(q);
@@ -101,7 +116,7 @@ export function switchTrack(track, rerender) {
   if (track === 'mob') {
     set((s) => {
       const q = s.profile;
-      if (!['cali', 'mob', 'run'].includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+      if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.mob ||= newMob(); q.mobN = 0;
       q.track = 'mob'; q.coach = 'tamar'; q.goal = goalForTrack(q.goal, 'mob'); q.level = mobLevel(q.mob);
       s.plan = createPlan(q);
@@ -114,7 +129,7 @@ export function switchTrack(track, rerender) {
   if (track === 'gym') {
     set((s) => {
       const q = s.profile;
-      if (['cali', 'mob', 'run'].includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
+      if (NO_GYM.includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
       q.track = 'gym'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
       s.plan = createPlan(q);
       return s;
@@ -161,10 +176,10 @@ function toCali(track, cali, rerender) {
   set((s) => {
     const q = s.profile;
     // יוצאים ממצב שיש בו חדר כושר → זוכרים את המאמן והרמה שלו
-    if (!['cali', 'mob', 'run'].includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+    if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
     q.cali = cali;
     if (track === 'mix') {
-      if (['cali', 'mob', 'run'].includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
+      if (NO_GYM.includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
       q.track = 'mix'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
     } else { q.track = 'cali'; q.coach = 'maya'; q.goal = goalForTrack(q.goal, 'cali'); q.level = caliLevel(cali); }
     s.plan = createPlan(q);
@@ -176,13 +191,13 @@ function toCali(track, cali, rerender) {
 function after(track, rerender) {
   const p = get().profile;
   unlock(); stop(); say(`hello_${p.coach}`, { priority: true });
-  toast(track === 'run' ? `עברת למסלול ריצה עם ${COACHES[p.coach].name}` : track === 'mob' ? `עברת למסלול מוביליטי וגמישות עם ${COACHES.tamar.name}` : track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
+  toast(track === 'hiit' ? `עברת למסלול HIIT עם ${COACHES.lia.name}` : track === 'run' ? `עברת למסלול ריצה עם ${COACHES[p.coach].name}` : track === 'mob' ? `עברת למסלול מוביליטי וגמישות עם ${COACHES.tamar.name}` : track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
   rerender();
 }
 
 // ───── המלצת המערכת (הגדרות) ─────
 // אותה המלצה כמו בסוף ההיכרות: שאלה אחת על גישה לחדר כושר, והשאר מהפרופיל (מטרה, ימים, פציעות).
-const TRACK_NAME = { gym: 'חדר כושר', cali: 'קליסתניקס', mix: 'משולב', mob: 'מוביליטי', run: 'ריצה' };
+const TRACK_NAME = { gym: 'חדר כושר', cali: 'קליסתניקס', mix: 'משולב', mob: 'מוביליטי', run: 'ריצה', hiit: 'HIIT' };
 export function recommendSheet(rerender) {
   const p = get().profile;
   const cur = p.track || 'gym';

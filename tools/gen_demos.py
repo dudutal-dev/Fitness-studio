@@ -15,20 +15,24 @@ WHO = {"ori": "the same man from the reference image (same face, hair, stubble, 
        "maya": "the same woman from the reference image (same face, light-brown curly hair in a high bun, same black sleeveless top with amber piping and black leggings)",
        "guy": "the same man from the reference image (same face, short light-brown hair, same black running t-shirt with thin amber piping and black running shorts, sports watch)",
        "shira": "the same woman from the reference image (same face, dark-blonde ponytail under a plain black running cap, same black running tank top with thin amber piping and black running tights, sports watch)",
+       "lia": "the same woman from the reference image (same face, shoulder-length dark wavy hair with a plain black headband, same black cropped training top with thin amber piping and black high-waist leggings, barefoot)",
        "tamar": "the same woman from the reference image (same face, straight shoulder-length auburn-brown hair, same fitted black long-sleeve top with thin amber piping and black leggings, barefoot)"}
 GYM = ("in a dark premium modern gym with teal and electric-lime accent lighting. Full body visible, centered, vertical 9:16 framing, "
        "photorealistic. No text, no logos, no brand names.")
 PARK = ("on a red outdoor running track in a city park at golden hour, warm amber sunlight, trees softly blurred in the background. Anatomically correct body, two arms and two legs. "
         "Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names, no race numbers.")
-SCENES = {"ori": GYM, "noa": GYM, "guy": PARK, "shira": PARK,
+STUDIO = ("in a modern boutique fitness studio with a dark rubber floor, a brick wall and warm amber and soft teal accent lighting. Anatomically correct body, two arms and two legs. "
+          "Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")
+SCENES = {"ori": GYM, "noa": GYM, "guy": PARK, "shira": PARK, "lia": STUDIO,
           "maya": ("in a dark premium calisthenics studio with a steel rig, warm amber and soft teal accent lighting. Anatomically correct body, two arms and two legs. "
                    "Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names."),
           "tamar": ("in a calm premium movement studio with a light wooden floor, rolled mats in the background, warm amber and soft teal accent lighting. "
                     "Anatomically correct body, two arms and two legs. Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")}
 # מי מדגים כל תרגיל: האיבר השלישי ב-demos.json — "cali" = רק מאיה, "mob" = רק תמר, "run" = גיא ושירה, "all" = אורי, נועה ומאיה, "stretch" = כולם, בלי = אורי ונועה
-COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "hiit": ("lia",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+EXTRA = json.load(open(os.path.join(os.path.dirname(__file__), "demos_extra.json")))  # מאמן → תרגילים קיימים שגם הוא מדגים
 def coaches_for(ex):
-    return COACHES_FOR[DEMOS[ex][2] if len(DEMOS[ex]) > 2 else "gym"]
+    return tuple(COACHES_FOR[DEMOS[ex][2] if len(DEMOS[ex]) > 2 else "gym"]) + tuple(c for c, ids in EXTRA.items() if ex in ids)
 lock = threading.Lock()
 state = json.load(open(STATE_F)) if os.path.exists(STATE_F) else {}
 

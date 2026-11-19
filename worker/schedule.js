@@ -1,7 +1,7 @@
 // לוגיקת התזכורות (טהורה, נבדקת): אילו תזכורות צריך לשלוח עכשיו למנוי מסוים.
 // sub: { app, tz, name, sex, coach, lastWorkout, sent:{}, settings:{ workout, water, weigh, comeback } }
 // הנוסח לפי האפליקציה: LOHEM (app === 'lohem') פונה לחיילים; סטודיו כושר וקליסתניקס — לכולם.
-export const COACH = { ori: 'אורי', noa: 'נועה', maya: 'מאיה', tamar: 'תמר', guy: 'גיא', shira: 'שירה' };
+export const COACH = { ori: 'אורי', noa: 'נועה', maya: 'מאיה', tamar: 'תמר', guy: 'גיא', shira: 'שירה', lia: 'ליה' };
 const WINDOW = 5; // דקות — הקרון רץ כל 5 דקות
 
 export function localNow(tz, now = new Date()) {
@@ -26,6 +26,7 @@ function texts(sub, seed) {
       { title: `${coach}: הגיע הזמן 🔥`, body: `${n}כל אימון מקרב ${f ? 'אותך' : 'אותך'} למטרה. ${f ? 'יאללה, צאי' : 'יאללה, צא'} לאימון!` },
       sub.coach === 'maya' ? { title: `${coach}: עוד שלב בסולם 🪜`, body: `${n}אימון קצר היום שווה יותר מאימון מושלם מחר.` }
       : ['guy', 'shira'].includes(sub.coach) ? { title: `${coach}: נעליים, ויוצאים 👟`, body: `${n}ריצה קלה היום בונה את הריצה הארוכה של מחר.` }
+      : sub.coach === 'lia' ? { title: `${coach}: עשרים דקות, וזהו ⚡`, body: `${n}אימון קצר וחזק היום. רק ${f ? 'תתחילי' : 'תתחיל'} — השאר כבר ירוץ לבד.` }
       : sub.coach === 'tamar' ? { title: `${coach}: עשר דקות לגוף 🧘`, body: `${n}כמה דקות של תנועה היום שוות יותר מאימון ארוך פעם בשבוע.` }
       : { title: army ? `${coach}: לוחמים לא מדלגים ⚔️` : `${coach}: רק להתחיל 👟`, body: `${n}רק ${f ? 'תתחילי' : 'תתחיל'} — אני אספור איתך כל חזרה.` },
     ], seed),

@@ -1006,5 +1006,133 @@
  "shira/outdoor_run": {
   "img": "kCslPTAKkFrJZjmq899y",
   "vid": "0sE5e1DGCkck9xRiLetw"
+ },
+ "lia/pushup": {
+  "img": "bMX0jm2wMDtQVoBuPpIr",
+  "vid": "VLYV8ZeVdHtzaRmVOFQi"
+ },
+ "lia/plank": {
+  "img": "GsxIXBjRR0nsr5ZrvOTQ",
+  "vid": "8VEDJIzSb390A3eIh9Rm"
+ },
+ "lia/burpee": {
+  "img": "mGnvshGIT3eHJzJRB6Bt",
+  "vid": "vr8bBSuiJHvwZ6Ku6epk"
+ },
+ "lia/jumping_jacks": {
+  "img": "jrOEdMjDKMG5nxliR4IG",
+  "vid": "iWtQGio6ymwK1gZ4r4Pn"
+ },
+ "lia/arm_circles": {
+  "img": "kFqSWBjctNIkLeJe2xry",
+  "vid": "2yXqTsR23GsU5dwEsRUg"
+ },
+ "lia/leg_swings": {
+  "img": "X7WYllMwowBwlVusgkfS",
+  "vid": "VnVGzssHo6RnYnw6EGXV"
+ },
+ "lia/inchworm": {
+  "img": "CLzhO72LbadcCzvvTCcG",
+  "vid": "QVSSJkDFJPmdp6EkSuTK"
+ },
+ "lia/bw_squat": {
+  "img": "t24VkBHr1hDswGxKlyzL",
+  "vid": "ExWdPJovpVMxqEV9vvSE"
+ },
+ "lia/high_knees": {
+  "img": "Sx1qQ81UCJlZX9eOxquk",
+  "vid": "IFENMpjKkPrmi80NN490"
+ },
+ "lia/quad_stretch": {
+  "img": "OBmcpHXVOX0hY8d7hONB",
+  "vid": "dhIVGppAkwuNR2XjeZm1"
+ },
+ "lia/hamstring_stretch": {
+  "img": "6r0udT0bh4rcxLF5hBk4",
+  "vid": "LRZdslj6MgTiotZublvr"
+ },
+ "lia/hip_flexor_stretch": {
+  "img": "59YH0sUSCRKdAaBaPuiB",
+  "vid": "A7Li1KyIBPLPMKwj1UuW"
+ },
+ "lia/chest_stretch": {
+  "img": "RIbxnuW3cXLfhMYhr0sm",
+  "vid": "BqhO3Kxe9GhG8aHdER9C"
+ },
+ "lia/child_pose": {
+  "img": "loQkWU5Ce5HhZiNDWoNy",
+  "vid": "pV5FbpDJH5OFJ1w9y5Ew"
+ },
+ "lia/air_squat": {
+  "img": "Q5HuzElBrvE409Vu0vxR",
+  "vid": "3DMsCHZ53rN7aMVzQNPe"
+ },
+ "lia/bw_lunge": {
+  "img": "oeGKOI9WxLs1Ej9CrYiD",
+  "vid": "9RruSJVjTdUe8qStgKz7"
+ },
+ "lia/glute_bridge": {
+  "img": "kxmVQk8wVcUFef84lStv",
+  "vid": "7i1KpYsQQDhLQr4gQ2vN"
+ },
+ "lia/mountain_climber": {
+  "img": "DjTyKzEMUl7HH2lwK05a",
+  "vid": "HSof1SzGGQ07MEJYbcuK"
+ },
+ "lia/knee_pushup": {
+  "img": "XL7L4T0HjAZCHYl68RhL",
+  "vid": "TgcezXJxysVGJ7NowmOp"
+ },
+ "lia/h_squat_jump": {
+  "img": "a1RiBy80AEJAhxDagDH4",
+  "vid": "hf9yTrWYX2nHyUt5tYzO"
+ },
+ "lia/h_jump_lunge": {
+  "img": "tAcdxpji9D62OITFUN16",
+  "vid": "aUB3smNIv8Ws59b8QDU3"
+ },
+ "lia/h_reverse_lunge": {
+  "img": "xmGlyxs5FhB0SvjmKiac",
+  "vid": "X3v6l7bthb1JCKqsJ7OJ"
+ },
+ "lia/h_wall_sit": {
+  "img": "jKgjTO8TZRRTX3kqvNZH",
+  "vid": "gWxHyZUKOIhQZWEkFvYw"
+ },
+ "lia/h_skater": {
+  "img": "vxzZSQk8qjaQ5HLy0A10",
+  "vid": "N857B31vOjLzSzqc69hV"
+ },
+ "lia/h_butt_kicks": {
+  "img": "U89NyB6Hv5Rbku9BqRUt",
+  "vid": "QW2EClzDTuZIwxIRn75E"
+ },
+ "lia/h_fast_feet": {
+  "img": "xjpJYrBv4qiEyS9PyhrT",
+  "vid": "BwlS3V8hc7kg4Tx231RT"
+ },
+ "lia/h_step_jack": {
+  "img": "625UZS2KdfAf0lgoVXLD",
+  "vid": "wpthBsvTaWgHpJj51AWK"
+ },
+ "lia/h_march": {
+  "img": "3pOrO6H1gSLsa4HHqMh4",
+  "vid": "LEHkYMlzsOd4CXlQSkmv"
+ },
+ "lia/h_plank_jack": {
+  "img": "cYBx9Hn2QZZRMx9K1wA0",
+  "vid": "gn8MGJOlKJpRLfJoG4Bl"
+ },
+ "lia/h_plank_tap": {
+  "img": "7qD51mMxtxypGohZyjct",
+  "vid": "F0yZPLPeWUMgIUmQqYdq"
+ },
+ "lia/h_bicycle": {
+  "img": "PAvPeoUQOTn01tEx8VrY",
+  "vid": "KHGYDzscF7NIEPmz1FkM"
+ },
+ "lia/h_russian_twist": {
+  "img": "o7o0bZkgiHX2OEWCMMnW",
+  "vid": "Uu32TvDgweg6gJr6PXwj"
  }
 }
