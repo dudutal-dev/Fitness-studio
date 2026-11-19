@@ -1059,3 +1059,41 @@ html.locked body { overflow: hidden; }
 
 /* כפתור מוזיקת הרקע באימון: כבוי = מעומעם */
 .live .hud-top .icon-btn.off { opacity: 0.45; }
+
+/* ───── הבית: כרטיס "התזונה של היום" ───── */
+.nut-home { display: block; width: 100%; text-align: start; color: inherit; padding: 11px 12px 10px; border: 1px solid rgba(var(--pri-rgb), 0.35); background: linear-gradient(135deg, rgba(var(--pri-rgb), 0.13), rgba(var(--pri-rgb), 0.03) 60%), var(--card-bg, var(--panel)); }
+.nh-top { display: flex; align-items: center; gap: 12px; }
+.nh-top .ring { flex: 0 0 auto; }
+.nh-top .ring .big { font-size: 15px; }
+.nh-top .grow { flex: 1 1 0; min-width: 0; }
+.nut-home .eyebrow { display: flex; align-items: center; gap: 5px; color: var(--pri-ink); font-size: 12px; font-weight: 800; }
+.nh-left { font-size: 16px; font-weight: 700; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nh-left b { font-size: 21px; font-weight: 900; }
+.nh-left small { color: var(--mute); font-size: 12px; font-weight: 600; }
+.nh-macros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 6px; }
+.nh-m span { display: block; font-size: 11px; color: var(--mute); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nh-m b { color: var(--text); } .nh-m small { font-weight: 600; }
+.nh-m .bar { height: 4px; margin-top: 3px; }
+.nh-next { display: flex; align-items: baseline; gap: 8px; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+.nh-next .sub { flex: 0 0 auto; font-size: 12px; }
+.nh-next b { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.nh-next .chev { flex: 0 0 auto; color: var(--mute); transform: scaleX(-1); align-self: center; }
+.home:has(.nut-home) .hero { min-height: 230px; }
+.home .nut-home { margin: 0; }
+/* כשכרטיס התזונה מוצג, אריחי המעקב נעשים שורה נמוכה (סמל ליד המספר) — כדי שהבית יישאר מסך אחד */
+.home:has(.nut-home) .today .tracker { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding: 8px 10px; text-align: start; }
+.home:has(.nut-home) .today .tracker .tr-top { grid-row: 1 / span 2; margin: 0; }
+.home:has(.nut-home) .today .tracker .v { font-size: 16px; }
+.home:has(.nut-home) .today .tracker .v small { display: inline; font-size: 10.5px; }
+.home:has(.nut-home) .today .tracker .sub { margin: 0; }
+.home:has(.nut-home) .today .tracker .bar { display: none; }
+.home:has(.nut-home) .hero-in > .sub { display: none; }
+.home:has(.nut-home) .hero .stats { margin: 6px 0 9px; }
+.home:has(.nut-home) .hero .week-cap { margin-top: 9px; }
+.home:has(.nut-home) .hero-in { padding: 13px 16px; }
+/* מסך נמוך: מוותרים על שורת "הארוחה הבאה" ועל נתוני האימון שבכרטיס הראשי, כדי שהבית יישאר מסך אחד */
+@media (max-height: 720px) {
+  .home:has(.nut-home) .nh-next { display: none; }
+  .home:has(.nut-home) .hero .stats { display: none; }
+  .home:has(.nut-home) .hero { min-height: 200px; }
+}

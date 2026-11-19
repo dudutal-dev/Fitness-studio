@@ -5,7 +5,9 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { dayTotals, dayType, dayTargets, wantsNutrition } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan } from '../engine/nutrition.js';
+import { FOOD } from '../data/foods.js';
+import { openNutritionTab } from './nutrition.js';
 import { buildFieldWorkout } from '../engine/program.js';
 import { say, onSpeaking, unlock } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
@@ -67,6 +69,22 @@ export function renderHome(root) {
   const doneN = s.plan.week.sessions.filter((x) => doneDays.has(x.day)).length;
   const eaten = dayTotals(dd, p.customFoods);
   const pct = (v, of) => Math.min(100, Math.round((v / Math.max(1, of)) * 100));
+  // כרטיס התזונה של היום: כמה נשאר, שלושת אבות המזון, והארוחה הבאה מהתפריט (אותו תפריט שבמסך התזונה)
+  const nutCard = () => {
+    const left = t.kcal - eaten.kcal, nf = (n) => Math.round(n).toLocaleString('he-IL');
+    const plan = mealPlan(p, { ctx: 'home', seed: new Date().getDate(), t });
+    const h = new Date().getHours();
+    const order = h < 10 ? ['breakfast', 'snack1', 'lunch'] : h < 12 ? ['snack1', 'lunch'] : h < 15 ? ['lunch', 'post', 'dinner'] : h < 18 ? ['post', 'dinner'] : ['dinner'];
+    const meal = order.map((id) => plan.meals.find((m) => m.id === id)).find(Boolean) || plan.meals[plan.meals.length - 1];
+    const bar = (name, v, of, color) => `<div class="nh-m"><span>${name} <b class="num">${Math.round(v)}</b><small>/${of}</small></span><div class="bar"><i style="width:${pct(v, of)}%;background:${color}"></i></div></div>`;
+    return html`<button class="card nut-home" data-act="nut">
+      <div class="nh-top">${ring(Math.min(1, eaten.kcal / Math.max(1, t.kcal)), { size: 58, stroke: 6, big: pct(eaten.kcal, t.kcal) + '%' })}
+        <div class="grow"><div class="eyebrow">${icon('food', 'width="14" height="14"')} התזונה של היום</div>
+          <div class="nh-left">${left >= 0 ? `נשארו <b class="num">${nf(left)}</b> קק״ל` : `<b class="num">${nf(-left)}</b> קק״ל מעל היעד`}<small> מתוך ${nf(t.kcal)}</small></div>
+          <div class="nh-macros">${bar('חלבון', eaten.p, t.protein, 'var(--pri)')}${bar('פחמימה', eaten.c, t.carbs, 'var(--acc)')}${bar('שומן', eaten.f, t.fat, 'var(--orange)')}</div></div></div>
+      ${meal ? `<div class="nh-next"><span class="sub">הארוחה הבאה · ${meal.name}</span><b>${meal.items.slice(0, 3).map((it) => esc(FOOD[it.id].name)).join(' · ')}</b><span class="chev">${icon('chev', 'width="16" height="16"')}</span></div>` : ''}
+    </button>`;
+  };
   const tile = (act, ic, val, unit, label, bar) => `<button class="card tight tracker" data-act="${act}"><div class="tr-top">${ic}<span class="tr-add">＋</span></div>
     <div class="v num">${val}<small> ${unit}</small></div><div class="sub t-cap">${label}</div>${bar != null ? `<div class="bar"><i style="width:${bar}%"></i></div>` : ''}</button>`;
 
@@ -124,9 +142,9 @@ export function renderHome(root) {
       <button class="speak" data-act="speak" data-key="${line.key}" aria-label="השמע את ${coach.name}"><span class="wave"><i></i><i></i><i></i><i></i></span></button>
     </div>
 
-    <div class="today ${wantsNutrition(p) ? '' : 'n3'}">
+    ${wantsNutrition(p) ? nutCard() : ''}
+    <div class="today n3">
       ${tile('water', ib('drop', 'acc'), (dd.water / 1000).toFixed(1), `/ ${t.waterL} ל׳`, 'מים', pct(dd.water, t.waterL * 1000))}
-      ${wantsNutrition(p) ? tile('food', ib('food', 'pri'), eaten.kcal.toLocaleString('he-IL'), `/ ${t.kcal.toLocaleString('he-IL')}`, 'קלוריות', pct(eaten.kcal, t.kcal)) : ''}
       ${tile('weight', ib('scale'), lastW ? lastW.kg : '—', 'ק״ג', 'משקל', null)}
       ${tile('checkin', ib('pulse', 'ok'), dd.checkin != null ? Math.round(dd.checkin * 100) : '—', dd.checkin != null ? '%' : '', 'מוכנות', dd.checkin != null ? Math.round(dd.checkin * 100) : null)}
     </div>
@@ -161,6 +179,7 @@ export function renderHome(root) {
     if (a === 'field') checkIn((r) => startWorkout({ ...buildFieldWorkout(p), day: null, field: true }, { readiness: r }));
     if (a === 'water') { setDaily({ water: dd.water + 250 }); if (dd.water + 250 >= t.waterL * 1000 && dd.water < t.waterL * 1000) { addXP(XP.water * 4); toast('יעד השתייה הושלם!'); } renderHome(root); }
     if (a === 'food') location.hash = '#/nutrition';
+    if (a === 'nut') { openNutritionTab('menu'); location.hash = '#/nutrition'; }
     if (a === 'weight') weightSheet(() => renderHome(root));
     if (a === 'backup') backupNow().then((ok) => { if (ok) toast('הגיבוי נשמר'); renderHome(root); });
     if (a === 'backup-later') { snoozeBackup(7); renderHome(root); }

@@ -11,6 +11,7 @@ import { dayKey } from '../engine/stats.js';
 import { lookupBarcode, startScanner } from '../barcode.js';
 
 let tab = 'today';
+export const openNutritionTab = (t) => { tab = t; };   // מהבית: הכרטיס "התזונה של היום" פותח ישר את התפריט
 let ctx = 'home';
 let seed = new Date().getDate();
 let editDislikes = false;
