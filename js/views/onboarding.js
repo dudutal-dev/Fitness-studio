@@ -14,8 +14,11 @@ import { set, createPlan, today, lohemData, importFromLohem } from '../store.js'
 import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
-const GATE_TAG = { ori: 'חדר כושר', noa: 'חדר כושר', maya: 'קליסתניקס', tamar: 'מוביליטי', guy: 'ריצה', shira: 'ריצה', lia: 'HIIT · פילאטיס', yael: 'יוגה' };
-const GATE_COUNT = { 5: 'חמישה', 6: 'שישה', 7: 'שבעה', 8: 'שמונה', 9: 'תשעה', 10: 'עשרה' };
+const GATE_TILES = {
+  gym: ['חדר כושר', 'עם אורי ונועה', ['ori', 'noa']], cali: ['קליסתניקס', 'עם מאיה', ['maya']], run: ['ריצה', 'עם גיא ושירה', ['guy', 'shira']],
+  hiit: ['HIIT', 'עם ליה', ['lia']], pil: ['פילאטיס', 'עם ליה', ['lia']], yoga: ['יוגה', 'עם יעל', ['yael']], mob: ['מוביליטי', 'עם תמר', ['tamar']],
+  mix: ['משולב', 'כמה מסלולים בשבוע', []],
+};
 
 const GOAL_DESC = {
   combat: 'כוח + ריצה + סבולת. כושר מאוזן לכל מה שהחיים דורשים.',
@@ -92,13 +95,14 @@ export function renderOnboarding(root, done) {
 
   const views = [
     // 0 — פתיחה
-    () => { const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids].map((id) => `<figure><img src="${COACHES[id].img}" alt=""><figcaption><b>${COACHES[id].name}</b><span>${GATE_TAG[id]}</span></figcaption></figure>`).join('')}</div></div>`;
+    () => { const tile = (id) => { const [name, sub, who] = GATE_TILES[id]; return `<figure>${who.length ? `<span class="gt-faces">${who.map((c) => `<img src="${COACHES[c].face}" alt="">`).join('')}</span>` : `<span class="gt-ico">${icon('sparkle')}</span>`}<figcaption><b>${name}</b><span>${sub}</span></figcaption></figure>`; };
+      const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids, ...ids, ...ids].map(tile).join('')}</div></div>`;
       return html`<div class="gate">
         <div class="gate-top"><div class="gate-logo">${BRAND.name}</div><div class="gate-tag">הסטודיו שלך. בכל מקום.</div></div>
-        <div class="gate-wall" aria-hidden="true">${row(['ori', 'yael', 'guy', 'lia'], 'a')}${row(['maya', 'noa', 'tamar', 'shira'], 'b')}${row(['ori', 'yael', 'maya', 'guy', 'lia', 'noa', 'tamar', 'shira'], 'one')}</div>
+        <div class="gate-wall" aria-hidden="true">${row(['gym', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit'], 'tall b')}${row(['mob', 'mix'], 'tall')}${row(['gym', 'yoga', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'mob', 'mix'], 'short b')}</div>
         <div class="gate-copy">
-          <div class="gate-h">${GATE_COUNT[Object.keys(COACHES).length] || 'צוות'} מאמנים.<br><em>סטודיו אחד.</em></div>
-          <p class="sub">חדר כושר, קליסתניקס, ריצה, HIIT, פילאטיס, יוגה ומוביליטי — או שילוב ביניהם.</p>
+          <div class="gate-h">שבעה סוגי אימון.<br><em>סטודיו אחד.</em></div>
+          <p class="sub">שמונה מאמנים מלווים אותך — במסלול אחד או בשילוב ביניהם.</p>
           <div class="gate-feats"><span>${icon('target')}תוכנית שמשתנה איתך</span><span>${icon('vol')}ספירת חזרות בקול</span><span>${icon('chart')}תזונה ומעקב</span></div>
           ${lohemData() ? `<button class="btn block" style="margin-top:12px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ"חוד"</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית "חוד" נשארת כמו שהיא.</p>` : ''}
         </div></div>`; },
