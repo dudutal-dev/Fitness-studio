@@ -5,7 +5,7 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { targets, dayTotals } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets } from '../engine/nutrition.js';
 import { buildFieldWorkout } from '../engine/program.js';
 import { say, onSpeaking, unlock } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
@@ -55,7 +55,7 @@ export function renderHome(root) {
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
   const dd = daily();
-  const t = targets(p);
+  const t = dayTargets(p, dayType(s, Date.now(), dd.dayType).type);   // יעד היום — כמו במסך התזונה
   const line = coachLine(s);
   const doneDays = new Set(s.plan.completedDays);
   const lastW = s.weights[s.weights.length - 1];

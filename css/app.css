@@ -982,3 +982,11 @@ html.locked body { overflow: hidden; }
   .hero .week { margin-top: 10px; }
   .hero-in .btn.xl { min-height: 50px; }
 }
+
+/* ───── תזונה לפי היום ───── */
+.day-fuel .seg { flex: 0 0 auto; }
+.day-fuel .seg button { flex: 0 0 auto; height: 34px; padding: 0 12px; font-size: 13.5px; overflow: visible; }
+.fuel { display: grid; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.fuel > div { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 13.5px; line-height: 1.4; }
+.fuel b { color: var(--pri-ink); font-size: 12.5px; padding-top: 1px; }
+.fuel span { color: var(--mute); }

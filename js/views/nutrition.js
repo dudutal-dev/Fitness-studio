@@ -3,6 +3,7 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES } from '../engine/nutrition.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 import { dayKey } from '../engine/stats.js';
@@ -27,9 +28,12 @@ export function renderNutrition(root) {
   const s = get();
   const p = s.profile;
   const custom = p.customFoods || [];
-  const plan = mealPlan(p, { ctx, seed });
-  const t = plan.targets;
   const dd = daily();
+  // היעדים והתפריט של היום — לפי האימון של היום (ראו dayType / dayTargets במנוע התזונה)
+  const dt = dayType(s, Date.now(), dd.dayType);
+  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type) });
+  const t = plan.targets;
+  const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
   const ctxs = [['home', 'בבית'], ['base', 'בעבודה'], ['field', 'בדרכים']]; // base = יש חדר אוכל/מסעדה · field = בלי מטבח
   const log = (dd.foods || []).map((it, i) => ({ ...it, i, f: foodLookup(it.id, custom) })).filter((x) => x.f);
@@ -48,6 +52,14 @@ export function renderNutrition(root) {
   const TABS = [['today', 'היום'], ['menu', 'תפריט'], ['prefs', 'העדפות']];
 
   const todayTab = () => html`
+    <div class="card tight day-fuel">
+      <div class="row between"><div class="grow"><div class="eyebrow">התזונה של היום</div><b>${DAY_TYPES[dt.type].name}</b>${dt.name ? `<span class="sub"> · ${esc(dt.name)}</span>` : ''}</div>
+        ${dt.done ? '<span class="tag lime">בוצע</span>' : dt.planned || dt.manual ? `<div class="seg" data-daytype><button data-v="train" class="${dt.manual ? '' : 'on'}">אימון</button><button data-v="rest" class="${dt.manual ? 'on' : ''}">מנוחה</button></div>` : ''}</div>
+      <div class="sub t-foot" style="margin-top:6px">${t.dayDelta ? `היעד היום: <b class="num">${nf(t.kcal)}</b> קק״ל — <span class="num">${nf(Math.abs(t.dayDelta))}</span> ${t.dayDelta > 0 ? 'מעל' : 'מתחת'} ליום רגיל, והשינוי כולו בפחמימה (<span class="num">${t.carbs}</span> ג׳ במקום <span class="num">${t.baseCarbs}</span>). החלבון לא משתנה.` : 'היעד היום הוא היעד הרגיל שלך.'}</div>
+      ${fuel.rest ? `<div class="fuel"><div><b>היום</b><span>${fuel.rest}</span></div></div>`
+    : `<div class="fuel"><div><b>לפני</b><span>${fuel.before}</span></div><div><b>במהלך</b><span>${fuel.during}</span></div><div><b>אחרי</b><span>${fuel.after}</span></div></div>`}
+    </div>
+
     <div class="card">
       <div class="nut-top">
         ${ring(eaten.kcal / t.kcal, { size: 124, stroke: 11, color: left < 0 ? 'var(--acc)' : 'var(--pri)', big: nf(Math.abs(left)), lbl: left >= 0 ? 'קק״ל נשארו' : 'קק״ל מעל היעד' })}
@@ -118,6 +130,7 @@ export function renderNutrition(root) {
     <details class="card acc"><summary>טיפים</summary><div class="acc-body">${ARMY_TIPS.map(tip)}</div></details>
     <details class="card acc method"><summary>איך זה מחושב</summary><div class="acc-body">
       ${p.track === 'cali' ? `<div class="m-row"><b>קליסתניקס</b><span>${p.goal === 'muscle' ? 'העודף הקלורי נשאר קטן בכוונה: כל קילו נוסף הוא קילו שצריך להרים במתח ובמקבילים.' : p.goal === 'cut' ? 'ירידה איטית שומרת על הכוח. כל קילו שומן שיורד מקל ישירות על מתח, לברים ועמידת ידיים.' : 'איזון קלורי עם חלבון גבוה: בונים כוח בלי לעלות במשקל, כי הכוח כאן נמדד ביחס למשקל הגוף.'}</span></div>` : ''}
+      <div class="m-row"><b>לפי היום</b><span>הפחמימה עוקבת אחרי עומס האימון של אותו יום (Burke 2011; ACSM / AND / DC 2016): ‎+15% קלוריות ביום ריצה ארוכה, ‎+5% ביום אימון קשה, בלי שינוי ביום קל, ו-‎−5% ביום מנוחה. החלבון קבוע. גודל ההזזה הוא בחירה של האפליקציה, לא ממצא מחקרי.</span></div>
       <div class="m-row"><b>קלוריות</b><span>BMR לפי Mifflin-St Jeor (<span class="num">${t.bmr}</span>) × מקדם פעילות ${t.activity.factor} = <span class="num">${t.tdee}</span>${t.delta ? ` ${t.delta > 0 ? '+' : '−'} <span class="num">${Math.abs(t.delta)}</span> (${p.goal === 'cut' ? 'ירידה של ~0.5% ממשקל הגוף בשבוע' : 'עודף של ~10% — עלייה של 0.25–0.5% בשבוע'})` : ' (תחזוקה)'}${t.adjust ? ` ${t.adjust > 0 ? '+' : '−'} <span class="num">${Math.abs(t.adjust)}</span> (כיול לפי מגמת המשקל שלך)` : ''}</span></div>
       <div class="m-row"><b>חלבון</b><span>${t.perKg} ג׳ לק״ג${t.refW < Math.round(p.weightKg) ? ` (לפי משקל ייחוס ${t.refW} ק״ג)` : ''} — ISSN: 1.4–2.0 למתאמנים, יותר בגירעון; 20–40 ג׳ בכל ארוחה</span></div>
       <div class="m-row"><b>שומן</b><span>25% מהקלוריות (טווח מומלץ 20–35%), לא פחות מ-0.5 ג׳ לק״ג</span></div>
@@ -137,6 +150,7 @@ export function renderNutrition(root) {
     ${tab === 'menu' ? menuTab() : tab === 'prefs' ? prefsTab() : todayTab()}`;
 
   const rerender = () => renderNutrition(root);
+  on(root, 'click', '[data-daytype] button', (e, b) => { setDaily({ dayType: b.dataset.v === 'rest' ? 'rest' : null }); renderNutrition(root); });
   on(root, 'click', '[data-repeat]', (e, b) => {
     const slot = b.dataset.repeat;
     const items = yFoods.filter((it) => (it.slot || 'snack') === slot).map((it) => ({ id: it.id, qty: it.qty, slot, at: Date.now() }));

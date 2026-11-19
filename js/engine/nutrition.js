@@ -160,8 +160,8 @@ function fitQuantities(meals, t, minMealP) {
 
 // בניית תפריט יומי. ctx: base | field | home
 // התפריט נבנה רק מהמאכלים שנבחרו לו ידנית; מאכלי הרחבת המאגר (plan: false) משמשים לחיפוש וליומן בלבד.
-export function mealPlan(profile, { ctx = 'base', seed = 1 } = {}) {
-  const t = targets(profile);
+export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null } = {}) {
+  const t = dayT || targets(profile);   // dayT: יעדי היום (dayTargets) — כשהתפריט נבנה ליום מסוים
   const rnd = seeded(seed);
   const pool = FOODS.filter((f) => allowed(f, profile.dislikes, profile.dislikedFoods) && f.ctx.includes(ctx) && f.cat !== 'meal' && f.plan !== false && !NOT_IN_PLAN.has(f.id));
   const usedToday = new Set();
@@ -237,4 +237,72 @@ export function searchFoods(query, customFoods = [], { cat = null, limit = 40 } 
   const res = pool.filter((f) => (!cat || f.cat === cat || (cat === 'custom' && f.custom)) && words.every((w) => norm(f.name).includes(w)));
   if (words.length) res.sort((a, b) => (norm(a.name).startsWith(words[0]) ? 0 : 1) - (norm(b.name).startsWith(words[0]) ? 0 : 1));
   return res.slice(0, limit);
+}
+
+// ───── תזונה לפי היום ─────
+// צריכת הפחמימה אמורה לעקוב אחרי עומס האימון של אותו יום (Burke 2011; עמדת ACSM / AND / DC 2016), והחלבון נשאר קבוע.
+// כאן זה מיושם כהזזה קטנה של יעד הקלוריות דרך הפחמימה: יותר ביום ארוך או קשה, פחות ביום מנוחה — כך שהממוצע השבועי כמעט לא משתנה.
+// גודל ההזזה (‎+15% / ‎+5% / 0 / ‎−5%) הוא החלטת תכנון, לא ממצא מחקרי. ראו docs/NUTRITION_SOURCES.md.
+export const DAY_TYPES = {
+  long: { name: 'יום ריצה ארוכה', f: 0.15 },
+  hard: { name: 'יום אימון קשה', f: 0.05 },
+  light: { name: 'יום אימון קל', f: 0 },
+  rest: { name: 'יום מנוחה', f: -0.05 },
+};
+const LOAD_RANK = { rest: 0, light: 1, hard: 2, long: 3 };
+// עומס של אימון או ריצה — מתוכננים (מהתוכנית השבועית) או שמורים (מההיסטוריה)
+export function loadOf(x) {
+  if (!x) return 'rest';
+  const run = x.runOnly ? x.run : x.segs || (x.type && !x.items && !x.exercises) ? x : null;
+  if (run) {
+    const sec = run.totalSec || run.durationSec || 0;
+    if (run.type === 'long' || sec >= 3600) return 'long';
+    return ['intervals', 'tempo', 'test'].includes(run.type) ? 'hard' : 'light';
+  }
+  if (x.track === 'mob' || x.track === 'pil' || x.easy) return 'light';
+  return 'hard';
+}
+// איזה יום היום: לפי מה שכבר בוצע היום; אחרת לפי האימון הבא בתוכנית — אלא אם המתאמן סימן "מנוחה" (manual === 'rest')
+export function dayType(state, now = Date.now(), manual = null) {
+  const same = (d) => new Date(d).toDateString() === new Date(now).toDateString();
+  const done = [...(state.sessions || []), ...(state.runs || [])].filter((x) => same(x.date));
+  if (done.length) {
+    const top = done.map((x) => ({ x, type: loadOf(x) })).sort((a, b) => LOAD_RANK[b.type] - LOAD_RANK[a.type])[0];
+    return { type: top.type, name: top.x.name || '', done: true };
+  }
+  if (manual === 'rest') return { type: 'rest', manual: true };
+  const doneDays = new Set(state.plan?.completedDays || []);
+  const next = (state.plan?.week?.sessions || []).find((x) => !doneDays.has(x.day));
+  return next ? { type: loadOf(next), name: next.name, planned: true } : { type: 'rest' };
+}
+export function dayTargets(profile, type = 'light') {
+  const b = targets(profile);
+  const f = DAY_TYPES[type]?.f || 0;
+  const kcal = f ? Math.round(Math.max(b.bmr, b.kcal * (1 + f)) / 10) * 10 : b.kcal;
+  const carbs = f ? Math.max(0, Math.round((kcal - b.protein * 4 - b.fat * 9) / 4)) : b.carbs;
+  return { ...b, kcal, carbs, fiber: Math.round((kcal / 1000) * 14), dayType: type, baseKcal: b.kcal, baseCarbs: b.carbs, dayDelta: kcal - b.kcal };
+}
+// מה לאכול סביב האימון של היום. הכמויות לפי משקל הגוף:
+//  לפני: 1–4 ג׳ פחמימה לק״ג, 1–4 שעות לפני (ACSM / AND / DC 2016) — כאן 1 ג׳/ק״ג, ו-1.5 לפני ריצה ארוכה.
+//  במהלך: 30–60 ג׳ פחמימה לשעה במאמץ של יותר משעה (אותה עמדה). אחרי: 0.25–0.3 ג׳ חלבון לק״ג, 20–40 ג׳ (ISSN, Jäger 2017).
+export function fuelTips(profile, type) {
+  const w = profile.weightKg || 70;
+  const r5 = (v) => Math.round(v / 5) * 5;
+  const prot = Math.min(40, Math.max(20, r5(w * 0.3)));
+  if (type === 'long') return {
+    before: `2–3 שעות לפני: ארוחה עם כ-${r5(w * 1.5)} ג׳ פחמימה (אורז, פסטה או לחם), מעט שומן וסיבים, וכוס־שתיים מים.`,
+    during: 'אחרי השעה הראשונה: 30–60 ג׳ פחמימה לשעה (תמרים, בננה או ג׳ל), ולגימות מים קבועות.',
+    after: `בתוך שעתיים: ${prot} ג׳ חלבון וכ-${r5(w)} ג׳ פחמימה, והרבה שתייה.`,
+  };
+  if (type === 'hard') return {
+    before: `שעה־שעתיים לפני: כ-${r5(w)} ג׳ פחמימה ומעט חלבון (יוגורט עם פרי, או כריך).`,
+    during: 'מים. באימון של עד שעה אין צורך באוכל.',
+    after: `בתוך שעתיים: ארוחה עם ${prot} ג׳ חלבון.`,
+  };
+  if (type === 'light') return {
+    before: 'לא צריך ארוחה מיוחדת. עדיף לא על בטן מלאה — כשעה אחרי ארוחה.',
+    during: 'מים.',
+    after: `ארוחה רגילה, עם ${prot} ג׳ חלבון.`,
+  };
+  return { rest: `פחות פחמימה מביום אימון, ואותו חלבון. ביום הזה הגוף מתאושש ונבנה — לא מדלגים על ארוחות, ו-${prot} ג׳ חלבון בכל אחת.` };
 }
