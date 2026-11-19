@@ -36,7 +36,7 @@ export const COACHES = {
     style: 'אנרגטי-חד', img: 'assets/coaches/lia.webp', face: 'assets/coaches/lia_face.webp',
   },
   yael: {
-    id: 'yael', name: 'יעל', title: 'מורה ליוגה', voice: 'קול ייעודי (ElevenLabs)', track: 'yoga', f: true,
+    id: 'yael', name: 'יעל', title: 'מאמנת יוגה', voice: 'קול ייעודי (ElevenLabs)', track: 'yoga', f: true,
     bio: 'שלווה, חמה ומדויקת. מאמינה שיוגה מתחילה בנשימה: מי שנושם ברוגע בתנוחה, כבר עושה אותה נכון.',
     style: 'שלו-חם', img: 'assets/coaches/yael.webp', face: 'assets/coaches/yael_face.webp',
   },

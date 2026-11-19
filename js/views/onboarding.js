@@ -122,7 +122,7 @@ export function renderOnboarding(root, done) {
           <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
       <p class="sub" style="margin-top:14px">${esc(COACHES[d.coach].bio)}</p>
       <div class="card tight" style="margin-top:6px"><b>מה צריך?</b><div class="sub">נעלי ריצה וטלפון. המרחק והקצב נמדדים ב-GPS של הטלפון; שעון דופק הוא תוספת, לא חובה.</div></div>`
-      : yoga() ? html`<div class="eyebrow">שלב 2 · המורה</div><div class="q">${esc(COACHES.yael.name)} תלמד אותך</div>
+      : yoga() ? html`<div class="eyebrow">שלב 2 · המאמנת</div><div class="q">${esc(COACHES.yael.name)} תאמן אותך</div>
       <div class="coach-solo"><img src="${COACHES.yael.img}" alt="${COACHES.yael.name}"><div><b>${COACHES.yael.name}</b><span>${COACHES.yael.title}</span><p class="sub">${esc(COACHES.yael.bio)}</p>
         <button class="btn sm teal" data-coach="yael">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
       <div class="card tight" style="margin-top:16px"><b>מה צריך?</b><div class="sub">מזרן, ומקום לפרוש ידיים לצדדים. בגדים נוחים, ויחפים. בלי ציוד נוסף.</div></div>

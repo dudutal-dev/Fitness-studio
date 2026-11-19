@@ -35,5 +35,5 @@
 - אין שמות בסנסקריט, חוץ מ"שוואסנה".
 
 ## נכסים
-- יעל: מורה חדשה (`COACHES.yael`), קול מעוצב ב-ElevenLabs. הדגמות: קטגוריה `yoga` ב-`tools/demos.json`.
+- יעל: מאמנת חדשה (`COACHES.yael`), קול מעוצב ב-ElevenLabs. הדגמות: קטגוריה `yoga` ב-`tools/demos.json`.
 - משפטי הרצף: המפתחות `mob_*` בנוסח של יעל (`COACH_LINES.yael`), ו-`hello_yael`.
