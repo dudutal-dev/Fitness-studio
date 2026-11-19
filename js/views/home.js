@@ -5,7 +5,7 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { dayTotals, dayType, dayTargets } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets, wantsNutrition } from '../engine/nutrition.js';
 import { buildFieldWorkout } from '../engine/program.js';
 import { say, onSpeaking, unlock } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
@@ -124,9 +124,9 @@ export function renderHome(root) {
       <button class="speak" data-act="speak" data-key="${line.key}" aria-label="השמע את ${coach.name}"><span class="wave"><i></i><i></i><i></i><i></i></span></button>
     </div>
 
-    <div class="today">
+    <div class="today ${wantsNutrition(p) ? '' : 'n3'}">
       ${tile('water', ib('drop', 'acc'), (dd.water / 1000).toFixed(1), `/ ${t.waterL} ל׳`, 'מים', pct(dd.water, t.waterL * 1000))}
-      ${tile('food', ib('food', 'pri'), eaten.kcal.toLocaleString('he-IL'), `/ ${t.kcal.toLocaleString('he-IL')}`, 'קלוריות', pct(eaten.kcal, t.kcal))}
+      ${wantsNutrition(p) ? tile('food', ib('food', 'pri'), eaten.kcal.toLocaleString('he-IL'), `/ ${t.kcal.toLocaleString('he-IL')}`, 'קלוריות', pct(eaten.kcal, t.kcal)) : ''}
       ${tile('weight', ib('scale'), lastW ? lastW.kg : '—', 'ק״ג', 'משקל', null)}
       ${tile('checkin', ib('pulse', 'ok'), dd.checkin != null ? Math.round(dd.checkin * 100) : '—', dd.checkin != null ? '%' : '', 'מוכנות', dd.checkin != null ? Math.round(dd.checkin * 100) : null)}
     </div>

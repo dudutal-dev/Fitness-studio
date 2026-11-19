@@ -96,6 +96,36 @@ export function allowed(food, dislikes = [], dislikedFoods = []) {
   return !food.tags.some((t) => dislikes.includes(t));
 }
 
+// ליווי התזונה הוא בחירה של המתאמן (profile.nutrition === false — כבוי). פרופילים ישנים, בלי השדה: פעיל.
+export const wantsNutrition = (profile) => profile?.nutrition !== false;
+// השאלון הקצר: סוג תזונה, כשרות, מספר ארוחות, אלרגיות. הסינון לפי התגיות שבמאגר (ועוד כמה מאכלים בשמם).
+export const DIETS = { all: 'הכול', veg: 'צמחוני', vegan: 'טבעוני' };
+export const ALLERGIES = { gluten: 'גלוטן', lactose: 'חלב / לקטוז', eggs: 'ביצים', peanut: 'בוטנים', nuts: 'אגוזים', sesame: 'שומשום', fish: 'דגים', soy: 'סויה' };
+const MEAT = ['chicken', 'red_meat'], FISH = ['fish', 'tuna'], MILK = ['dairy', 'cottage'];
+const DIET_TAGS = { veg: [...MEAT, ...FISH], vegan: [...MEAT, ...FISH, ...MILK, 'eggs'] };
+const DIET_IDS = { vegan: ['honey'] };
+const ALLERGY_TAGS = { gluten: ['bread', 'pasta', 'oats'], lactose: MILK, eggs: ['eggs'], peanut: ['peanut'], nuts: ['nuts'], sesame: ['tahini', 'hummus'], fish: FISH, soy: [] };
+const ALLERGY_IDS = {
+  gluten: ['couscous', 'bulgur', 'schnitzel', 'pancakes', 'cornflakes', 'fish_patties', 'chicken_meatballs', 'beef_meatballs', 'kebab', 'falafel', 'cookies', 'wafers', 'bissli', 'granola_bar'],
+  soy: ['tofu', 'tofu_plain', 'edamame', 'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'soy_milk', 'soy_flakes', 'tempeh', 'soy_protein'], sesame: ['halva'],
+};
+ALLERGY_IDS.gluten.push('veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground');
+// מקורות חלבון מן הצומח מהמאגר המורחב: נכנסים לתפריט רק בתזונה צמחונית או טבעונית (אחרת אין מספיק חלבון לבחור ממנו)
+const PLANT_PLAN = new Set(['veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'soy_flakes', 'tempeh', 'soy_milk', 'pea_protein', 'soy_protein',
+  'black_beans', 'red_beans', 'lentils_onion', 'ful', 'lupin', 'roasted_chickpeas', 'beans_tomato_canned']);
+// מה שנשמר בלי קירור ובלי מטבח — זמין בתזונה מן הצומח גם בדרכים
+const PLANT_ANYWHERE = new Set(['pea_protein', 'soy_protein', 'soy_milk', 'roasted_chickpeas', 'beans_tomato_canned']);
+export function blockedBy(profile = {}) {
+  const tags = new Set(DIET_TAGS[profile.diet] || []), ids = new Set(DIET_IDS[profile.diet] || []);
+  for (const a of profile.allergies || []) { for (const t of ALLERGY_TAGS[a] || []) tags.add(t); for (const id of ALLERGY_IDS[a] || []) ids.add(id); }
+  return { tags, ids };
+}
+export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
+  return allowed(food, profile.dislikes, profile.dislikedFoods) && !blk.ids.has(food.id) && !food.tags.some((t) => blk.tags.has(t));
+}
+const isMeat = (f) => f.tags.some((t) => MEAT.includes(t));
+const isDairy = (f) => f.tags.some((t) => MILK.includes(t));
+
 // ארוחות: כל משבצת מתמלאת רק במאכלים שמתאימים לארוחה (שדה meals במאגר) — לא עוף או בשר בבוקר.
 // share = חלק מהקלוריות; pShare = חלק מהחלבון — מפוזר שווה יותר, כדי שכל ארוחה תגיע ל-20–40 ג׳ (ISSN: 0.25–0.4 ג׳/ק״ג לארוחה).
 const MEALS = [
@@ -105,6 +135,14 @@ const MEALS = [
   { id: 'post', code: 'p', name: 'אחרי אימון', icon: 'dumbbell', share: 0.12, pShare: 0.18, slots: [['protein', 'dairy'], ['fruit', 'carb']] },
   { id: 'dinner', code: 'd', name: 'ערב', icon: 'moon', share: 0.23, pShare: 0.22, slots: [['protein', 'dairy'], ['carb'], ['veg']] },
 ];
+// מספר הארוחות לפי בחירת המתאמן (3 / 4 / 5); החלקים מנורמלים כך שיסתכמו ליום שלם
+const MEAL_SETS = { 3: ['breakfast', 'lunch', 'dinner'], 4: ['breakfast', 'lunch', 'post', 'dinner'] };
+export function mealsFor(profile) {
+  const ids = MEAL_SETS[profile?.mealsN];
+  if (!ids) return MEALS;
+  const use = MEALS.filter((m) => ids.includes(m.id)), ks = use.reduce((a, m) => a + m.share, 0), ps = use.reduce((a, m) => a + m.pShare, 0);
+  return use.map((m) => ({ ...m, share: m.share / ks, pShare: m.pShare / ps }));
+}
 // לא נכנסים לתפריט אוטומטי (ההנחיות של משרד הבריאות ממליצות להגביל חטיפים, משקאות ממותקים ובשר מעובד)
 const NOT_IN_PLAN = new Set(['bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink',
   'chocolate_spread', 'halva', 'hot_dog', 'salami', 'fries', 'mayo', 'butter', 'jam', 'honey', 'popcorn', 'dairy_pudding', 'chocolate_milk']);
@@ -160,16 +198,26 @@ function fitQuantities(meals, t, minMealP) {
 
 // בניית תפריט יומי. ctx: base | field | home
 // התפריט נבנה רק מהמאכלים שנבחרו לו ידנית; מאכלי הרחבת המאגר (plan: false) משמשים לחיפוש וליומן בלבד.
-export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null } = {}) {
+export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, recent = [] } = {}) {
   const t = dayT || targets(profile);   // dayT: יעדי היום (dayTargets) — כשהתפריט נבנה ליום מסוים
   const rnd = seeded(seed);
-  const pool = FOODS.filter((f) => allowed(f, profile.dislikes, profile.dislikedFoods) && f.ctx.includes(ctx) && f.cat !== 'meal' && f.plan !== false && !NOT_IN_PLAN.has(f.id));
+  const blk = blockedBy(profile), plant = profile.diet === 'veg' || profile.diet === 'vegan';
+  const pool = FOODS.filter((f) => planAllowed(f, profile, blk) && (f.ctx.includes(ctx) || (plant && PLANT_ANYWHERE.has(f.id))) && f.cat !== 'meal' && (f.plan !== false || (plant && PLANT_PLAN.has(f.id))) && !NOT_IN_PLAN.has(f.id));
   const usedToday = new Set();
-  const pick = (opts) => { const f = opts[Math.floor(rnd() * opts.length)]; usedToday.add(f.id); return { id: f.id, qty: 1 }; };
-  const meals = MEALS.map((m) => {
+  // מה שסומן כמועדף, או נרשם ביומן לאחרונה, מקבל עדיפות בהגרלה (פי 3 / פי 2)
+  const fav = new Set(profile.favFoods || []), seen = new Set(recent);
+  const pick = (opts) => {
+    const w = opts.map((f) => (fav.has(f.id) ? 3 : seen.has(f.id) ? 2 : 1));
+    let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
+    while (i < opts.length - 1 && (r -= w[i]) >= 0) i++;
+    usedToday.add(opts[i].id); return { id: opts[i].id, qty: 1 };
+  };
+  // כשרות (profile.kosher): באותה ארוחה אין בשר עם חלב
+  const fits = (items, f) => !profile.kosher || !(isMeat(f) ? items.some((it) => isDairy(FOOD[it.id])) : isDairy(f) && items.some((it) => isMeat(FOOD[it.id])));
+  const meals = mealsFor(profile).map((m) => {
     const items = [];
     for (const cats of m.slots) {
-      let opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id));
+      let opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id) && fits(items, f));
       // לא אוכל ירקות? המשבצת מקבלת פרי או שומן בריא במקום להישאר ריקה
       if (!opts.length && cats.includes('veg')) opts = pool.filter((f) => ['fruit', 'fat'].includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id));
       if (opts.length) items.push(pick(opts));
@@ -189,7 +237,7 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null } = {
     const order = meals.map((m) => ({ m, gap: needP ? t.protein * m.pShare - sumItems(m.items).p : t.kcal * m.share - sumItems(m.items).kcal })).sort((a, b) => b.gap - a.gap);
     let added = false;
     for (const { m } of order) {
-      const opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id));
+      const opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id) && fits(m.items, f));
       if (!opts.length) continue;
       m.items.push(pick(opts)); added = true; break;
     }
@@ -199,7 +247,8 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null } = {
   for (const m of meals) { m.items = m.items.filter((it) => it.qty > 0); m.total = roundMacros(sumItems(m.items)); }
   const total = roundMacros(meals.reduce((a, m) => { for (const k of Object.keys(a)) a[k] += m.total[k]; return a; }, { kcal: 0, p: 0, c: 0, f: 0, fib: 0 }));
   const noVeg = (profile.dislikes || []).includes('vegetables');
-  return { targets: t, meals, total, noVeg };
+  // short: התפריט רחוק מהיעד (מעט מדי מאכלים מתאימים) — המסך מציג על זה הערה
+  return { targets: t, meals, total, noVeg, short: total.p < t.protein * 0.85 || total.kcal < t.kcal * 0.9 };
 }
 
 export function qtyLabel(q) {

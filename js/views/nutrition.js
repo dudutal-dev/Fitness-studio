@@ -3,7 +3,8 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
-import { dayType, dayTargets, fuelTips, DAY_TYPES } from '../engine/nutrition.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition } from '../engine/nutrition.js';
+import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 import { dayKey } from '../engine/stats.js';
@@ -24,14 +25,30 @@ function currentSlot() {
   return h < 11 ? 'breakfast' : h < 16 ? 'lunch' : h < 21 ? 'dinner' : 'snack';
 }
 
+// מה שנרשם ביומן ב-14 הימים האחרונים — מקבל עדיפות בתפריט
+function recentFoodIds(s) {
+  const ids = new Set();
+  for (let i = 0; i < 14; i++) for (const it of s.daily[dayKey(new Date(Date.now() - i * 864e5))]?.foods || []) ids.add(it.id);
+  return [...ids];
+}
+
 export function renderNutrition(root) {
   const s = get();
   const p = s.profile;
+  // ליווי התזונה כבוי (בחירת המתאמן בהיכרות): מסך אחד קצר, עם אפשרות להפעיל
+  if (!wantsNutrition(p)) {
+    root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
+      <div class="card nut-off"><div class="nc-ico">${icon('food')}</div><b style="font-size:19px">ליווי התזונה כבוי</b>
+        <p class="sub" style="margin:8px 0 16px">בחרת להתמקד באימונים. אם רוצים, אפשר להפעיל תפריט יומי מותאם, יעדי קלוריות וחלבון ויומן אכילה — עם כמה שאלות קצרות.</p>
+        <button class="btn primary block" data-act="nut-on">להפעיל ליווי תזונה</button></div>`;
+    on(root, 'click', '[data-act="nut-on"]', () => { set((s2) => { s2.profile.nutrition = true; return s2; }); tab = 'prefs'; renderNutrition(root); });
+    return;
+  }
   const custom = p.customFoods || [];
   const dd = daily();
   // היעדים והתפריט של היום — לפי האימון של היום (ראו dayType / dayTargets במנוע התזונה)
   const dt = dayType(s, Date.now(), dd.dayType);
-  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type) });
+  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s) });
   const t = plan.targets;
   const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
@@ -103,6 +120,7 @@ export function renderNutrition(root) {
     <div class="seg">${ctxs.map(([k, v]) => `<button data-ctx="${k}" class="${ctx === k ? 'on' : ''}">${v}</button>`)}</div>
     <div class="row between menu-sum"><div class="sub t-foot">התפריט: <b class="num">${nf(plan.total.kcal)}</b> קק״ל · <b class="num">${plan.total.p}</b> ג׳ חלבון<br>יעד: <span class="num">${nf(t.kcal)}</span> קק״ל · <span class="num">${t.protein}</span> ג׳ חלבון</div>
       <button class="btn sm" data-act="shuffle">${icon('swap', 'width="16" height="16"')} תפריט אחר</button></div>
+    ${plan.short ? '<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים כדי להגיע ליעד. כדאי להשלים ממה שיש בהישג יד, או לנסות "תפריט אחר".</div>' : ''}
     ${plan.meals.map((m, mi) => html`<div class="card tight meal">
       <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}</b><span class="num sub t-foot">${m.total.kcal} קק״ל · ${m.total.p} ג׳ חלבון</span></div>
         <button class="eat-btn" data-eat-meal="${mi}" aria-label="אכלתי את ${esc(m.name)}">${icon('check')} אכלתי</button></div>
@@ -111,7 +129,8 @@ export function renderNutrition(root) {
     <div class="sub t-foot center-t mt-3">סה״כ ביום: <span class="num">${plan.total.c}</span> ג׳ פחמימה · <span class="num">${plan.total.f}</span> ג׳ שומן · <span class="num">${plan.total.fib}</span> ג׳ סיבים (יעד ${t.fiber})</div>`;
 
   const prefsTab = () => html`
-    <div class="h2" style="margin-top:4px">רמת פעילות</div>
+    ${nutPrefsHtml(p)}
+    <div class="h2">רמת פעילות</div>
     <div class="seg" data-activity>${Object.entries(ACTIVITY).map(([k, a]) => `<button data-v="${k}" class="${actKey === k ? 'on' : ''}">${a.name}</button>`).join('')}</div>
     <div class="sub t-foot mt-2">${esc(act.full)}: ${esc(act.desc)}. קובע את יעד הקלוריות.</div>
 
@@ -143,7 +162,8 @@ export function renderNutrition(root) {
       <details style="margin-top:8px"><summary class="sub" style="cursor:pointer;min-height:44px;display:flex;align-items:center">מקורות (${NUTRITION_REFS.length})</summary>
         <ol class="refs">${NUTRITION_REFS.map((r) => `<li><a href="${r.u}" target="_blank" rel="noopener">${esc(r.t)}</a></li>`).join('')}</ol></details>
     </div></details>
-    <p class="sub t-cap mt-3">ההמלצות כלליות ואינן תחליף לייעוץ של דיאטנית/רופא.</p>`;
+    <p class="sub t-cap mt-3">ההמלצות כלליות ואינן תחליף לייעוץ של דיאטנית/רופא.</p>
+    <button class="btn sm block mt-3" data-act="nut-off">לכבות את ליווי התזונה</button>`;
 
   root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
     <div class="seg tabs" data-tabs>${TABS.map(([k, v]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${v}</button>`).join('')}</div>
@@ -165,6 +185,8 @@ export function renderNutrition(root) {
   });
   on(root, 'click', '[data-activity] button', (e, b) => { set((s2) => { s2.profile.activityLevel = b.dataset.v; return s2; }); rerender(); });
   on(root, 'click', '[data-ctx]', (e, b) => { ctx = b.dataset.ctx; rerender(); });
+  bindNutPrefs(root, on, (mutate) => { set((s2) => { mutate(s2.profile); return s2; }); rerender(); });
+  on(root, 'click', '[data-act="nut-off"]', () => { set((s2) => { s2.profile.nutrition = false; return s2; }); tab = 'today'; toast('ליווי התזונה כובה. אפשר להפעיל שוב מכאן.'); rerender(); });
   on(root, 'click', '[data-act="shuffle"]', () => { seed++; rerender(); });
   on(root, 'click', '[data-act="edit"]', () => { editDislikes = !editDislikes; rerender(); });
   on(root, 'click', '[data-act="add-food"]', () => foodSearchSheet(rerender));

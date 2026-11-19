@@ -1033,3 +1033,16 @@ html.locked body { overflow: hidden; }
 .fuel > div { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 13.5px; line-height: 1.4; }
 .fuel b { color: var(--pri-ink); font-size: 12.5px; padding-top: 1px; }
 .fuel span { color: var(--mute); }
+
+/* ───── ליווי תזונה: שאלת הפתיחה והשאלון הקצר ───── */
+.nut-choice { display: flex; gap: 14px; align-items: center; width: 100%; text-align: start; padding: 14px; margin-bottom: 12px; border-radius: 20px; background: var(--panel); border: 2px solid var(--line); transition: all 0.2s; }
+.nut-choice.on { border-color: var(--pri-ink); background: rgba(var(--pri-rgb), 0.07); }
+.nut-choice .nc-ico { width: 52px; height: 52px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 16px; background: rgba(var(--pri-rgb), 0.14); color: var(--pri-ink); }
+.nut-choice .nc-ico svg { width: 26px; height: 26px; }
+.nut-choice b { display: block; font-size: 17px; }
+.nut-choice span { display: block; font-size: 13.5px; color: var(--mute); line-height: 1.35; margin-top: 2px; }
+.np-h { margin-top: 18px; }
+.nut-off { text-align: center; padding: 26px 18px; }
+.nut-off .nc-ico { width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 20px; background: rgba(var(--pri-rgb), 0.14); color: var(--pri-ink); }
+.nut-off .nc-ico svg { width: 32px; height: 32px; }
+.today.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

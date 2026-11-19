@@ -1,4 +1,5 @@
 // מסך התקדמות: משקל עם מגמה, כוח (1RM משוער), ריצה, מפת שרירים, היסטוריה.
+import { wantsNutrition } from '../engine/nutrition.js';
 import { html, esc, on, fmtDate, fmtTime, ib, icon } from '../ui/dom.js';
 import { lineChart, bars, bodyMap } from '../ui/charts.js';
 import { get } from '../store.js';
@@ -61,13 +62,13 @@ const TABS = {
         ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'ימים פעילים', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? 'ק״מ ריצה' : 'ריצות', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
         ${kpi('scale', '', w.weight ? w.weight.kg : '—', 'משקל (ק״ג)', w.weight?.delta != null ? `<small><span class="ltr">${w.weight.delta > 0 ? '+' : ''}${w.weight.delta}</span> מהשקילה הקודמת</small>` : '<small>אין שקילה השבוע</small>')}
       </div>
-      <div class="card" style="margin-top:12px"><b>תזונה — ממוצע יומי</b>
+      ${wantsNutrition(s.profile) ? html`<div class="card" style="margin-top:12px"><b>תזונה — ממוצע יומי</b>
         ${c.foodDays ? html`<div class="sub t-foot" style="margin-bottom:10px">לפי ${c.foodDays} ימים שנרשמו השבוע</div>
           <div class="meter"><div class="row"><span>קלוריות</span><span>${c.kcal.toLocaleString('he-IL')} / ${w.targets.kcal.toLocaleString('he-IL')}</span></div><div class="bar"><i style="width:${pct(c.kcal, w.targets.kcal)}%"></i></div></div>
           <div class="meter"><div class="row"><span>חלבון</span><span>${c.protein} / ${w.targets.protein} ג׳</span></div><div class="bar"><i style="width:${pct(c.protein, w.targets.protein)}%"></i></div></div>
           ${c.waterL != null ? `<div class="meter"><div class="row"><span>מים</span><span>${c.waterL} / ${w.targets.waterL} ל׳</span></div><div class="bar"><i style="width:${pct(c.waterL, w.targets.waterL)}%;background:var(--blue)"></i></div></div>` : ''}`
         : '<div class="sub t-foot" style="margin-top:6px">לא נרשם אוכל השבוע. רישום של כמה ימים מספיק כדי לראות ממוצע מול היעד.</div>'}
-      </div>`;
+      </div>` : ''}`;
   },
   weight(s, p) {
     const W = weightTrend(s.weights);

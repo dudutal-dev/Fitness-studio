@@ -7,7 +7,7 @@ import { EX } from '../data/exercises.js';
 import { FOOD } from '../data/foods.js';
 import { GOALS, LEVEL_NAMES } from '../engine/program.js';
 import { isCali, isMix, hasCali, hasGym, sessionCoach, rungState, mixCaliCount, LADDERS, STRENGTH_LADDERS } from '../engine/cali.js';
-import { mealPlan } from '../engine/nutrition.js';
+import { mealPlan, wantsNutrition } from '../engine/nutrition.js';
 import { isRun, rwWeeksLeft } from '../engine/running.js';
 import { isHiit, HIIT_FORMAT, lowImpact } from '../engine/hiit.js';
 import { isPil, PIL_LEVELS, pilLevel } from '../engine/pil.js';
@@ -73,7 +73,7 @@ export function openPlanIntro(onDone) {
         <div class="sub t-foot" style="margin-top:6px">${mobTested(p.mob) ? `לפי מבחן הטווחים, הכי הרבה זמן יקבלו: <b>${weakRegions(p.mob).map((r) => REGIONS[r]).join(' · ')}</b>. בעוד ארבעה שבועות נבדוק שוב.` : 'מבחן הטווחים (שישה מבחנים קצרים) מחכה במסך התוכנית. עד אז האימונים מאוזנים בין כל האזורים.'}</div></div>` : ''}
       ${hasGym(p) && !cali ? `<div class="card tight"><b>המשקלים</b><div class="sub t-foot" style="margin-top:4px">באימון הראשון המשקלים שמרניים בכוונה. אחרי כל סט ${fem ? 'מדרגת' : 'מדרג'} כמה היה קשה, והמשקל הבא מתכוונן לפי זה.</div></div>` : ''}
 
-      <div class="h2">${ib('food', 'pri', 'sm')} תזונה</div>
+      ${wantsNutrition(p) ? html`<div class="h2">${ib('food', 'pri', 'sm')} תזונה</div>
       <div class="card tight">
         <div class="pi-kcal"><b class="num">${t.kcal.toLocaleString('he-IL')}</b><span>קק״ל ביום</span></div>
         <div class="sub t-foot" style="text-align:center;margin-bottom:10px">${energy}</div>
@@ -90,10 +90,11 @@ export function openPlanIntro(onDone) {
           <div class="sub">${m.items.map((it) => esc(FOOD[it.id].name)).join(' · ')}</div></div>`)}
         <div class="sub t-foot" style="margin-top:8px">${(p.dislikes || []).length ? `התפריט נבנה בלי מה שסימנת ש${fem ? 'את לא אוכלת' : 'אתה לא אוכל'}. ` : ''}זו הצעה, לא חובה: במסך התזונה יש תפריט מתחלף לפי מקום (בבית, בעבודה, בדרכים), ורישום של מה שאוכלים בפועל.</div>
       </div>
+` : ''}
       <p class="sub t-foot" style="text-align:center;margin:14px 0 6px">לפני תחילת תוכנית אימונים מומלץ אישור רפואי. כאב חד — עוצרים.</p>
     </div>
     <div class="pi-actions">
-      <div class="grid2"><button class="btn sm" data-go="plan">${icon('plan', 'width="16" height="16"')} התוכנית המלאה</button><button class="btn sm" data-go="nutrition">${icon('food', 'width="16" height="16"')} מסך התזונה</button></div>
+      <div class="grid2"><button class="btn sm" data-go="plan" ${wantsNutrition(p) ? '' : 'style="grid-column:1/-1"'}>${icon('plan', 'width="16" height="16"')} התוכנית המלאה</button>${wantsNutrition(p) ? `<button class="btn sm" data-go="nutrition">${icon('food', 'width="16" height="16"')} מסך התזונה</button>` : ''}</div>
       <button class="btn primary block xl" data-go="home">${fem ? 'מעולה, בואי נתחיל' : 'מעולה, בוא נתחיל'}</button>
     </div></div>`);
   document.body.append(root);

@@ -16,7 +16,7 @@ async function baseState(b) {
   await p.goto(BASE); await p.evaluate(() => localStorage.clear()); await p.reload();
   await p.click('[data-g=skip]'); await p.waitForTimeout(300);
   await p.click('[data-act=next]'); await p.click('[data-act=next]'); await p.fill('input[name=name]', 'עומר');
-  for (let i = 0; i < 6; i++) { await p.click('[data-act=next]'); await p.waitForTimeout(80); }
+  for (let i = 0; i < 6; i++) { if (await p.$('[data-nut]') && !(await p.$('[data-nut].on'))) await p.click('[data-nut="1"]'); await p.click('[data-act=next]'); await p.waitForTimeout(80); }
   await p.waitForTimeout(3500);
   const st = await p.evaluate(() => localStorage.getItem('fitness_studio_v1'));
   await p.close();

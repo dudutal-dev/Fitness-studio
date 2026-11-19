@@ -10,6 +10,7 @@ import { EQUIP } from '../data/cali.js';
 import { runLevelFrom3k, RUN_BASES } from '../engine/running.js';
 import { ANCHOR_LIFTS } from '../engine/progression.js';
 import { DISLIKE_TAGS } from '../data/foods.js';
+import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { set, createPlan, today, lohemData, importFromLohem } from '../store.js';
 import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
@@ -59,7 +60,7 @@ export function renderOnboarding(root, done) {
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1,
+    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1,
   };
   let step = 0;
   const STEPS = 11;
@@ -258,9 +259,13 @@ export function renderOnboarding(root, done) {
       ${withFlags() ? `<div class="q" style="font-size:20px;margin-top:8px">${cls() ? 'ועוד שאלה — יש אחד מאלה?' : 'ולפני מתיחות — יש אחד מאלה?'}</div>
         <p class="sub">תרגילים שלא מתאימים למצב לא ייכנסו ${cls() ? 'לשיעורים' : 'לאימוני המוביליטי'}.</p>${flagChips(d.flags)}${flagNotes(d.flags)}` : ''}`,
     // 8 — תזונה
-    () => html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">מה ${d.sex === 'f' ? 'את' : 'אתה'} <span style="color:var(--red)">לא</span> ${d.sex === 'f' ? 'אוכלת' : 'אוכל'}?</div>
-      <p class="sub">${d.sex === 'f' ? 'סמני הכל — התפריט ייבנה רק ממה שאת כן אוכלת' : 'סמן הכל — התפריט ייבנה רק ממה שאתה כן אוכל'}, עם חלופות חכמות (למשל: לא אוכל ירקות? נשלים ויטמינים ממקורות אחרים).</p>
-      <div class="chips">${Object.entries(DISLIKE_TAGS).map(([id, t]) => `<button class="chip no ${d.dislikes.includes(id) ? 'on' : ''}" data-dis="${id}">${t}</button>`)}</div>`,
+    () => html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">רוצים גם ליווי תזונה?</div>
+      <p class="sub">תפריט יומי מותאם, יעדי קלוריות וחלבון ויומן אכילה. זה לא חובה, ואפשר להפעיל או לכבות בכל רגע במסך התזונה.</p>
+      <button class="nut-choice ${d.nutrition === true ? 'on' : ''}" data-nut="1"><div class="nc-ico">${icon('food')}</div><div><b>כן, עם תזונה</b><span>עוד כמה שאלות קצרות, והתפריט ייבנה לפיהן.</span></div></button>
+      <button class="nut-choice ${d.nutrition === false ? 'on' : ''}" data-nut="0"><div class="nc-ico">${icon('dumbbell')}</div><div><b>לא עכשיו — רק אימונים</b><span>מדלגים על השאלות. מסך התזונה נשאר כבוי עד שמפעילים אותו.</span></div></button>
+      ${d.nutrition ? html`${nutPrefsHtml(d)}
+        <div class="h2 np-h">מה לא אוכלים?</div>
+        <div class="chips">${Object.entries(DISLIKE_TAGS).map(([id, t]) => `<button class="chip no ${d.dislikes.includes(id) ? 'on' : ''}" data-dis="${id}">${t}</button>`)}</div>` : ''}`,
     // 9 — המלצת המערכת (רק במצב "תמליצו לי")
     () => {
       const r = rec();
@@ -341,6 +346,7 @@ export function renderOnboarding(root, done) {
     unlock();
     readInputs();
     if (t.dataset.act === 'back') { if (step === REC) { d.decided = false; d.goal = d.goalWanted || d.goal; } step--; paint(); return; }
+    if (root.querySelector('[data-nut]') && d.nutrition == null) { toast('רוצים ליווי תזונה? בוחרים כן או לא'); return; }
     if (step === 3 && !d.name) { toast('איך קוראים לך?'); return; }
     if (step === 5 && !cali() && !mob() && !hiit() && !cls() && d.run3kStr && !parse3k(d.run3kStr)) { toast('פורמט זמן: דקות:שניות, למשל 13:30'); return; }
     if (step === REC - 1) {
@@ -395,6 +401,8 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-flag]', (e, t) => { toggle(d.flags, t.dataset.flag); paint(); });
   bindMobTest(root, d.mobTest);
   on(root, 'click', '[data-dis]', (e, t) => { toggle(d.dislikes, t.dataset.dis); paint(); });
+  on(root, 'click', '[data-nut]', (e, t) => { d.nutrition = t.dataset.nut === '1'; paint(); });
+  bindNutPrefs(root, on, (mutate) => { mutate(d); paint(); });
 
   function runBuild() {
     const items = [...root.querySelectorAll('#buildList li')];
@@ -410,7 +418,8 @@ export function renderOnboarding(root, done) {
         track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}),
         coach: d.coach, name: d.name, age: d.age, sex: d.sex, heightCm: d.heightCm, weightKg: d.weightKg, targetWeight: d.targetWeight,
         goal: d.goal, level, days: d.days, sessionMin: d.sessionMin, run3k, runLevel: runLevelFrom3k(run3k), injuries: d.injuries,
-        dislikes: d.dislikes, dislikedFoods: [], createdAt: new Date().toISOString(),
+        nutrition: d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies } : {}),
+        dislikes: d.nutrition ? d.dislikes : [], dislikedFoods: [], createdAt: new Date().toISOString(),
         lifts: liftsFrom((k, f) => d[`lift_${k}_${f}`]),
       };
       set((s) => {
