@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#0f161d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ניהול">
-<link rel="manifest" href="admin.webmanifest">
-<link rel="icon" href="assets/icons/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="ניהול כושר">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>ניהול קישורי הפעלה</title>
 <style>
   :root { --bg: #eef2f8; --card: #fff; --ink: #14213d; --muted: #5d6a84; --line: #dfe5f0; --pri: #c2551b; --pri2: #ff8a4c; --gold: #e8a830; --bad: #d03a3a; --ok: #1f9d55; --warn: #c9811a; --soft: #f3f6fb;
@@ -73,8 +73,7 @@
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <a class="out" id="back" href="./" style="margin-inline-start:0;text-decoration:none">→ לאפליקציה</a>
-  <img id="topIcon" src="assets/icons/icon-192.png" alt="">
+  <img src="icon-192.png" alt="">
   <div><h1>קישורי הפעלה</h1><p>LOHEM · סטודיו כושר · קליסתניקס</p></div>
   <button class="out" id="logout" type="button" hidden>יציאה</button>
 </div></header>
@@ -125,16 +124,18 @@
 </main>
 <div id="msg" hidden></div>
 <script>
-// שרת הקישורים הוא שרת התזכורות המשותף לשלוש האפליקציות (worker/lic.js). אותו עמוד ניהול נמצא בכל אחת מהן.
+// אפליקציית ניהול נפרדת (מותקנת למסך הבית בפני עצמה) לקישורי ההפעלה של שלוש האפליקציות.
+// השרת הוא שרת התזכורות המשותף שלהן (worker/lic.js).
 const API = (window.__LIC_API || 'https://lohem-reminders.dudu-tal.workers.dev') + '/lic/admin';
 const BASE = { lohem: 'https://dudutal-dev.github.io/Fitness-center/', studio: 'https://dudutal-dev.github.io/Fitness-studio/', calisthenics: 'https://dudutal-dev.github.io/Calisthenics/' };
+const mem0 = k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
 const HE = { lohem: 'LOHEM', studio: 'סטודיו כושר', calisthenics: 'קליסתניקס' };
 const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + 'assets/icons/icon-192.png'])), COL = ['#c2551b', '#0f9f94', '#e5587f', '#d98a1c', '#7b61f0', '#2b8a3e'];
-// מאיזו אפליקציה נפתח העמוד: ?app=… או לפי הכתובת
-const HERE = (() => { const q = new URLSearchParams(location.search).get('app'); if (BASE[q]) return q; return Object.keys(BASE).find(k => location.href.toLowerCase().startsWith(BASE[k].toLowerCase())) || 'studio'; })();
+// האפליקציה שנבחרה בפעם הקודמת בטופס ההנפקה
+const HERE = BASE[mem0('fitlicapp')] ? mem0('fitlicapp') : 'studio';
 const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const mem = { get: k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
-let pw = mem.get('fitlicpw'), sess = '', show = HERE, last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
+let pw = mem.get('fitlicpw'), sess = '', show = 'all', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 const canFace = !!(window.PublicKeyCredential && navigator.credentials), faceOn = () => mem.get('fitlicwa') === '1';
 const say = t => { const m = $('#msg'); m.textContent = t; m.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => m.hidden = true, 3200); };
@@ -208,7 +209,7 @@ function draw() {
 $('#newForm').onsubmit = async e => { e.preventDefault();
   const app = $('#nApp').value, name = $('#nName').value.trim(), days = +$('#nDays').value;
   const r = await call('create', { app, name, days }).catch(() => ({}));
-  if (!r.ok) return say('ההנפקה נכשלה'); $('#nName').value = ''; show = app; await load();
+  if (!r.ok) return say('ההנפקה נכשלה'); $('#nName').value = ''; mem.set('fitlicapp', app); await load();
   shareLink(BASE[app] + '?k=' + r.token, name, app, Date.now() + days * 86400e3); };
 // הודעת השיתוף: למי, לאיזו אפליקציה, עד מתי, ושזה לטלפון אחד
 function shareLink(link, name, app, exp) {
@@ -232,7 +233,6 @@ document.addEventListener('click', async e => {
     const r = await call(op, body).catch(() => ({})); say(r.ok ? 'עודכן' : 'הפעולה נכשלה'); load(); }
 });
 $('#nApp').innerHTML = Object.keys(BASE).map(k => `<option value="${k}" ${k === HERE ? 'selected' : ''}>${HE[k]}</option>`).join('');
-$('#topIcon').src = ICON[HERE];
 start();
 </script>
 </body>

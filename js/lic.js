@@ -1,10 +1,11 @@
-// קישור הפעלה אישי (?k=…) שמופעל על טלפון אחד, עם תוקף. מנוהל במסך הניהול (admin.html) ונבדק מול השרת (worker/lic.js).
+// קישור הפעלה אישי (?k=…) שמופעל על טלפון אחד, עם תוקף. הקישורים מונפקים באפליקציית הניהול הנפרדת
+// (Fitness-studio/admin/) ונבדקים מול השרת (worker/lic.js). באפליקציה עצמה אין שום כניסה לניהול.
 // השרת מחליט אם האפליקציה דורשת קישור בכלל ("אכיפה"). כשהאכיפה כבויה — שום דבר כאן לא חוסם.
 // בלי אינטרנט: קישור שאושר ב-21 הימים האחרונים ממשיך לעבוד, כדי שאפשר יהיה להתאמן גם בלי קליטה.
 import { APP_ID, APP_IN } from './app-id.js';
 import { WORKER, isIOS, isStandalone } from './reminders.js';
 
-const K = `${APP_ID}.lic`, KC = `${APP_ID}.licCfg`, KD = `${APP_ID}.dev`, KA = `${APP_ID}.adm`, KH = `${APP_ID}.hand`;
+const K = `${APP_ID}.lic`, KC = `${APP_ID}.licCfg`, KD = `${APP_ID}.dev`, KH = `${APP_ID}.hand`;
 const GRACE = 21 * 864e5, RECHECK = 6 * 3600e3;
 const get = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
 const put = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch { /* מצב פרטי */ } };
@@ -105,15 +106,3 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && L 
 // ───── מה שמוצג בהגדרות ─────
 export const licenseText = () => (valid() ? `קישור הפעלה${L.name ? ` עבור ${L.name}` : ''} · בתוקף עד ${new Date(L.exp).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' })}` : '');
 export const licenseEnforced = () => !!cfg.enforce;
-
-// כפתור "שליחת קישורים" נסתר: חמש הקשות רצופות על שורת הגרסה בתחתית ההגדרות חושפות אותו בטלפון הזה.
-// מסך הניהול עצמו מוגן בסיסמה — ההסתרה רק שומרת על מסך ההגדרות נקי אצל מי שקיבל קישור.
-export const adminRevealed = () => get(KA) === 1;
-export function bindHiddenAdmin(el, onReveal) {
-  let n = 0, t = 0;
-  el.addEventListener('click', () => {
-    const now = Date.now(); n = now - t < 900 ? n + 1 : 1; t = now;
-    if (n >= 5) { n = 0; put(KA, adminRevealed() ? null : 1); onReveal(adminRevealed()); }
-  });
-}
-export const adminUrl = () => `admin.html?app=${APP_ID}`;
