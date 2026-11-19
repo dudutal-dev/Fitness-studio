@@ -95,6 +95,17 @@ Object.assign(lines, {
   mob_no_pain: 'מתיחה נעימה בלבד. אם כואב, יוצאים מעט מהתנוחה.',
   mob_close: 'מסיימים בנשימה. נותנים לגוף לנוח.',
 });
+// ריצה (גיא ושירה)
+Object.assign(lines, {
+  hello_guy: '[excited] היי! אני גיא, מאמן הריצה. היום יוצאים לדרך — בקצב נכון, צעד אחרי צעד. מתחילים!',
+  hello_shira: '[excited] היי! אני שירה, מאמנת הריצה. היום רצים חכם: רוב הזמן בקלות, ונהנים מהדרך. מתחילים!',
+  run_long: 'ריצה ארוכה. קצב שיחה, בלי למהר. היום בונים סבולת.',
+  run_form: 'כתפיים רפויות, מבט קדימה, צעדים קצרים וקלים.',
+  run_breathe: 'אם אי אפשר לדבר, מאטים קצת. זה בדיוק הקצב הנכון.',
+});
+const RUN_ONLY = ['run_long', 'run_form', 'run_breathe'];
+// מה אומרים מאמני הריצה: כל משפטי הריצה והדופק, ספירה לאחור, פתיחה וסיום — בלי סטים, משקלים ותרגילים
+const RUN_SAYS = ['n1', 'n2', 'n3', 'go', 'workout_start', 'streak', 'pr', 'm2', 'm4', 'm5', 'm6', 'm8', 'm10', 'watch_on', 'zone_up', 'zone_down', 'checkin_low', 'checkin_high'];
 const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'];
 // המשפטים הכלליים שגם תמר אומרת (אין אצלה ספירת חזרות, סטים, משקלים או ריצה)
 const MOB_SAYS = ['n1', 'n2', 'n3', 'warm_go', 'switch_side', 'next_ex', 'hold_half', 'hold_done', 'workout_start', 'workout_done', 'streak', 'm10'];
@@ -134,6 +145,9 @@ export const COACH_LINES = {
     m8: 'היום עוד שנייה בהחזקה. ככה מגיעים רחוק.',
     workout_start: 'האימון מתחיל. אני כאן בכל סט.',
   },
+  // מאמני הריצה: בלי "לאכול חלבון" ובלי חדר כושר
+  guy: { workout_start: 'יוצאים לריצה. אני איתך לאורך כל הדרך.', streak: 'רצף אימונים! ככה בונים סבולת — ריצה אחרי ריצה.' },
+  shira: { workout_start: 'יוצאים לריצה. אני איתך לאורך כל הדרך.', streak: 'רצף אימונים! ככה בונים סבולת — ריצה אחרי ריצה.' },
   // תמר מדברת לאט וברוגע, בלי לדחוף. הנוסחים ניטרליים למין המתאמן.
   tamar: {
     warm_go: 'מתחילים.', switch_side: 'מחליפים צד.', next_ex: 'התנועה הבאה.',
@@ -149,6 +163,8 @@ export function coachSays(key, coach) {
   const track = coachTrack(coach), cali = track === 'cali';
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
   if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.includes(track); }
+  if (RUN_ONLY.includes(key)) return track === 'run';
+  if (track === 'run') return key.startsWith('run_') || RUN_SAYS.includes(key);
   if (MOB_ONLY.includes(key)) return track === 'mob';
   if (track === 'mob') return MOB_SAYS.includes(key);
   if (CALI_ONLY.includes(key)) return cali;
@@ -184,6 +200,8 @@ export const NAME_LINES = {
     ori: { m: '[excited] אהלן {name}! אני אורי, המאמן האישי. היום עובדים חזק. בוא נתחיל!', f: '[excited] אהלן {name}! אני אורי, המאמן האישי. היום עובדים חזק. בואי נתחיל!' },
     noa: { m: '[excited] היי {name}! אני נועה, המאמנת האישית. היום עובדים חזק. בוא נתחיל!', f: '[excited] היי {name}! אני נועה, המאמנת האישית. היום עובדים חזק. בואי נתחיל!' },
     maya: { m: '[excited] היי {name}! אני מאיה, המאמנת לקליסתניקס. כאן בונים שליטה בגוף, שלב אחרי שלב. מתחילים!', f: '[excited] היי {name}! אני מאיה, המאמנת לקליסתניקס. כאן בונים שליטה בגוף, שלב אחרי שלב. מתחילים!' },
+    guy: { m: '[excited] היי {name}! אני גיא, מאמן הריצה. היום יוצאים לדרך — בקצב נכון, צעד אחרי צעד. מתחילים!', f: '[excited] היי {name}! אני גיא, מאמן הריצה. היום יוצאים לדרך — בקצב נכון, צעד אחרי צעד. מתחילים!' },
+    shira: { m: '[excited] היי {name}! אני שירה, מאמנת הריצה. היום רצים חכם: רוב הזמן בקלות, ונהנים מהדרך. מתחילים!', f: '[excited] היי {name}! אני שירה, מאמנת הריצה. היום רצים חכם: רוב הזמן בקלות, ונהנים מהדרך. מתחילים!' },
     tamar: { m: 'היי {name}, אני תמר, המאמנת למוביליטי וגמישות. היום נעים לאט, נושמים, ונותנים לגוף להיפתח. מתחילים.', f: 'היי {name}, אני תמר, המאמנת למוביליטי וגמישות. היום נעים לאט, נושמים, ונותנים לגוף להיפתח. מתחילים.' },
   },
   welcome: { m: '{name}, בוא נעבוד.', f: '{name}, בואי נעבוד.' },
@@ -200,7 +218,7 @@ export const NAME_LINES = {
 };
 // מתי להחליף משפט רגיל בגרסה עם השם: [מפתח שמי, הסתברות]
 export const NAME_SWAP = {
-  hello_ori: ['hello', 1], hello_noa: ['hello', 1], hello_maya: ['hello', 1], hello_tamar: ['hello', 1], workout_done: ['workout_done', 1], run_done: ['run_done', 1], pr: ['pr', 1],
+  hello_ori: ['hello', 1], hello_noa: ['hello', 1], hello_maya: ['hello', 1], hello_tamar: ['hello', 1], hello_guy: ['hello', 1], hello_shira: ['hello', 1], workout_done: ['workout_done', 1], run_done: ['run_done', 1], pr: ['pr', 1],
   last_set: ['last_set', 0.6], two_more: ['two_more', 0.4], hr_ready: ['hr_ready', 0.5],
   m1: ['push_on', 0.5], m6: ['proud', 0.5], m10: ['proud', 0.7], workout_start: ['welcome', 0.5],
 };

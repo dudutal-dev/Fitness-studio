@@ -671,7 +671,7 @@ export function maybeAdvanceWeek() {
     if (s2.plan.weekInBlock >= 4) {
       s2.plan.weekInBlock = 0;
       s2.plan.blockIndex += 1;
-      const ev = isCali(s2.profile) ? { change: 0, msg: 'ממשיכים בסולמות — כל סולם מתקדם בקצב שלו.' } : isMob(s2.profile) ? { change: 0, msg: 'ארבעה שבועות עברו — זה הזמן למבחן טווחים חוזר (מסך ההתקדמות).' } : evaluateLevel(s2.profile.level, blockStats(s2));
+      const ev = isCali(s2.profile) ? { change: 0, msg: 'ממשיכים בסולמות — כל סולם מתקדם בקצב שלו.' } : s2.profile.track === 'run' ? { change: 0, msg: 'ארבעה שבועות של ריצה מאחוריך. הריצה הארוכה ממשיכה לגדול.' } : isMob(s2.profile) ? { change: 0, msg: 'ארבעה שבועות עברו — זה הזמן למבחן טווחים חוזר (מסך ההתקדמות).' } : evaluateLevel(s2.profile.level, blockStats(s2));
       if (ev.change) {
         s2.profile.level = ev.level;
         s2.events = [{ type: 'level', text: `רמה ${ev.level} (${LEVEL_NAMES[ev.level]}): ${ev.msg}`, date: new Date().toISOString() }, ...s2.events];

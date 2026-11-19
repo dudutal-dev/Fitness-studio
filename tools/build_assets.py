@@ -10,12 +10,12 @@ OUT = os.path.join(ROOT, "assets")
 
 def coaches():
     os.makedirs(f"{OUT}/coaches", exist_ok=True)
-    for c in ("ori", "noa", "maya", "tamar"):
+    for c in ("ori", "noa", "maya", "tamar", "guy", "shira"):
         if not os.path.exists(f"{SRC}/coach_{c}.png"): continue  # אין מקור מקומי — משאירים את הקובץ הקיים
         im = Image.open(f"{SRC}/coach_{c}.png").convert("RGB")
         w, h = im.size
         big = im.copy(); big.thumbnail((900, 1200)); big.save(f"{OUT}/coaches/{c}.webp", quality=82)
-        s = int(w * 0.46); cx, cy = (int(w * 0.54), int(h * 0.30)) if c == "maya" else (int(w * 0.5), int(h * 0.19)) if c == "tamar" else (w // 2, int(h * 0.27))
+        s = int(w * 0.46); cx, cy = (int(w * 0.54), int(h * 0.30)) if c == "maya" else (int(w * 0.5), int(h * 0.19)) if c == "tamar" else (int(w * 0.5), int(h * 0.33)) if c == "guy" else (int(w * 0.52), int(h * 0.30)) if c == "shira" else (w // 2, int(h * 0.27))
         face = im.crop((cx - s // 2, cy - s // 2, cx + s // 2, cy + s // 2 + int(s * 0.2))).resize((360, 432), Image.LANCZOS)
         face.save(f"{OUT}/coaches/{c}_face.webp", quality=84)
 
@@ -42,7 +42,7 @@ def icons():
 if __name__ == "__main__":
     coaches(); icons()
     demos = json.load(open(os.path.join(os.path.dirname(__file__), "demos.json")))
-    WHO = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+    WHO = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
     jobs = [(c, e) for e, v in demos.items() for c in WHO[v[2] if len(v) > 2 else "gym"]]
     with ThreadPoolExecutor(4) as ex:
         list(ex.map(demo, jobs))

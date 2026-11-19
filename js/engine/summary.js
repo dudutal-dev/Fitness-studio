@@ -34,6 +34,8 @@ function windowStats(state, keys) {
 export function weekSummary(state, now = Date.now()) {
   const cur = windowStats(state, keysBack(now, 0, 7));
   const prev = windowStats(state, keysBack(now, 7, 14));
+  // מסלול ריצה: הריצות הן האימונים של התוכנית
+  if (state.profile?.track === 'run') { cur.workouts += cur.runs; prev.workouts += prev.runs; }
   const t = targets(state.profile || {});
   // משקל: השקילה האחרונה בשבוע מול האחרונה שלפניו
   const ws = [...(state.weights || [])].sort((a, b) => a.date.localeCompare(b.date));

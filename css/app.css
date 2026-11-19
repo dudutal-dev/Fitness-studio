@@ -884,7 +884,8 @@ html.locked body { overflow: hidden; }
 .lic-steps li span { display: block; color: var(--mute); font-size: 13px; line-height: 1.4; margin-bottom: 6px; }
 
 /* ───── מוביליטי וגמישות (תמר) ───── */
-[data-track-seg] button, [data-pick-track] button { font-size: 13px; padding: 0 2px; }
+[data-track-seg], [data-pick-track] { flex-wrap: wrap; }
+[data-track-seg] button, [data-pick-track] button { font-size: 14px; padding: 0 4px; flex: 1 1 30%; }
 .mob-test { margin-top: 10px; }
 .mob-test .sub { margin: 4px 0 10px; }
 .mt-opts { display: grid; gap: 6px; }

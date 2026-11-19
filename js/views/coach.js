@@ -6,6 +6,7 @@ import { GOALS, INJURIES, LEVEL_NAMES, goalsFor } from '../engine/program.js';
 import { isCali, isMix, hasCali, mixCaliCount, recommendTrack } from '../engine/cali.js';
 import { switchTrack, equipChips, setEquip, recommendSheet } from './cali-ui.js';
 import { isMob, mobCount } from '../engine/mob.js';
+import { isRun } from '../engine/running.js';
 import { mobSettings, bindMobSettings } from './mob-ui.js';
 import { TRACKS, goalDesc } from './onboarding.js';
 import { BRAND } from '../brand.js';
@@ -31,19 +32,19 @@ export function renderCoach(root) {
   const s = get();
   const p = s.profile;
   const st = s.settings;
-  const cali = isCali(p), mix = isMix(p), mob = isMob(p), track = mob ? 'mob' : cali ? 'cali' : mix ? 'mix' : 'gym';
-  const noGym = cali || mob, mobN = mobCount(p);
+  const cali = isCali(p), mix = isMix(p), mob = isMob(p), run = isRun(p), track = run ? 'run' : mob ? 'mob' : cali ? 'cali' : mix ? 'mix' : 'gym';
+  const noGym = cali || mob || run, mobN = mobCount(p);
   const recMix = mix ? (() => { const r = recommendTrack({ gymAccess: p.gymAccess || 'yes', goal: p.goal, days: p.days, injuries: p.injuries }); return r.track === 'mix' ? r.mixCali : null; })() : null;
   if (sessionStorage.getItem('scrollTo') === 'reminders') openSec.add('reminders');
   root.innerHTML = html`<div class="page-head"><div class="h1">הגדרות</div></div>
     <div class="h2" style="margin-top:0">המאמן שלך</div>
-    <div class="coach-pick ${noGym ? 'solo' : ''}">${coachesFor(track).map((c) => html`
+    <div class="coach-pick ${cali || mob ? 'solo' : ''}">${coachesFor(track).map((c) => html`
       <button class="coach-card ${p.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span>
         <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
     <p class="sub t-foot" style="margin-top:10px">${esc(COACHES[p.coach].bio)}${mix ? ` באימוני הקליסתניקס מאמנת ${COACHES.maya.name}.` : ''}${mobN ? ` באימוני המוביליטי מאמנת ${COACHES.tamar.name}.` : ''}</p>
 
     <div class="h2">המסלול שלך</div>
-    <div class="card tight"><div class="seg" data-track-seg>${['gym', 'cali', 'mix', 'mob'].map((k) => `<button data-track="${k}" class="${track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
+    <div class="card tight"><div class="seg" data-track-seg>${['gym', 'cali', 'run', 'mob', 'mix'].map((k) => `<button data-track="${k}" class="${track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
       <div class="sub t-foot" style="margin-top:8px">${esc(TRACKS[track].desc)} מעבר מסלול בונה תוכנית חדשה ומחליף מאמן; ההיסטוריה, השקילות והתזונה נשמרות.</div>
       <button class="btn sm teal block" style="margin-top:10px" data-rec-track>${icon('sparkle', 'width="16" height="16"')} לא ${p.sex === 'f' ? 'בטוחה' : 'בטוח'}? המלצת המערכת</button>
       ${hasCali(p) ? `<div style="font-weight:700;margin:12px 0 6px">הציוד שלי${mix ? ' לקליסתניקס' : ''}</div>${equipChips(p.cali.equip)}<div class="sub t-foot" style="margin-top:6px">שינוי ציוד מעדכן מיד את האימונים. השלבים בסולמות נשמרים.</div>` : ''}</div>
@@ -76,13 +77,13 @@ export function renderCoach(root) {
         ${field('name', 'שם', p.name, 'text')}${field('age', 'גיל', p.age)}
         ${field('heightCm', 'גובה (ס״מ)', p.heightCm)}${field('targetWeight', 'משקל יעד', p.targetWeight)}
       </div>
-      <label class="field" ${noGym ? 'hidden' : ''}><span>זמן 3 ק״מ אחרון</span><input class="input num" name="run3k" value="${p.run3k ? fmtTime(p.run3k) : ''}" placeholder="13:30"></label>
+      <label class="field" ${cali || mob ? 'hidden' : ''}><span>זמן 3 ק״מ אחרון</span><input class="input num" name="run3k" value="${p.run3k ? fmtTime(p.run3k) : ''}" placeholder="13:30"></label>
       <label class="field"><span>מטרה</span><div class="seg" data-seg="goal">${goalsFor(track).map((k) => `<button data-v="${k}" class="${p.goal === k ? 'on' : ''}" aria-label="${GOALS[k].name}">${icon(GOALS[k].icon)}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px" data-goal-desc><b>${GOALS[p.goal].name}</b> — ${goalDesc(p.goal, track)}</div></label>
       <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${[3, 4, 5, 6].map((v) => `<button data-v="${v}" class="${p.days === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       ${mix ? `<label class="field"><span>כמה מהם קליסתניקס? (השאר בחדר הכושר)</span><div class="seg" data-seg="mixCali">${Array.from({ length: p.days - mobN - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(p) === v ? 'on' : ''}">${v}${recMix === v ? ' ★' : ''}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">★ המלצת המערכת לפי המטרה שלך. אחרי שינוי במספר האימונים בשבוע — לשמור, ואז לבחור כאן מחדש.</div></label>` : ''}
-      <label class="field" ${mob ? 'hidden' : ''}><span>משך אימון</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${p.sessionMin === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
+      <label class="field" ${mob || run ? 'hidden' : ''}><span>משך אימון</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${p.sessionMin === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       <label class="field"><span>פציעות / רגישויות</span><div class="chips">${Object.entries(INJURIES).map(([k, x]) => `<button class="chip no ${p.injuries.includes(k) ? 'on' : ''}" data-inj="${k}">${x.name}</button>`).join('')}</div></label>
       <div class="field" ${noGym ? 'hidden' : ''}><span>כמה ${p.sex === 'f' ? 'את מרימה' : 'אתה מרים'} (משקל × חזרות) — לא חובה</span>
         ${Object.entries(ANCHOR_LIFTS).map(([k, name]) => `<div class="lift-row"><span>${name}</span>
@@ -90,7 +91,7 @@ export function renderCoach(root) {
           <i>×</i><input class="input num" name="lift_${k}_r" type="number" inputmode="numeric" placeholder="חזרות" value="${p.lifts?.[k]?.reps ?? ''}" aria-label="${name} — חזרות"></div>`).join('')}
         <div class="sub" style="font-size:12px;margin-top:6px">קובע את משקל הפתיחה של תרגילים שעוד לא ביצעת. תרגיל שכבר יש לו היסטוריה ממשיך לפיה.</div></div>
       <button class="btn primary block" data-save>שמור ועדכן תוכנית</button>
-      <div class="sub" style="font-size:12px;margin-top:8px">${mob ? 'אורך האימון נבחר לפני כל אימון: 10, 20 או 30 דקות' : cali ? 'השלבים בסולמות: מסך התוכנית ← הסולמות שלי' : `רמה נוכחית${mix ? ' בחדר הכושר' : ''}: ${p.level} (${LEVEL_NAMES[p.level]})`} · שינוי מטרה/ימים בונה מחדש את השבוע הנוכחי.</div>
+      <div class="sub" style="font-size:12px;margin-top:8px">${run ? 'אורך כל ריצה נקבע בתוכנית וגדל משבוע לשבוע' : mob ? 'אורך האימון נבחר לפני כל אימון: 10, 20 או 30 דקות' : cali ? 'השלבים בסולמות: מסך התוכנית ← הסולמות שלי' : `רמה נוכחית${mix ? ' בחדר הכושר' : ''}: ${p.level} (${LEVEL_NAMES[p.level]})`} · שינוי מטרה/ימים בונה מחדש את השבוע הנוכחי.</div>
     </div>`)}
 
     <a class="card tight set-row" href="#/guide" style="margin-top:12px;text-decoration:none;color:inherit;border-bottom:0"><div class="grow"><b>מדריך שימוש</b><div class="sub">מה להגדיר ואיך מתאמנים עם המאמן</div></div><span class="chev">${icon('chev', 'width="20" height="20"')}</span></a>
@@ -137,14 +138,14 @@ export function renderCoach(root) {
   });
   on(root, 'click', '[data-coach]', (e, b) => {
     unlock(); stop();
-    set((s2) => { s2.profile.coach = b.dataset.coach; if (!isCali(s2.profile) && !isMob(s2.profile)) s2.profile.gymCoach = b.dataset.coach; return isMix(s2.profile) ? regenerateWeek(s2) : s2; });
+    set((s2) => { s2.profile.coach = b.dataset.coach; if (!COACHES[b.dataset.coach].track) s2.profile.gymCoach = b.dataset.coach; if (COACHES[b.dataset.coach].track === 'run') s2.profile.runCoach = b.dataset.coach; return isMix(s2.profile) ? regenerateWeek(s2) : s2; });
     say(`hello_${b.dataset.coach}`, { priority: true });
     syncReminders().catch(() => {});
     renderCoach(root);
   });
   on(root, 'click', '[data-toggle]', (e, b) => { const k = b.dataset.toggle; set((s2) => { s2.settings[k] = !(s2.settings[k] ?? true); return s2; }); document.body.classList.toggle('no-captions', get().settings.captions === false); if (k === 'voice') stop(); renderCoach(root); });
   root.querySelector('[data-vol]').addEventListener('change', (e) => set((s2) => { s2.settings.volume = Number(e.target.value); return s2; }));
-  on(root, 'click', '[data-test]', () => { unlock(); say(isMob(get().profile) ? 'workout_start' : 'm1', { priority: true }); });
+  on(root, 'click', '[data-test]', () => { unlock(); say(isMob(get().profile) || isRun(get().profile) ? 'workout_start' : 'm1', { priority: true }); });
   const draft = { goal: p.goal, days: p.days, sessionMin: p.sessionMin, injuries: [...p.injuries], sex: p.sex || 'm', ...(mix ? { mixCali: mixCaliCount(p) } : {}) };
   on(root, 'click', '[data-seg] button', (e, b) => {
     const k = b.closest('[data-seg]').dataset.seg;

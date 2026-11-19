@@ -55,7 +55,9 @@ export function targets(profile) {
   const refW = Math.min(w, 30 * hM * hM);
   // מוביליטי בלבד (בלי אימוני כוח): 1.4 ג׳/ק״ג — הקצה התחתון של טווח ה-ISSN לאנשים פעילים; בגירעון 1.8
   const mobOnly = profile.track === 'mob';
-  const perKg = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : profile.goal === 'cut' ? 2.2 : 2.0;
+  // ריצה בלבד: 1.6 ג׳/ק״ג (ISSN לספורט סבולת: 1.4–1.8), ובגירעון 2.0
+  const runOnly = profile.track === 'run';
+  const perKg = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : runOnly ? (profile.goal === 'cut' ? 2.0 : 1.6) : profile.goal === 'cut' ? 2.2 : 2.0;
   const protein = Math.round(refW * perKg);
   // שומן: 25% מהאנרגיה — בתוך הטווח 20–35% (IOM, AMDR), ולא פחות מ-0.5 ג׳/ק״ג (Iraki 2019: 0.5–1.5 ג׳/ק״ג).
   const fat = Math.round(Math.max((kcal * 0.25) / 9, 0.5 * w));

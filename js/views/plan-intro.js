@@ -8,6 +8,7 @@ import { FOOD } from '../data/foods.js';
 import { GOALS, LEVEL_NAMES } from '../engine/program.js';
 import { isCali, isMix, hasCali, hasGym, sessionCoach, rungState, mixCaliCount, LADDERS, STRENGTH_LADDERS } from '../engine/cali.js';
 import { mealPlan } from '../engine/nutrition.js';
+import { isRun, rwWeeksLeft } from '../engine/running.js';
 import { isMob, hasMob, mobCount, mobTested, mobScore, weakRegions, REGIONS } from '../engine/mob.js';
 import { estMinutes } from './home.js';
 
@@ -17,7 +18,7 @@ export function openPlanIntro(onDone) {
   document.querySelector('.plan-intro')?.remove();
   const s = get(), p = s.profile, week = s.plan.week;
   const cali = isCali(p), mix = isMix(p);
-  const mob = isMob(p), mobN = mobCount(p);
+  const mob = isMob(p), mobN = mobCount(p), run = isRun(p);
   const coaches = [...(mix ? [COACHES[p.gymCoach || p.coach], COACHES.maya] : [COACHES[p.coach]]), ...(mobN ? [COACHES.tamar] : [])];
   const fem = p.sex === 'f';
   const plan = mealPlan(p, { ctx: CTX, seed: new Date().getDate() });
@@ -42,21 +43,23 @@ export function openPlanIntro(onDone) {
       <div class="card tight">
         <div class="pi-kpis">
           <div><b class="num">${week.sessions.length}</b><span>אימונים בשבוע</span></div>
-          <div><b class="num">${mob ? '10–30' : p.sessionMin}</b><span>דקות לאימון</span></div>
-          <div><b>${mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'טווחים') : cali ? 'סולמות' : `רמה ${p.level}`}</b><span>${mob ? (mobTested(p.mob) ? 'ציון טווחים' : 'במקום משקלים') : cali ? 'במקום משקלים' : LEVEL_NAMES[p.level]}</span></div>
+          <div><b class="num">${run ? Math.round(Math.max(...week.sessions.filter((x) => x.run).map((x) => x.run.totalSec)) / 60) : mob ? '10–30' : p.sessionMin}</b><span>${run ? (rwWeeksLeft(p) ? 'דקות לריצה' : 'דקות בריצה הארוכה') : 'דקות לאימון'}</span></div>
+          <div><b>${run ? (rwWeeksLeft(p) ? 'ריצה־הליכה' : `רמה ${p.runLevel || 2}`) : mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'טווחים') : cali ? 'סולמות' : `רמה ${p.level}`}</b><span>${run ? (rwWeeksLeft(p) ? `עוד ${rwWeeksLeft(p)} שבועות עד ריצה רצופה` : 'רמת ריצה') : mob ? (mobTested(p.mob) ? 'ציון טווחים' : 'במקום משקלים') : cali ? 'במקום משקלים' : LEVEL_NAMES[p.level]}</span></div>
         </div>
         <div class="pi-goal">${icon(GOALS[p.goal].icon)} <b>${GOALS[p.goal].name}</b>${mix ? ` · משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס` : ''}${mobN ? ` · ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`} עם ${COACHES.tamar.name}` : ''}</div>
       </div>
       <div class="card tight pi-week">
         ${week.sessions.map((x) => html`<div class="pi-day"><span class="dn num">${x.day}</span>
           <div class="grow"><b>${esc(x.name)}</b><span>${esc(x.focus)}</span></div>
-          <small>${coaches.length > 1 ? `${COACHES[sessionCoach(p, x)].name} · ` : ''}~${estMinutes(x)} דק׳${x.run ? ` · ${emi(x.run.icon)} ריצה` : ''}</small></div>`)}
-        <div class="sub t-foot" style="margin-top:8px">האימונים לא צמודים לימים בשבוע: פשוט עושים את הבא בתור${hasCali(p) ? ', עם יום מנוחה בין אימון לאימון כשאפשר' : ''}.${runs ? ` ${runs === 1 ? 'אחד מהם כולל' : `${runs} מהם כוללים`} גם ריצה.` : ''}</div>
+          <small>${coaches.length > 1 ? `${COACHES[sessionCoach(p, x)].name} · ` : ''}~${estMinutes(x)} דק׳${x.run && !x.runOnly ? ` · ${emi(x.run.icon)} ריצה` : ''}</small></div>`)}
+        <div class="sub t-foot" style="margin-top:8px">האימונים לא צמודים לימים בשבוע: פשוט עושים את הבא בתור${hasCali(p) ? ', עם יום מנוחה בין אימון לאימון כשאפשר' : ''}.${runs && !run ? ` ${runs === 1 ? 'אחד מהם כולל' : `${runs} מהם כוללים`} גם ריצה.` : ''}</div>
       </div>
       ${ladders.length ? html`<div class="card tight"><b>נקודת הפתיחה שלך בסולמות</b>
         <div class="pi-ladders">${ladders.map(({ lid, st }) => `<div><span>${esc(LADDERS[lid].name)}</span><b>${esc(EX[st.rung.id].name)}</b><small class="num">${st.i + 1}/${st.n}</small></div>`).join('')}</div>
         ${skills.length ? `<div class="sub t-foot" style="margin-top:8px">מיומנויות שנכנסות לאימונים: <b>${skills.map(esc).join(', ')}</b>. אחרות נפתחות כשהבסיס מוכן.</div>` : ''}
         <div class="sub t-foot" style="margin-top:6px">כשכל הסטים מגיעים ליעד העליון — עולים שלב לבד. אם שלב לא מתאים, משנים אותו במסך התוכנית.</div></div>` : ''}
+      ${run ? `<div class="card tight"><b>איך זה עובד</b><div class="sub t-foot" style="margin-top:4px">${rwWeeksLeft(p) ? 'מתחילים בריצה־הליכה: קטעי ריצה קצרים עם הליכה ביניהם. בכל שבוע הקטעים מתארכים, עד חצי שעה של ריצה רצופה — ואז עוברים לתוכנית המלאה.' : 'רוב הריצות בקצב שאפשר לדבר בו, אחת איכותית בשבוע, וריצה ארוכה שגדלה בארבע דקות בכל שבוע. כל שבוע רביעי קל יותר, עם מבדק 3 ק״מ שמעדכן את הקצבים.'}</div>
+        <div class="sub t-foot" style="margin-top:6px">המרחק והקצב נמדדים ב-GPS של הטלפון. ${COACHES[p.coach].name} ${COACHES[p.coach].f ? 'תגיד' : 'יגיד'} באוזניות מתי לרוץ, מתי ללכת ומתי להאט.</div></div>` : ''}
       ${hasMob(p) ? `<div class="card tight"><b>${mob ? 'איך זה עובד' : `המוביליטי עם ${COACHES.tamar.name}`}</b><div class="sub t-foot" style="margin-top:4px">לפני כל אימון בוחרים כמה זמן יש — 10, 20 או 30 דקות. פותחים בתנועה איטית, ממשיכים להחזקות רגועות של 30 שניות, ומסיימים בנשימה. מתיחה נעימה בלבד, בלי כאב.</div>
         <div class="sub t-foot" style="margin-top:6px">${mobTested(p.mob) ? `לפי מבחן הטווחים, הכי הרבה זמן יקבלו: <b>${weakRegions(p.mob).map((r) => REGIONS[r]).join(' · ')}</b>. בעוד ארבעה שבועות נבדוק שוב.` : 'מבחן הטווחים (שישה מבחנים קצרים) מחכה במסך התוכנית. עד אז האימונים מאוזנים בין כל האזורים.'}</div></div>` : ''}
       ${hasGym(p) && !cali ? `<div class="card tight"><b>המשקלים</b><div class="sub t-foot" style="margin-top:4px">באימון הראשון המשקלים שמרניים בכוונה. אחרי כל סט ${fem ? 'מדרגת' : 'מדרג'} כמה היה קשה, והמשקל הבא מתכוונן לפי זה.</div></div>` : ''}

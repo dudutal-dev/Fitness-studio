@@ -794,5 +794,10 @@
   "lying on her back on a grey exercise mat with knees bent and feet on the mat, one hand on the belly and one hand on the chest, eyes closed, side view",
   "breathes slowly and deeply, the belly rising and falling",
   "mob"
+ ],
+ "outdoor_run": [
+  "running on the red track, mid-stride with one foot off the ground, relaxed shoulders, arms bent at 90 degrees, side view",
+  "runs at a steady relaxed pace with good running form while the camera tracks alongside at the same speed, the runner staying centered in the frame",
+  "run"
  ]
 }

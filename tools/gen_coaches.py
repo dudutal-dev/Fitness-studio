@@ -20,6 +20,12 @@ COACHES = {
             "sleeveless training top with thin amber-orange piping and black leggings, standing next to a steel pull-up bar with one hand resting on it, waist-up framing. "
             "Dark premium calisthenics studio with steel pull-up bars and wooden gymnastic rings in the background, moody warm amber and soft teal rim lighting, "
             "shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
+    "guy": "Portrait of Guy, a friendly energetic Israeli male running coach, about 33, short light-brown hair, clean-shaven, lean runner's build, bright open smile, "
+           "wearing a plain fitted black running t-shirt with thin amber-orange piping and black running shorts, a plain sports watch on his wrist, hands on hips, standing, waist-up framing. "
+           "Outdoor running track in a city park at golden hour, soft warm amber sunlight with a hint of teal in the shadows, trees softly blurred in the background, shallow depth of field, photorealistic editorial sports photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering, no race numbers anywhere.",
+    "shira": "Portrait of Shira, a cheerful focused Israeli female running coach, about 29, dark-blonde hair in a low ponytail under a plain black running cap, light freckles, lean runner's build, warm confident smile, "
+             "wearing a plain fitted black running tank top with thin amber-orange piping and black running tights, a plain sports watch on her wrist, arms relaxed at her sides, standing, waist-up framing. "
+             "Outdoor running track in a city park at golden hour, soft warm amber sunlight with a hint of teal in the shadows, trees softly blurred in the background, shallow depth of field, photorealistic editorial sports photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering, no race numbers anywhere.",
     "tamar": "Portrait of Tamar, a warm calm Israeli female mobility and flexibility coach, about 38, straight shoulder-length auburn-brown hair tucked behind one ear, "
              "gentle confident smile, lean supple build with relaxed open posture, wearing a plain fitted black long-sleeve training top with thin amber-orange piping "
              "and black leggings, standing barefoot on a wooden studio floor beside a rolled exercise mat, one hand resting lightly on her hip, waist-up framing. "

@@ -3,7 +3,9 @@
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, emi } from '../ui/dom.js';
 import { get, set, addXP, XP, pushEvent } from '../store.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
-import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget } from '../engine/running.js';
+import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget, isRun } from '../engine/running.js';
+import { coachSays } from '../data/voice-lines.js';
+import { maybeAdvanceWeek } from './workout.js';
 import { sessionCoach } from '../engine/cali.js';
 import { say, sayNow, stop, onSpeaking, unlock, preload } from '../coach/voice.js';
 import { gpsTracker } from '../devices/gps.js';
@@ -18,10 +20,11 @@ const TARGET_Z = { fast: [4, 5], tempo: [4, 4], steady: [2, 3], easy: [2, 3], te
 export function startRun(run, { day = null } = {}) {
   unlock();
   // טעינה מראש של כל מה שהמאמן אומר בריצה
-  preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3']);
   const s = get();
   const profile = s.profile;
-  const coach = sessionCoach(profile, null); // ריצה שייכת למסלול חדר הכושר
+  const coach = sessionCoach(profile, null); // ריצה: המאמן של מסלול חדר הכושר, או מאמן הריצה במסלול הריצה
+  const runCoach = COACHES[coach].track === 'run', demo = runCoach ? 'outdoor_run' : 'treadmill_run';
+  preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3'].filter((k) => coachSays(k, coach)));
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
   let i = 0;
@@ -29,7 +32,7 @@ export function startRun(run, { day = null } = {}) {
   let paused = false, timer = null, wakeLock = null;
   let testStart = null, testStartDist = 0, saidHalf = false;
   let kmAnnounced = 0;
-  let zoneOutSince = 0, zoneCooldown = 0;
+  let zoneOutSince = 0, zoneCooldown = 0, tipped = false;
   const totalPlanned = segs.reduce((t, x) => t + x.sec, 0);
   try { navigator.wakeLock?.request('screen').then((l) => (wakeLock = l)).catch(() => {}); } catch { /* */ }
 
@@ -44,8 +47,8 @@ export function startRun(run, { day = null } = {}) {
   };
 
   const root = el(`<div class="live" role="dialog" aria-label="ריצה">
-    <div class="stage" style="flex:0 0 34%"><img class="poster" src="${demoPoster(coach, 'treadmill_run')}" alt="">
-      <video muted playsinline loop autoplay src="${demoVideo(coach, 'treadmill_run')}"></video>
+    <div class="stage" style="flex:0 0 34%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
+      <video muted playsinline loop autoplay src="${demoVideo(coach, demo)}"></video>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>
         <span class="clock num" id="tot">0:00</span></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
@@ -91,7 +94,8 @@ export function startRun(run, { day = null } = {}) {
     const pace = sg.kind === 'fast' ? p.fast : sg.kind === 'tempo' ? p.tempo : sg.kind === 'test' ? p.test : ['steady', 'easy'].includes(sg.kind) ? p.easy : null;
     $('#pace').textContent = pace ? `${fmtPace(pace)} לק״מ` : 'הליכה / קל';
     const isLastFast = sg.kind === 'fast' && !segs.slice(i + 1).some((x) => x.kind === 'fast');
-    say(isLastFast ? 'run_last' : SEG_VOICE[sg.kind], { priority: true });
+    say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: true });
+    tipped = false;
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
     else { $('#testDone').style.display = 'none'; $('[data-act="skip"]').style.display = ''; }
     vibrate([60, 40, 60]);
@@ -133,6 +137,8 @@ export function startRun(run, { day = null } = {}) {
       if (d - testStartDist >= 3000) { say('run_3k', { priority: true }); testDone(); }
       return;
     }
+    // מאמני הריצה: דגש טכניקה אחרי שתי דקות בקטע ריצה ארוך, ותזכורת קצב בריצות הקלות
+    if (runCoach && !tipped && inSeg > 120 && sg.sec >= 480 && ['steady', 'easy'].includes(sg.kind)) { tipped = true; say(i % 2 ? 'run_breathe' : 'run_form'); }
     const left = sg.sec - inSeg;
     $('#big').textContent = fmtTime(left);
     const secLeft = Math.ceil(left);
@@ -219,10 +225,14 @@ export function saveRun(r) {
   const isPR = r.timeSec && (!prev.length || r.timeSec < Math.min(...prev));
   set((s2) => {
     s2.runs.push({ date: r.date || new Date().toISOString(), ...r });
+    // מסלול ריצה: הריצה היא האימון של היום בתוכנית
+    if (isRun(s2.profile) && r.day != null && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
+    if (isRun(s2.profile) && r.timeSec) s2.profile.level = runLevelFrom3k(r.timeSec);
     if (r.timeSec) { s2.profile.run3k = r.timeSec; s2.profile.runLevel = runLevelFrom3k(r.timeSec); }
     return s2;
   });
   addXP(XP.run + (isPR ? XP.pr : 0), 'run');
+  if (isRun(get().profile) && r.day != null) { const msg = maybeAdvanceWeek(); if (msg) pushEvent({ type: 'coach', text: msg }); }
   pingWorkout();
   if (r.timeSec) pushEvent({ type: isPR ? 'pr' : 'coach', text: `${isPR ? 'שיא חדש ב-3 ק״מ' : 'מבדק 3 ק״מ'}: ${fmtTime(r.timeSec)}. היעד הבא: ${fmtTime(next3kTarget(r.timeSec))}` });
   if (isPR) say('pr');

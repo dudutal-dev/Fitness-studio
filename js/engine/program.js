@@ -1,6 +1,6 @@
 // מנוע התוכנית: בניית תוכנית שבועית לפי פרופיל, מחזוריות (בלוקים של 4 שבועות) ואוטו־רגולציה.
 import { EX, EXERCISES } from '../data/exercises.js';
-import { buildRunSession } from './running.js';
+import { buildRunSession, isRun, buildRunWeek, buildRunSessions, RUN_PHASE } from './running.js';
 import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -31,12 +31,16 @@ export const GOALS = {
   // מסלול מוביליטי בלבד
   flex: { name: 'גמישות וטווחי תנועה', icon: 'sparkle', runs: 0, finisher: false, phaseOrder: ['base'], track: 'mob' },
   posture: { name: 'יציבה ושחרור אחרי ישיבה', icon: 'shield', runs: 0, finisher: false, phaseOrder: ['base'], track: 'mob' },
+  // מסלול ריצה בלבד
+  r5k: { name: '5 ק״מ ראשונים', icon: 'run', runs: 0, finisher: false, phaseOrder: ['base'], track: 'run' },
+  r10k: { name: '10 ק״מ', icon: 'target', runs: 0, finisher: false, phaseOrder: ['base'], track: 'run' },
+  r21k: { name: 'חצי מרתון', icon: 'trophy', runs: 0, finisher: false, phaseOrder: ['base'], track: 'run' },
 };
 // המטרות של כל מסלול (מסה וחיטוב משותפות)
-const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'] };
-export const goalsFor = (track) => TRACK_GOALS[track === 'cali' || track === 'mob' ? track : 'gym'];
+const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'] };
+export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run'].includes(track) ? track : 'gym'];
 // מעבר בין מסלולים: המטרה המקבילה במסלול השני
-export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : 'combat');
+export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : 'combat');
 
 // ───── תבניות פיצול ─────
 // כל משבצת: role + רשימת תרגילים מועדפים לפי סדר (בחירה לפי רמה/פציעות/רוטציה)
@@ -116,6 +120,7 @@ export function blockedSet(profile) {
 export function phaseFor(profile, blockIndex) {
   if (isCali(profile)) return CALI_PHASE;
   if (isMob(profile)) return MOB_PHASE;
+  if (isRun(profile)) return RUN_PHASE;
   const order = GOALS[profile.goal]?.phaseOrder || GOALS.combat.phaseOrder;
   const id = order[blockIndex % order.length];
   return PHASES.find((p) => p.id === id);
@@ -209,6 +214,7 @@ export function buildWeek(profile, opt = {}) {
 }
 
 function buildMainWeek(profile, { blockIndex = 0, weekInBlock = 0, min = 3 } = {}) {
+  if (isRun(profile)) return min < 3 ? { ...buildRunWeek(profile, { blockIndex, weekInBlock }), sessions: buildRunSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildRunWeek(profile, { blockIndex, weekInBlock });
   if (isCali(profile)) return min < 3 ? { ...buildCaliWeek(profile, { blockIndex, weekInBlock }), sessions: buildCaliSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildCaliWeek(profile, { blockIndex, weekInBlock });
   const days = Math.min(6, Math.max(min, profile.days || 4));
   // משולב: חלק מהימים קליסתניקס, והשאר חדר כושר (בפחות מ-3 ימי חדר כושר — אימוני גוף מלא)
@@ -250,7 +256,7 @@ export function buildFieldWorkout(profile) {
 export function applyReadiness(workout, readiness) {
   const w = structuredClone(workout);
   w.readiness = readiness;
-  if (w.track === 'mob') return w; // מוביליטי: אותו אימון בכל מצב — הוא עצמו ההתאוששות
+  if (w.track === 'mob' || w.track === 'run') return w; // מוביליטי: אותו אימון בכל מצב — הוא עצמו ההתאוששות
   if (w.track === 'cali') {
     // קליסתניקס: אין משקל להוריד — משנים נפח ומרחק מכישלון
     if (readiness < 0.4) {

@@ -2,7 +2,8 @@
 import { VOICE_LINES, SPOKEN, FEMALE, NAME_LINES, COACH_LINES, coachSays, femaleLine, nameTpl } from '../js/data/voice-lines.js';
 import { NAMES } from '../js/data/names.js';
 
-export const VOICES = { ori: 'PBHwEnXdzx0yfhIO2UCH' /* Dorian */, noa: 's0T0DT6EAPeX57MQpn3I' /* Danit */, maya: 'tPkZ8BPQfux4koA8Wyli' /* קול שעוצב למאיה */, tamar: 'cgSgspJ2msm6clMCkdW9' /* Jessica */ };
+export const VOICES = { ori: 'PBHwEnXdzx0yfhIO2UCH' /* Dorian */, noa: 's0T0DT6EAPeX57MQpn3I' /* Danit */, maya: 'tPkZ8BPQfux4koA8Wyli' /* קול שעוצב למאיה */, tamar: 'cgSgspJ2msm6clMCkdW9' /* Jessica */,
+  guy: 'SSaO8heNHx6ee5ZRpZ1X' /* Gad Tamir */, shira: 'RrrmZPMES7HQ6Dm2L7GF' /* קול שעוצב לשירה */ };
 const PRONOUN_FIX = { m: [[/גאה בך\./g, 'גאה בְּךָ.']], f: [[/גאה בך\./g, 'גאה בָּךְ.']] };
 
 // הגייה של מונחים לועזיים בשמות התרגילים (רק לקול; הטקסט המוצג נשאר בלי ניקוד)
