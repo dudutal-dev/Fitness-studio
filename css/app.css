@@ -749,6 +749,10 @@ bdi { unicode-bidi: isolate; }
 .tc-img { display: flex; flex: 0 0 auto; }
 .tc-img img { width: 62px; height: 74px; object-fit: cover; border-radius: 14px; border: 2px solid var(--bg); }
 .tc-img img + img { margin-inline-start: -26px; }
+/* ארבעה מאמנים (משולב): רשת של 2×2, כדי שלא ידחקו את הטקסט */
+.tc-img:has(img:nth-child(4)) { display: grid; grid-template-columns: repeat(2, 46px); gap: 4px; }
+.tc-img:has(img:nth-child(4)) img { width: 46px; height: 54px; margin: 0; border-radius: 12px; }
+.track-card > div:last-child { flex: 1 1 0; min-width: 0; }
 .coach-solo { display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line); }
 .coach-solo img { width: 116px; height: 150px; object-fit: cover; object-position: 50% 12%; border-radius: 16px; flex: 0 0 auto; }
 .coach-solo b { display: block; font-size: 22px; font-weight: 900; }

@@ -17,7 +17,9 @@ const vapid = (env) => ({ publicKey: env.VAPID_PUBLIC, privateJwk: JSON.parse(en
 const validId = (id) => typeof id === 'string' && /^[a-f0-9-]{36}$/.test(id);
 const clean = (b) => ({
   settings: b.settings || {}, tz: String(b.tz || 'Asia/Jerusalem').slice(0, 64), name: String(b.name || '').slice(0, 30),
-  sex: b.sex === 'f' ? 'f' : 'm', coach: ['noa', 'maya'].includes(b.coach) ? b.coach : 'ori',
+  sex: b.sex === 'f' ? 'f' : 'm', coach: ['noa', 'maya', 'tamar'].includes(b.coach) ? b.coach : 'ori',
+  // מאיזו אפליקציה המנוי (הנוסח שונה: LOHEM פונה לחיילים, השאר לכולם). מנוי ישן בלי השדה נשאר בלעדיו עד הסנכרון הבא.
+  ...(['lohem', 'studio', 'calisthenics'].includes(b.app) ? { app: b.app } : {}),
 });
 
 async function push(env, rec, msg) {
@@ -58,7 +60,7 @@ export default {
     }
     if (url.pathname === '/test') {
       const f = rec.sex === 'f';
-      const status = await push(env, rec, { title: `${{ noa: 'נועה', maya: 'מאיה' }[rec.coach] || 'אורי'}: התזכורות עובדות ✅`, body: `${rec.name ? `${rec.name}, ` : ''}ככה ${f ? 'תקבלי' : 'תקבל'} ממני תזכורות לאימון, שתייה ושקילה.`, tag: 'test', url: './#/coach' });
+      const status = await push(env, rec, { title: `${{ noa: 'נועה', maya: 'מאיה', tamar: 'תמר' }[rec.coach] || 'אורי'}: התזכורות עובדות ✅`, body: `${rec.name ? `${rec.name}, ` : ''}ככה ${f ? 'תקבלי' : 'תקבל'} ממני תזכורות לאימון, שתייה ושקילה.`, tag: 'test', url: './#/coach' });
       if (status === 404 || status === 410) await env.SUBS.delete(key);
       return json(req, { status }, status < 300 ? 200 : 502);
     }

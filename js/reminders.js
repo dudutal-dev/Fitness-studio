@@ -1,6 +1,7 @@
 // תזכורות Push: הרשמה לשרת התזכורות (Cloudflare Worker), עדכון הגדרות, בדיקה, ודיווח על אימון שבוצע.
 // השרת שולח תזכורות גם כשהאפליקציה סגורה. באייפון — רק כשהאפליקציה מותקנת במסך הבית (iOS 16.4+).
 import { get, set } from './store.js';
+import { APP_ID } from './app-id.js';
 
 export const WORKER = (typeof window !== 'undefined' && window.__LOHEM_WORKER) || 'https://lohem-reminders.dudu-tal.workers.dev'; // ניתן לעקוף לבדיקות
 const VAPID_PUBLIC = 'BKfwqeI-cB2O0RjGsdpnZ0cP9ObKW9DWhSufgftbnsaNYoeSOHul9gaS-_aoY979yKJoGCulUuIUm8qmo5cEg1w';
@@ -27,7 +28,7 @@ function profilePart() {
   const s = get();
   const p = s.profile || {};
   const last = [...(s.sessions || []), ...(s.runs || [])].map((x) => x.date).sort().pop() || null;
-  return { name: p.name || '', sex: p.sex || 'm', coach: p.coach || 'ori', tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jerusalem', lastWorkout: last };
+  return { app: APP_ID, name: p.name || '', sex: p.sex || 'm', coach: p.coach || 'ori', tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jerusalem', lastWorkout: last };
 }
 
 async function post(path, body) {
