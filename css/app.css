@@ -445,20 +445,23 @@ body:has(.live) .toast { bottom: auto; top: calc(62px + var(--safe-t)); }
 .ob .actions { display: flex; gap: 10px; padding-top: 16px; }
 .ob .q { font-size: 30px; font-weight: 900; line-height: 1.12; margin: 6px 0 8px; }
 /* שער האפליקציה: הלוגו, קיר המאמנים (שתי שורות שנעות לאט בכיוונים מנוגדים) והמסר */
-.gate { flex: 1; min-height: 100%; display: flex; flex-direction: column; gap: 14px; position: relative; }
+.gate { flex: 1; display: flex; flex-direction: column; gap: 14px; position: relative; }
 .ob:has(.gate) .content { display: flex; flex-direction: column; }
 .gate::before { content: ''; position: absolute; inset: -40px -18px auto; height: 260px; background: radial-gradient(60% 100% at 50% 0%, rgba(var(--pri-rgb), 0.22), transparent 70%); pointer-events: none; z-index: 0; }
 .gate > * { position: relative; z-index: 1; }
 .gate-top { text-align: center; padding-top: 6px; }
 .gate-logo { font-family: var(--num); font-size: clamp(44px, 15vw, 64px); font-weight: 900; line-height: 0.95; letter-spacing: 0.06em; color: var(--pri-ink); direction: ltr; }
 .gate-tag { margin-top: 6px; font-size: 13.5px; font-weight: 600; color: var(--mute); letter-spacing: 0.02em; }
-.gate-wall { flex: 1 1 0; min-height: 250px; max-height: 460px; display: flex; flex-direction: column; gap: 10px; margin-inline: -18px; overflow: hidden; direction: ltr;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); }
-.gate-row { flex: 1 1 0; min-height: 0; display: flex; }
-.gate-track { display: flex; gap: 10px; height: 100%; padding-inline-end: 10px; flex: 0 0 auto; animation: gateDrift 46s linear infinite; will-change: transform; }
-.gate-row.b .gate-track { animation-direction: reverse; animation-duration: 54s; }
-@keyframes gateDrift { to { transform: translateX(-50%); } }
-.gate-track figure { position: relative; height: 100%; aspect-ratio: 3 / 4; margin: 0; flex: 0 0 auto; border-radius: 18px; overflow: hidden; background: #0b0c12; box-shadow: 0 0 0 1px var(--line); }
+/* גדלים מפורשים (בלי גובה באחוזים, בלי מסכה ובלי will-change) — התנועה היא גלילה רגילה של השורה (js), לא אנימציית transform: ב-Safari של iOS השכבה הנעה נעלמה */
+.gate { --card-h: clamp(110px, calc((100vh - 470px) / 2), 215px); --card-h: clamp(110px, calc((100dvh - 470px) / 2), 215px); justify-content: space-between; }
+.gate-wall { position: relative; flex: 0 0 auto; display: flex; flex-direction: column; gap: 10px; margin-inline: -18px; overflow: hidden; direction: ltr; }
+.gate-wall::before, .gate-wall::after { content: ''; position: absolute; top: 0; bottom: 0; width: 34px; z-index: 2; pointer-events: none; }
+.gate-wall::before { left: 0; background: linear-gradient(to right, var(--bg), rgba(var(--bg-rgb), 0)); }
+.gate-wall::after { right: 0; background: linear-gradient(to left, var(--bg), rgba(var(--bg-rgb), 0)); }
+.gate-row { flex: 0 0 auto; height: var(--card-h); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.gate-row::-webkit-scrollbar { display: none; }
+.gate-track { display: flex; gap: 10px; height: var(--card-h); padding-right: 10px; width: max-content; }
+.gate-track figure { position: relative; height: var(--card-h); width: calc(var(--card-h) * 0.75); margin: 0; flex: 0 0 auto; border-radius: 18px; overflow: hidden; background: #0b0c12; box-shadow: 0 0 0 1px var(--line); }
 .gate-track img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 14%; display: block; }
 .gate-track figcaption { position: absolute; inset: auto 0 0; padding: 26px 10px 8px; direction: rtl; text-align: start; color: #fff; line-height: 1.2; background: linear-gradient(to top, rgba(6, 8, 14, 0.92), rgba(6, 8, 14, 0)); }
 .gate-track figcaption b { display: block; font-size: 15px; font-weight: 800; }
@@ -471,17 +474,14 @@ body:has(.live) .toast { bottom: auto; top: calc(62px + var(--safe-t)); }
 .gate-feats svg { width: 20px; height: 20px; color: var(--pri-ink); }
 /* מסך נמוך: שורה אחת של כל המאמנים, בכרטיסים גדולים */
 .gate-row.one { display: none; }
-.gate-row.one .gate-track { animation-duration: 90s; }
 @media (max-height: 720px) {
-  .gate { gap: 10px; }
-  .gate-wall { min-height: 170px; }
+  .gate { gap: 10px; --card-h: clamp(150px, calc(100vh - 400px), 300px); --card-h: clamp(150px, calc(100dvh - 400px), 300px); }
   .gate-row.a, .gate-row.b { display: none; }
-  .gate-row.one { display: flex; }
+  .gate-row.one { display: block; }
   .gate-feats span { flex-direction: row; justify-content: center; padding: 8px 4px; font-size: 11px; }
   .gate-feats svg { width: 16px; height: 16px; flex: 0 0 auto; }
 }
-@media (max-height: 600px) { .gate-feats { display: none; } .gate-logo { font-size: 40px; } }
-@media (prefers-reduced-motion: reduce) { .gate-track { animation: none !important; } .gate-row { overflow-x: auto; scrollbar-width: none; } }
+@media (max-height: 600px) { .gate { --card-h: clamp(130px, calc(100dvh - 330px), 300px); } .gate-feats { display: none; } .gate-logo { font-size: 40px; } }
 .coach-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .coach-card { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4/5; border: 2px solid transparent; transition: all 0.25s; background: var(--panel2); text-align: start; }
 .coach-card img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }

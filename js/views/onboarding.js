@@ -292,6 +292,29 @@ export function renderOnboarding(root, done) {
     });
   }
 
+  // קיר המאמנים בשער: השורות נגללות לאט (שורה ב' בכיוון ההפוך). נגיעה עוצרת לרגע, ואפשר לגלול באצבע
+  function gateDrift() {
+    const wall = root.querySelector('.gate-wall');
+    if (!wall || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rows = [...wall.querySelectorAll('.gate-row')].map((el) => ({ el, dir: el.classList.contains('b') ? -1 : 1, x: null }));
+    let hold = 0, last = 0;
+    const touch = () => { hold = performance.now() + 2500; for (const r of rows) r.x = null; };
+    wall.addEventListener('touchstart', touch, { passive: true }); wall.addEventListener('touchmove', touch, { passive: true }); wall.addEventListener('wheel', touch, { passive: true });
+    const tick = (t) => {
+      if (!wall.isConnected) return;
+      const dt = Math.min(64, t - (last || t)); last = t;
+      if (t > hold) for (const r of rows) {
+        const half = r.el.scrollWidth / 2; if (!r.el.offsetWidth || half < 50) continue;
+        if (r.x == null) r.x = r.el.scrollLeft || (r.dir < 0 ? half : 0);
+        r.x += r.dir * dt * 0.022;
+        if (r.x >= half) r.x -= half; else if (r.x <= 0) r.x += half;
+        r.el.scrollLeft = r.x;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
   function paint() {
     // משולב שנבחר ידנית: עד שהמתאמן נוגע בחלוקה, היא לפי המלצת המערכת (ומתעדכנת כשמשנים ימים או מטרה)
     if (d.track === 'mix' && !d.auto && !d.mixTouched) d.mixCali = recMix();
@@ -306,6 +329,7 @@ export function renderOnboarding(root, done) {
     </div>`;
     // הסעיף נשאר פתוח גם כשהמסך מצויר מחדש (למשל אחרי בחירת ניסיון)
     root.querySelector('details.lifts')?.addEventListener('toggle', (e) => { d.liftsOpen = e.target.open; });
+    if (step === 0) gateDrift();
     if (isBuild) runBuild();
   }
 
