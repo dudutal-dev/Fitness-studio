@@ -31,14 +31,15 @@ export const COACHES = {
     style: 'קליל-ממוקד', img: 'assets/coaches/shira.webp', face: 'assets/coaches/shira_face.webp',
   },
   lia: {
-    id: 'lia', name: 'ליה', title: 'מאמנת HIIT', voice: 'ElevenLabs', track: 'hiit', f: true,
-    bio: 'אנרגטית, חדה ולא מבזבזת זמן. מאמינה שעשרים דקות ממוקדות שוות יותר משעה של חצי מאמץ.',
+    id: 'lia', name: 'ליה', title: 'מאמנת HIIT ופילאטיס', voice: 'ElevenLabs', track: 'hiit', tracks: ['hiit', 'pil'], f: true,
+    bio: 'אנרגטית, חדה ומדויקת. ב-HIIT לא מבזבזת שנייה; בפילאטיס מאטה, ומקפידה על כל תנועה.',
     style: 'אנרגטי-חד', img: 'assets/coaches/lia.webp', face: 'assets/coaches/lia_face.webp',
   },
 };
 COACHES.noa.f = true;
 // המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה; מוביליטי — תמר; ריצה — גיא ושירה
-export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.track || 'gym') === (['cali', 'mob', 'run', 'hiit'].includes(track) ? track : 'gym'));
+const OWN = ['cali', 'mob', 'run', 'hiit', 'pil'];
+export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.tracks || [c.track || 'gym']).includes(OWN.includes(track) ? track : 'gym'));
 
 export const demoVideo = (coach, exId) => `assets/demos/${coach}/${exId}.mp4`;
 export const demoPoster = (coach, exId) => `assets/demos/${coach}/${exId}.webp`;

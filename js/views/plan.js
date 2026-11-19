@@ -18,6 +18,7 @@ import { isMob, hasMob, mobCount, mobScore, mobTested, weakRegions, REGIONS } fr
 import { mobTestSheet, quickMobSheet } from './mob-ui.js';
 import { isRun, rwWeeksLeft } from '../engine/running.js';
 import { isHiit, HIIT_FORMAT, lowImpact } from '../engine/hiit.js';
+import { isPil, PIL_LEVELS, pilLevel } from '../engine/pil.js';
 
 let libFilter = 'all';
 let libAll = false;
@@ -29,20 +30,20 @@ export function renderPlan(root) {
   const doneDays = new Set(plan.completedDays);
   const blocks = [0, 1, 2].map((b) => phaseFor(p, Math.floor(plan.blockIndex / 3) * 3 + b));
   const curInCycle = plan.blockIndex % 3;
-  const cali = isCali(p), mob = isMob(p), run = isRun(p), hiit = isHiit(p), single = cali || mob || run || hiit; // מסלול בלי בלוקים מתחלפים: בלוק אחד של 4 שבועות
+  const cali = isCali(p), mob = isMob(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), single = cali || mob || run || hiit || pil; // מסלול בלי בלוקים מתחלפים: בלוק אחד של 4 שבועות
   const mix = isMix(p), withCali = hasCali(p), withMob = hasMob(p), mobN = mobCount(p);
-  const tracks = [...(run ? [] : hiit ? ['hiit'] : mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
+  const tracks = [...(run ? [] : pil ? ['pil'] : hiit ? ['hiit'] : mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
   const inTracks = (e) => e.tracks.some((t) => tracks.includes(t));
   const libList = EXERCISES.filter((e) => inTracks(e) && (libFilter === 'all' || e.group === libFilter));
 
   root.innerHTML = html`
     <div class="page-head"><div class="h1">${icon(GOALS[p.goal].icon)} ${GOALS[p.goal].name}</div>
-    <div class="sub">${hiit ? `HIIT · רמה ${p.level} · ${HIIT_FORMAT[p.level][0]} שנ׳ עבודה / ${HIIT_FORMAT[p.level][1]} מנוחה${lowImpact(p) ? ' · בלי קפיצות' : ''}` : run ? `ריצה${rwWeeksLeft(p, plan.blockIndex * 4 + plan.weekInBlock) ? ' · ריצה־הליכה' : ` · רמה ${p.runLevel || 2}`}` : mob ? `מוביליטי וגמישות${mobTested(p.mob) ? ` · ציון טווחים ${mobScore(p.mob)}` : ''}` : cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`}${mobN ? ` · כולל ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`}` : ''} · ${p.days} אימונים בשבוע ${run ? '' : ` · ${mob ? `${p.mob.minutes || 20}` : hiit ? p.hiitMin || 20 : p.sessionMin} דק׳`}</div></div>
+    <div class="sub">${pil ? `פילאטיס מזרן · רמת ${PIL_LEVELS[pilLevel(p)]}` : hiit ? `HIIT · רמה ${p.level} · ${HIIT_FORMAT[p.level][0]} שנ׳ עבודה / ${HIIT_FORMAT[p.level][1]} מנוחה${lowImpact(p) ? ' · בלי קפיצות' : ''}` : run ? `ריצה${rwWeeksLeft(p, plan.blockIndex * 4 + plan.weekInBlock) ? ' · ריצה־הליכה' : ` · רמה ${p.runLevel || 2}`}` : mob ? `מוביליטי וגמישות${mobTested(p.mob) ? ` · ציון טווחים ${mobScore(p.mob)}` : ''}` : cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`}${mobN ? ` · כולל ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`}` : ''} · ${p.days} אימונים בשבוע ${run ? '' : ` · ${mob ? `${p.mob.minutes || 20}` : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : p.sessionMin} דק׳`}</div></div>
 
     <div class="card cycle" style="margin-top:4px">
       <div class="row between"><b>${esc(plan.week.phase.name)} · ${esc(plan.week.week.name)}</b><span class="sub t-cap num">${single ? `שבוע ${plan.weekInBlock + 1} / 4` : `שבוע ${curInCycle * 4 + plan.weekInBlock + 1} / 12`}</span></div>
       <div class="cycle-bar">${(single ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${single ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${single ? 'בלוק של 4 שבועות' : esc(ph.name)}</span></div>`)}</div>
-      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
+      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${pil ? 'כל תרגיל כדקה, בתנועה איטית. אם הצוואר מתאמץ — מניחים את הראש.' : hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
     </div>
 
     <div class="h2">השבוע<span class="more" data-act="regen">בנה מחדש</span></div>
@@ -52,7 +53,7 @@ export function renderPlan(root) {
         ${x.items.map((it) => { const e = EX[it.exId]; const sg = suggest(it.exId, it, s.history[it.exId], p); return html`
           <div class="ex-row" data-info="${it.exId}" data-coach="${sessionCoach(p, x)}"><div class="ex-thumb"><img src="${demoPoster(sessionCoach(p, x), it.exId)}" alt="" loading="lazy"></div>
             <div><div class="t">${esc(e.name)}</div><div class="s">${it.role === 'hiit' ? `${it.sets} סבבים × ${it.reps[0]} שנ׳ · מנוחה ${it.rest} שנ׳` : it.role === 'mob' ? `${it.sets > 1 ? `${it.sets} × ` : ''}${e.unilateral ? `${Math.round(it.reps[0] / 2)} שנ׳ לכל צד` : `${it.reps[0]} שנ׳`} · ${e.kind === 'static' ? 'החזקה' : 'תנועה'}` : `${it.sets} × ${it.reps[0]}–${it.reps[1]}${it.unit === 'sec' ? ' שנ׳' : ''} · מנוחה ${fmtTime(it.rest)}`}</div></div>
-            <div class="w">${it.role === 'hiit' ? `<small>${{ legs: 'רגליים', cardio: 'דופק', core: 'ליבה', upper: 'פלג עליון' }[it.cat] || ''}</small>` : it.role === 'mob' ? `<small>${REGIONS[it.region] || ''}</small>` : sg.w ? `${sg.w}<small>ק״ג</small>` : `<small>${it.role === 'skill' ? 'מיומנות' : it.vol ? 'נפח' : 'משקל גוף'}</small>`}</div></div>`; })}
+            <div class="w">${it.label ? `<small>${it.label}</small>` : it.role === 'hiit' ? `<small>${{ legs: 'רגליים', cardio: 'דופק', core: 'ליבה', upper: 'פלג עליון' }[it.cat] || ''}</small>` : it.role === 'mob' ? `<small>${REGIONS[it.region] || ''}</small>` : sg.w ? `${sg.w}<small>ק״ג</small>` : `<small>${it.role === 'skill' ? 'מיומנות' : it.vol ? 'נפח' : 'משקל גוף'}</small>`}</div></div>`; })}
         ${s.settings.warmup !== false && x.track !== 'mob' && !x.runOnly ? `<div class="mob-line"><span><b>חימום:</b> ${(x.warmup || warmupFor(x.items, blockedSet(p))).map((m) => EX[m.exId].name).join(' · ')}</span><span><b>מתיחות:</b> ${(x.cooldown || cooldownFor(x.items)).map((m) => EX[m.exId].name).join(' · ')}</span></div>` : ''}
         ${x.finisher ? `<div class="card tight" style="margin-top:10px"><b>${esc(x.finisher.name)}</b><div class="sub">${x.finisher.rounds} סבבים: ${x.finisher.items.map(([id, n]) => `${EX[id].name} ${n}${['time', 'cardio'].includes(EX[id].type) ? ' שנ׳' : ''}`).join(' + ')}</div></div>` : ''}
         ${x.run ? html`<div class="card tight" style="margin-top:10px"><div class="row"><b>${emi(x.run.icon)} ${esc(x.run.name)}</b><span class="spacer"></span><span class="tag teal">${x.run.type === 'test' ? 'מבדק' : `${Math.round(x.run.totalSec / 60)} דק׳`}</span></div>

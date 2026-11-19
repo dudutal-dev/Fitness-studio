@@ -864,5 +864,95 @@
   "sitting on a mat with knees bent and heels on the floor, torso leaning back slightly with a long back, hands clasped in front of the chest, front view",
   "rotates the torso to touch the hands to the floor beside one hip, then rotates to the other side",
   "hiit"
+ ],
+ "p_breathing": [
+  "lying on her back on a dark exercise mat with knees bent and feet flat, both hands resting on the sides of the rib cage, eyes closed, side view",
+  "breathes slowly and deeply, the rib cage expanding sideways and relaxing",
+  "pil"
+ ],
+ "p_pelvic_curl": [
+  "lying on her back on a dark exercise mat with knees bent, feet hip-width apart and arms long by the sides, side view",
+  "slowly peels the spine off the mat one vertebra at a time into a bridge with a straight line from shoulders to knees, then slowly rolls back down",
+  "pil"
+ ],
+ "p_toe_taps": [
+  "lying on her back on a dark exercise mat with both legs lifted in a tabletop position, knees bent at 90 degrees above the hips, arms by the sides, side view",
+  "slowly lowers one foot to tap the toes on the mat and lifts it back to tabletop, then the other foot",
+  "pil"
+ ],
+ "p_hundred": [
+  "in the pilates hundred position on a dark exercise mat: lying on her back with head and shoulders curled up, legs extended at 45 degrees, arms straight and hovering beside the hips, side view",
+  "holds the position and pumps the straight arms up and down in small quick beats",
+  "pil"
+ ],
+ "p_single_leg": [
+  "lying on her back on a dark exercise mat with head and shoulders curled up, the right knee hugged to the chest with both hands and the left leg extended straight at 45 degrees, side view",
+  "switches legs in a smooth controlled rhythm: hugs the left knee in while the right leg extends, then switches again",
+  "pil"
+ ],
+ "p_double_leg": [
+  "lying on her back on a dark exercise mat with head and shoulders curled up, both knees hugged to the chest with the hands on the shins, side view",
+  "extends the arms back by the ears and the legs forward at 45 degrees at the same time, then circles the arms around and hugs the knees back in",
+  "pil"
+ ],
+ "p_scissors": [
+  "lying on her back on a dark exercise mat with head and shoulders curled up, the right leg straight up toward the ceiling with both hands holding behind the calf and the left leg straight hovering just above the mat, side view",
+  "switches the straight legs like scissors: the left leg comes up to the hands while the right leg lowers, then switches again",
+  "pil"
+ ],
+ "p_dead_bug": [
+  "lying on her back on a dark exercise mat with both arms pointing straight up to the ceiling and both legs in tabletop, knees bent at 90 degrees, side view",
+  "slowly lowers the right arm back overhead and extends the left leg forward just above the mat, returns to the start, then repeats with the other arm and leg",
+  "pil"
+ ],
+ "p_leg_circles": [
+  "lying on her back on a dark exercise mat with the right leg extended straight up to the ceiling, the left leg straight on the mat and arms by the sides, side view",
+  "draws small slow controlled circles in the air with the raised straight leg, the hips staying still",
+  "pil"
+ ],
+ "p_swimming": [
+  "lying face down on a dark exercise mat with arms extended forward and legs straight, chest, arms and legs hovering just a few centimetres above the mat, head in line with the spine looking at the mat, side view",
+  "stays face down and low; makes small quick alternating movements, lifting the right arm with the left leg slightly and then the left arm with the right leg slightly. The limbs move only a few centimetres",
+  "pil"
+ ],
+ "p_swan": [
+  "lying face down on a dark exercise mat with the hands flat under the shoulders, elbows tucked in, chest slightly lifted, legs straight, side view",
+  "slowly lifts the chest a little higher using the back muscles with the hips staying on the mat, then lowers back down",
+  "pil"
+ ],
+ "p_bird_dog": [
+  "kneeling on all fours on a dark exercise mat with a flat back, the right arm extended forward and the left leg extended straight back, both level with the torso, side view",
+  "slowly returns the hand and knee to the mat, then extends the left arm forward and the right leg back",
+  "pil"
+ ],
+ "p_spine_stretch": [
+  "sitting tall on a dark exercise mat with legs straight and slightly wider than the hips, feet flexed, arms extended forward at shoulder height, side view",
+  "slowly rounds the spine forward reaching the hands toward the feet, then rolls back up to sitting tall",
+  "pil"
+ ],
+ "p_side_leg": [
+  "lying on her right side on a dark exercise mat with the body in one straight line, head resting on the lower arm, top hand on the mat in front of the chest, the top leg lifted to hip height, front view",
+  "slowly lowers the top leg to meet the bottom leg and lifts it back up to hip height",
+  "pil"
+ ],
+ "p_clam": [
+  "lying on her right side on a dark exercise mat facing the camera, hips and knees bent so the thighs point forward, knees stacked on top of each other and feet together, head resting on the lower arm, front view, full body filling the frame",
+  "keeps both feet pressed together and both knees bent the whole time; slowly lifts only the top knee a little, opening the knees like a clam shell, then slowly lowers it. The legs never straighten and never lift high",
+  "pil"
+ ],
+ "p_side_plank": [
+  "in a side plank on the right forearm on a dark exercise mat: elbow under the shoulder, body in a straight line from head to feet, feet stacked, top hand on the hip, front view",
+  "holds the side plank steadily",
+  "pil"
+ ],
+ "p_teaser": [
+  "balancing in a pilates teaser on a dark exercise mat: sitting on the sit bones with the torso leaning back and both straight legs lifted so the body forms a V shape, arms reaching forward parallel to the legs, side view",
+  "holds the teaser V position steadily with control",
+  "pil"
+ ],
+ "p_mermaid": [
+  "sitting on a dark exercise mat with both legs folded to the left side, the right hand on the mat and the left arm reaching up and over the head in a side bend to the right, front view",
+  "holds the mermaid side stretch, breathing slowly",
+  "pil"
  ]
 }

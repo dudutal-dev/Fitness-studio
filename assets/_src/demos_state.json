@@ -1134,5 +1134,77 @@
  "lia/h_russian_twist": {
   "img": "o7o0bZkgiHX2OEWCMMnW",
   "vid": "Uu32TvDgweg6gJr6PXwj"
+ },
+ "lia/p_toe_taps": {
+  "img": "h4dggV63Ug8ewdTQ3Nnt",
+  "vid": "dckIokoll84H6qOLmpwg"
+ },
+ "lia/p_breathing": {
+  "img": "is1souyDOUWhvkQatJwd",
+  "vid": "p1G12giinIKaynkBwKCV"
+ },
+ "lia/p_pelvic_curl": {
+  "img": "CLyCsCwJgBcjWVvvgQhX",
+  "vid": "VbHy1q94jIqLrzN8A451"
+ },
+ "lia/p_scissors": {
+  "img": "7AB2HTes6hzZSXyT5EMC",
+  "vid": "ZEYEfcHgNNBkNOrk7Pyb"
+ },
+ "lia/p_single_leg": {
+  "img": "GETuhyCahpYclF3asvV7",
+  "vid": "M7pAuXacSqp1LW57DoI4"
+ },
+ "lia/p_double_leg": {
+  "img": "plyVmiX9AzUsDi0dLEXd",
+  "vid": "3bssDYTv804W1doVlq81"
+ },
+ "lia/p_hundred": {
+  "img": "nrLGUtIydcCC2esArCU2",
+  "vid": "T1tX2sx8JPsbLxbMEAuU"
+ },
+ "lia/p_dead_bug": {
+  "img": "g3RFHMh0yVXZ8Zej736n",
+  "vid": "ndOC3nsvPq921lAwcVb6"
+ },
+ "lia/p_leg_circles": {
+  "img": "t9RgHwriI1H43ra0KLS7",
+  "vid": "8vv4cC3q9sQIoo6paSuG"
+ },
+ "lia/p_swan": {
+  "img": "Fg042q7NuyCl7bpfGL8F",
+  "vid": "Xsj97K8R2maYmA6qfzi7"
+ },
+ "lia/p_bird_dog": {
+  "img": "3waV4TdrEU0VwORG3GBt",
+  "vid": "sGgVoMFJhTMIqBtdcsuL"
+ },
+ "lia/p_spine_stretch": {
+  "img": "xFIIEXgp42JpMK0ZNyR0",
+  "vid": "EDJnXubgZgFgVYbfBIwE"
+ },
+ "lia/p_side_leg": {
+  "img": "CBsiFF684eWj4NhxVOIc",
+  "vid": "yfqahAYvVhJdmLoUAvqG"
+ },
+ "lia/p_side_plank": {
+  "img": "MBJjTgP5mYwkUY3k4gjw",
+  "vid": "pBDqctTJyqNg0pzmaGqg"
+ },
+ "lia/p_teaser": {
+  "img": "FjbQGZpGS606hDKlF1rl",
+  "vid": "YO1sWrRhX4RkOFGXWhAG"
+ },
+ "lia/p_mermaid": {
+  "img": "v730yJtT0a0BpKktYE0A",
+  "vid": "7tOAsCc2Kn7xw5gr0NgG"
+ },
+ "lia/p_swimming": {
+  "img": "r51BGb0FnY7xOuaZxt3N",
+  "vid": "3DfaIzKrq9OiI5cla1fr"
+ },
+ "lia/p_clam": {
+  "img": "dauiJX6Fs62dTaJGcxtH",
+  "vid": "VVwoppbRFuZsS48bOcn7"
  }
 }

@@ -26,7 +26,7 @@ export function renderProgress(root) {
   const cali = isCali(p);
   // קליסתניקס: סולמות במקום גרפי משקלים, ולשונית הריצה מופיעה רק אם יש ריצות (מיובאות)
   const mob = isMob(p);
-  const tabs = [['week', 'שבוע'], ...(hasMob(p) ? [['mob', 'טווחים']] : []), ['weight', 'משקל'], ...(cali || mob || isRun(p) || p.track === 'hiit' ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...((cali || mob || p.track === 'hiit') && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
+  const tabs = [['week', 'שבוע'], ...(hasMob(p) ? [['mob', 'טווחים']] : []), ['weight', 'משקל'], ...(cali || mob || isRun(p) || ['hiit', 'pil'].includes(p.track) ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...((cali || mob || ['hiit', 'pil'].includes(p.track)) && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
   if (!tabs.some(([k]) => k === tab)) tab = 'week';
   root.innerHTML = html`<div class="page-head"><div class="eyebrow">מעקב ומדדים</div><div class="h1">ההתקדמות שלך</div></div>
     <div class="seg" style="margin-bottom:14px">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`)}</div>
@@ -48,7 +48,7 @@ const TABS = {
   // סיכום שבועי: 7 הימים האחרונים מול השבוע שלפניו
   week(s) {
     const w = weekSummary(s), c = w.cur, pv = w.prev;
-    const mobOnly = isMob(s.profile) || isRun(s.profile) || s.profile.track === 'hiit', cali = isCali(s.profile) || mobOnly;
+    const mobOnly = isMob(s.profile) || isRun(s.profile) || ['hiit', 'pil'].includes(s.profile.track), cali = isCali(s.profile) || mobOnly;
     const delta = (a, b, unit = '') => { const d = Math.round((a - b) * 10) / 10; return d ? `<small class="${d > 0 ? 'up' : 'down'}"><span class="ltr">${d > 0 ? '+' : ''}${d.toLocaleString('he-IL')}</span>${unit} מהשבוע שעבר</small>` : '<small>כמו בשבוע שעבר</small>'; };
     const kpi = (ic, tone, val, label, sub) => `<div class="wk"><div class="row">${ib(ic, tone, 'sm')}<span class="sub t-cap">${label}</span></div><b class="num">${val}</b>${sub || ''}</div>`;
     const pct = (v, of) => Math.min(100, Math.round((v / Math.max(1, of)) * 100));

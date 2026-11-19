@@ -29,7 +29,7 @@ SCENES = {"ori": GYM, "noa": GYM, "guy": PARK, "shira": PARK, "lia": STUDIO,
           "tamar": ("in a calm premium movement studio with a light wooden floor, rolled mats in the background, warm amber and soft teal accent lighting. "
                     "Anatomically correct body, two arms and two legs. Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")}
 # מי מדגים כל תרגיל: האיבר השלישי ב-demos.json — "cali" = רק מאיה, "mob" = רק תמר, "run" = גיא ושירה, "all" = אורי, נועה ומאיה, "stretch" = כולם, בלי = אורי ונועה
-COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "hiit": ("lia",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "hiit": ("lia",), "pil": ("lia",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
 EXTRA = json.load(open(os.path.join(os.path.dirname(__file__), "demos_extra.json")))  # מאמן → תרגילים קיימים שגם הוא מדגים
 def coaches_for(ex):
     return tuple(COACHES_FOR[DEMOS[ex][2] if len(DEMOS[ex]) > 2 else "gym"]) + tuple(c for c, ids in EXTRA.items() if ex in ids)

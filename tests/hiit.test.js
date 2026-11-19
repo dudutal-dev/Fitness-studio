@@ -76,7 +76,7 @@ test('HIIT progression and voice', () => {
   assert.equal(hiitLevelUp(P(), ses(10), now), true); assert.equal(hiitLevelUp(P(), ses(8), now), false);
   assert.equal(hiitLevelUp(P({ level: 5 }), ses(12), now), false); assert.equal(hiitLevelUp(P(), ses(12, { partial: true }), now), false); assert.equal(hiitLevelUp(P(), ses(12, { track: 'mob' }), now), false);
   for (const k of ['hello_lia', 'hiit_go', 'hiit_10', 'hiit_round', 'hiit_last', 'hiit_low', 'n3', 'warm_intro', 'warm_done', 'cool_intro', 'next_ex', 'hold_done', 'workout_done', 'ex_h_squat_jump', 'tip_h_squat_jump', 'ex_burpee', 'ex_child_pose', 'ex_h_march']) { assert.ok(VOICE_LINES[k] != null, k); assert.equal(coachSays(k, 'lia'), true, k); }
-  for (const k of ['n10', 'set2', 'down', 'run_fast', 'pr', 'last_set', 'rate_set', 'hello_ori', 'ex_back_squat', 'ex_m_cat_cow', 'mob_intro', 'rung_up', 'm1']) assert.equal(coachSays(k, 'lia'), false, k);
+  for (const k of ['n10', 'set2', 'down', 'run_fast', 'pr', 'last_set', 'rate_set', 'hello_ori', 'ex_back_squat', 'ex_m_cat_cow', 'rung_up', 'm1']) assert.equal(coachSays(k, 'lia'), false, k);
   for (const k of ['hiit_go', 'hello_lia', 'ex_h_skater']) for (const c of ['ori', 'noa', 'maya', 'tamar', 'guy', 'shira']) assert.equal(coachSays(k, c), false, `${c} ${k}`);
   assert.equal(coachSays('ex_burpee', 'ori'), true); assert.equal(coachSays('ex_burpee', 'maya'), true);
 });

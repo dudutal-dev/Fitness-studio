@@ -18,6 +18,7 @@ import { hrPill, hrSummaryHtml } from '../devices/ui.js';
 import { mobMinutesSheet } from './mob-ui.js';
 import { isMob, mobCount, regionOf, REGIONS } from '../engine/mob.js';
 import { isHiit, hiitLevelUp, lowAlt } from '../engine/hiit.js';
+import { isPil, pilLevelUp, PIL_LEVELS } from '../engine/pil.js';
 
 const WARM_CHEER = ['m2', 'm5', 'm6', 'm9', 'm10'];
 const RPE = [{ v: 6.5, e: icon('effort1'), t: 'קל' }, { v: 8, e: icon('effort2'), t: 'טוב' }, { v: 9, e: icon('effort3'), t: 'קשה' }, { v: 10, e: icon('effort4'), t: 'עד הקצה' }];
@@ -30,13 +31,14 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   const profile = s.profile;
   // המאמן של האימון הזה (במסלול משולב: מאיה בקליסתניקס, אורי/נועה בחדר הכושר) — גם מדגים וגם מדבר
   const coach = sessionCoach(profile, workout);
-  const caliW = workout.track === 'cali', mobW = workout.track === 'mob', hiitW = workout.track === 'hiit';
+  const caliW = workout.track === 'cali', mobW = workout.track === 'mob', hiitW = workout.track === 'hiit', pilW = workout.track === 'pil';
+  const flowW = mobW || pilW;   // אימון רצף לפי זמן: מוביליטי או פילאטיס
   useCoach(coach);
   const w = readiness != null ? applyReadiness(workout, readiness) : structuredClone(workout);
 
   // פריטים: חימום → תרגילים → פיניש (סבב) → מתיחות
   const AUTO = new Set(['finisher', 'warmup', 'cooldown', 'mob', 'hiit']); // סטים שלא מדרגים ולא נכנסים להיסטוריה
-  const guidedMobility = get().settings.warmup !== false && !mobW;
+  const guidedMobility = get().settings.warmup !== false && !flowW;
   const warm = guidedMobility ? (w.warmup || warmupFor(w.items, blockedSet(profile))) : [];
   const cool = guidedMobility ? (w.cooldown || cooldownFor(w.items)) : [];
   const items = [
@@ -86,7 +88,8 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     ...Array.from({ length: 20 }, (_, i) => `n${i + 1}`), ...Array.from({ length: 6 }, (_, i) => `set${i + 1}`),
     ...(caliW ? ['slow_down', 'skill_intro', 'rung_up', 'rung_wait'] : []),
     ...(hiitW ? ['hiit_go', 'hiit_10', 'hiit_round', 'hiit_last', 'hiit_low'] : []),
-    ...(mobW ? ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'] : []),
+    ...(pilW ? ['pil_hello', 'pil_half', 'pil_done'] : []),
+    ...(flowW ? ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'] : []),
     ...MOTIVATION_KEYS, ...items.map((it) => `ex_${it.exId}`), ...items.filter((it) => MOBILITY_TIPS[it.exId]).map((it) => `tip_${it.exId}`)].filter((key) => coachSays(key, coach))); // רק מה שהמאמן הזה באמת אומר
 
   const root = el(`<div class="live" role="dialog" aria-label="אימון חי">
@@ -144,7 +147,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         ${it.role === 'hiit'
     ? `<span class="tag orange">${icon('flame')} סבב <span class="num">${setNo}/${it.sets}</span></span><span class="tag"><span class="num">${mobilityIdx('hiit').indexOf(cur().ii) + 1}/${mobilityIdx('hiit').length}</span></span><span class="tag">${it.reps[0]} שנ׳ עבודה · ${it.rest} מנוחה</span>`
     : it.role === 'mob'
-    ? `<span class="tag teal">${esc(REGIONS[it.region] || 'מוביליטי')} <span class="num">${mobilityIdx('mob').indexOf(cur().ii) + 1}/${mobilityIdx('mob').length}</span></span>${it.sets > 1 ? `<span class="tag">סבב <span class="num">${setNo}/${it.sets}</span></span>` : ''}${e.unilateral ? `<span class="tag">${Math.round(it.reps[0] / 2)} שנ׳ לכל צד</span>` : ''}`
+    ? `<span class="tag teal">${esc(REGIONS[it.region] || it.label || 'מוביליטי')} <span class="num">${mobilityIdx('mob').indexOf(cur().ii) + 1}/${mobilityIdx('mob').length}</span></span>${it.sets > 1 ? `<span class="tag">סבב <span class="num">${setNo}/${it.sets}</span></span>` : ''}${e.unilateral ? `<span class="tag">${Math.round(it.reps[0] / 2)} שנ׳ לכל צד</span>` : pilW ? `<span class="tag">${it.reps[0]} שנ׳</span>` : ''}`
     : it.role === 'warmup' || it.role === 'cooldown'
     ? `<span class="tag teal">${it.role === 'warmup' ? 'חימום' : 'מתיחות'} <span class="num">${mobilityIdx(it.role).indexOf(cur().ii) + 1}/${mobilityIdx(it.role).length}</span></span>${e.unilateral ? '<span class="tag">20 שנ׳ לכל צד</span>' : ''}`
     : html`${it.role === 'finisher' ? `<span class="tag orange">${icon('flame')} ${esc(w.finisher.name)}</span>` : `<span class="tag lime">${it.role === 'skill' ? 'מיומנות' : it.role === 'main' ? 'תרגיל מרכזי' : it.role === 'second' ? 'משני' : it.role === 'core' ? 'ליבה' : it.vol ? 'נפח' : 'עזר'}</span>`}
@@ -332,7 +335,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       const sec = Math.ceil(left);
       if (sec !== lastSec) {
         lastSec = sec;
-        if (!half && t >= secs / 2 && secs >= 20) { half = true; if (sides) { sayNow(['switch_side']); vibrate([60, 40, 60]); } else if (!hiit && (role !== 'mob' || secs >= 40)) say('hold_half'); }
+        if (!half && t >= secs / 2 && secs >= 20) { half = true; if (sides) { sayNow(['switch_side']); vibrate([60, 40, 60]); } else if (!hiit && (role !== 'mob' || secs >= 40)) say(pilW ? 'pil_half' : 'hold_half'); }
         // מוביליטי: תזכורת נשימה בהחזקות ארוכות, פעם אחת
         if (role === 'mob' && calm && !breathed && secs >= 40 && sec === (sides ? 8 : 12)) { breathed = true; say('mob_breathe'); }
         // חימום/מתיחות: דגש ביצוע כמה שניות אחרי ההתחלה
@@ -342,7 +345,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         if (role === 'warmup' && !cheered && sec === 12 && secs >= 30) { cheered = true; say(WARM_CHEER[Math.floor(Math.random() * WARM_CHEER.length)]); }
         if (sec <= 3 && sec >= 1) sayNow([`n${sec}`]);
       }
-      if (left <= 0) { countedReps = secs; sayNow(['hold_done']); endSet(); }
+      if (left <= 0) { countedReps = secs; sayNow([pilW ? 'pil_done' : 'hold_done']); endSet(); }
     }, 100);
   }
 
@@ -484,7 +487,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         if (e.role === 'finisher' || e.role === 'mob' || e.role === 'hiit') continue;
         (s2.history[e.exId] ||= []).push({ date: nowIso, sid, sets: e.sets, target: e.target });
       }
-      s2.sessions.push({ id: sid, date: nowIso, name: w.name, ...(caliW ? { track: 'cali' } : mobW ? { track: 'mob' } : hiitW ? { track: 'hiit' } : {}), day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr });
+      s2.sessions.push({ id: sid, date: nowIso, name: w.name, ...(caliW ? { track: 'cali' } : mobW ? { track: 'mob' } : hiitW ? { track: 'hiit' } : pilW ? { track: 'pil' } : {}), day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr });
       if (workout.day != null && !partial && !s2.plan.completedDays.includes(workout.day)) s2.plan.completedDays.push(workout.day);
       // קליסתניקס: עלייה/ירידה בסולמות לפי הביצוע, והשבוע נבנה מחדש עם השלבים החדשים
       if (hasCali(s2.profile) && caliW) {
@@ -519,8 +522,8 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     $('.panel').innerHTML = html`
       <div class="kpis" style="margin-top:8px">
         <div class="kpi"><b>${fmtTime(dur)}</b><span>זמן</span></div>
-        <div class="kpi"><b>${hiitW ? Math.max(...exercises.map((x) => x.sets.length)) : mobW ? exercises.length : setsDone}</b><span>${hiitW ? 'סבבים' : mobW ? 'תרגילים' : 'סטים'}</span></div>
-        ${hiitW ? `<div class="kpi up"><b>${Math.round(exercises.reduce((t, x) => t + x.sets.reduce((a, y) => a + (y.reps || 0), 0), 0) / 60)}</b><span>דקות עבודה</span></div>` : mobW ? `<div class="kpi up"><b>${new Set(exercises.map((x) => regionOf(x.exId)).filter((r) => r && r !== 'calm')).size}</b><span>אזורים</span></div>` : caliW ? `<div class="kpi up"><b>${repsTotal}</b><span>חזרות</span></div>` : `<div class="kpi up"><b>${Math.round(volume).toLocaleString('he-IL')}</b><span>ק״ג נפח</span></div>`}</div>
+        <div class="kpi"><b>${hiitW ? Math.max(...exercises.map((x) => x.sets.length)) : flowW ? exercises.length : setsDone}</b><span>${hiitW ? 'סבבים' : flowW ? 'תרגילים' : 'סטים'}</span></div>
+        ${hiitW ? `<div class="kpi up"><b>${Math.round(exercises.reduce((t, x) => t + x.sets.reduce((a, y) => a + (y.reps || 0), 0), 0) / 60)}</b><span>דקות עבודה</span></div>` : pilW ? `<div class="kpi up"><b>${Math.round(exercises.reduce((t, x) => t + x.sets.reduce((a, y) => a + (y.reps || 0), 0), 0) / 60)}</b><span>דקות תנועה</span></div>` : mobW ? `<div class="kpi up"><b>${new Set(exercises.map((x) => regionOf(x.exId)).filter((r) => r && r !== 'calm')).size}</b><span>אזורים</span></div>` : caliW ? `<div class="kpi up"><b>${repsTotal}</b><span>חזרות</span></div>` : `<div class="kpi up"><b>${Math.round(volume).toLocaleString('he-IL')}</b><span>ק״ג נפח</span></div>`}</div>
       ${ladderChanges.length ? html`<div class="card tight" style="margin-top:12px">${ladderChanges.map((c) => `<div class="row" style="padding:5px 0;align-items:flex-start">${ib(c.type === 'up' ? 'rocket' : c.type === 'down' ? 'refresh' : c.type === 'top' ? 'crown' : 'clock', c.type === 'up' || c.type === 'top' ? 'pri' : 'acc')}<div style="flex:1;min-width:0"><b>${esc(LADDERS[c.lid].name)}: ${
     c.type === 'up' ? `עלית שלב — ${esc(EX[c.to].name)}` : c.type === 'down' ? `יורדים שלב — ${esc(EX[c.to].name)}` : c.type === 'top' ? 'ראש הסולם!' : 'היעד הושג'}</b><div class="sub" style="font-size:13px">${
     c.type === 'up' ? 'מהאימון הבא. מתחילים מהיעד המינימלי ובונים מחדש.' : c.type === 'down' ? 'שני אימונים מתחת ליעד. בונים בסיס וחוזרים — זה חלק מהדרך.' : c.type === 'top' ? 'השלב האחרון בסולם הושלם. ממשיכים לשמר ולהוסיף חזרות.'
@@ -664,9 +667,9 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   }
 
   // פתיחה
-  say(`hello_${coach}`, { priority: true });
+  say(pilW ? 'pil_hello' : `hello_${coach}`, { priority: true });
   if (items[0].role === 'warmup') say('warm_intro');
-  if (mobW) say('mob_intro');
+  if (flowW) say('mob_intro');
   say(`ex_${items[0].exId}`);
   if (w.note) toast(w.note, 4200);
   paint();
@@ -694,10 +697,10 @@ export function maybeAdvanceWeek() {
     if (s2.plan.weekInBlock >= 4) {
       s2.plan.weekInBlock = 0;
       s2.plan.blockIndex += 1;
-      const ev = isCali(s2.profile) ? { change: 0, msg: 'ממשיכים בסולמות — כל סולם מתקדם בקצב שלו.' } : isHiit(s2.profile) ? (hiitLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב האימונים — עולים רמה: יותר עבודה, פחות מנוחה.' } : { change: 0, msg: 'נשארים באותה רמה עוד בלוק. התמדה לפני עצימות.' }) : s2.profile.track === 'run' ? { change: 0, msg: 'ארבעה שבועות של ריצה מאחוריך. הריצה הארוכה ממשיכה לגדול.' } : isMob(s2.profile) ? { change: 0, msg: 'ארבעה שבועות עברו — זה הזמן למבחן טווחים חוזר (מסך ההתקדמות).' } : evaluateLevel(s2.profile.level, blockStats(s2));
+      const ev = isCali(s2.profile) ? { change: 0, msg: 'ממשיכים בסולמות — כל סולם מתקדם בקצב שלו.' } : isPil(s2.profile) ? (pilLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב השיעורים — עולים רמה, ונפתחים תרגילים חדשים.' } : { change: 0, msg: 'ממשיכים באותה רמה. דיוק לפני קושי.' }) : isHiit(s2.profile) ? (hiitLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב האימונים — עולים רמה: יותר עבודה, פחות מנוחה.' } : { change: 0, msg: 'נשארים באותה רמה עוד בלוק. התמדה לפני עצימות.' }) : s2.profile.track === 'run' ? { change: 0, msg: 'ארבעה שבועות של ריצה מאחוריך. הריצה הארוכה ממשיכה לגדול.' } : isMob(s2.profile) ? { change: 0, msg: 'ארבעה שבועות עברו — זה הזמן למבחן טווחים חוזר (מסך ההתקדמות).' } : evaluateLevel(s2.profile.level, blockStats(s2));
       if (ev.change) {
         s2.profile.level = ev.level;
-        s2.events = [{ type: 'level', text: `רמה ${ev.level} (${LEVEL_NAMES[ev.level]}): ${ev.msg}`, date: new Date().toISOString() }, ...s2.events];
+        s2.events = [{ type: 'level', text: `רמה ${ev.level} (${isPil(s2.profile) ? PIL_LEVELS[ev.level] : LEVEL_NAMES[ev.level]}): ${ev.msg}`, date: new Date().toISOString() }, ...s2.events];
       }
       msg = `בלוק הושלם! ${ev.msg}`;
     }

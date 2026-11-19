@@ -5,6 +5,7 @@ import { EXERCISES, EX } from './exercises.js';
 import { COACHES } from './coaches.js';
 import { MOB_TIPS } from './mob-exercises.js';
 import { HIIT_TIPS } from './hiit-exercises.js';
+import { PIL_TIPS } from './pil-exercises.js';
 
 const NUM = ['', 'אחת', 'שתיים', 'שלוש', 'ארבע', 'חמש', 'שש', 'שבע', 'שמונה', 'תשע', 'עשר',
   'אחת עשרה', 'שתים עשרה', 'שלוש עשרה', 'ארבע עשרה', 'חמש עשרה', 'שש עשרה', 'שבע עשרה', 'שמונה עשרה', 'תשע עשרה', 'עשרים'];
@@ -105,6 +106,13 @@ Object.assign(lines, {
   hiit_last: '[excited] סבב אחרון! נותנים הכל!',
   hiit_low: 'עוברים לגרסה בלי קפיצות. אותו מאמץ.',
 });
+// פילאטיס (ליה): פתיחה וסיום משלה, ומשפטי הרצף (אותם מפתחות mob_* של המוביליטי, בנוסח שלה — ראו COACH_LINES)
+Object.assign(lines, {
+  pil_hello: 'היי, אני ליה. היום פילאטיס: תנועה איטית, מדויקת, שיוצאת מהמרכז. מתחילים.',
+  pil_half: 'חצי. ממשיכים באותה שליטה.',
+  pil_done: 'יפה. משחררים.',
+});
+const PIL_ONLY = ['pil_hello', 'pil_half', 'pil_done'];
 const HIIT_ONLY = ['hiit_go', 'hiit_10', 'hiit_round', 'hiit_last', 'hiit_low'];
 const HIIT_SAYS = ['n1', 'n2', 'n3', 'warm_intro', 'warm_go', 'switch_side', 'warm_done', 'cool_intro', 'cool_done', 'next_ex', 'hold_half', 'hold_done', 'workout_start', 'workout_done', 'streak',
   'm2', 'm4', 'm5', 'm6', 'm9', 'm10', 'checkin_low', 'checkin_high'];
@@ -142,7 +150,7 @@ export const MOBILITY_TIPS = {
   wrist_prep: 'לחץ עדין בלבד, בלי כאב. מסובבים גם לצדדים.',
   scap_pushup: 'ידיים ישרות כל הזמן. רק השכמות זזות.',
 };
-Object.assign(MOBILITY_TIPS, MOB_TIPS, HIIT_TIPS);
+Object.assign(MOBILITY_TIPS, MOB_TIPS, HIIT_TIPS, PIL_TIPS);
 for (const [id, text] of Object.entries(MOBILITY_TIPS)) lines[`tip_${id}`] = text;
 
 export const VOICE_LINES = lines;
@@ -166,6 +174,13 @@ export const COACH_LINES = {
     streak: 'רצף אימונים! עשרים דקות ביום, וזה מצטבר.',
     warm_intro: 'מתחילים בחימום קצר. שלוש תנועות, ואז לעבודה.',
     m9: 'כאן רוב האנשים מאטים. ממשיכים עוד קצת.', m6: 'רואים את ההתקדמות. ממשיכים ככה!',
+    // פילאטיס: משפטי הרצף
+    mob_intro: 'מתחילים בנשימה. מוצאים את המרכז, ומשם כל תנועה יוצאת.',
+    mob_hold: 'עכשיו החזקה. נושמים, והמרכז עובד.',
+    mob_again: 'עוד סבב אחד, באותה שליטה.',
+    mob_breathe: 'נשיפה ארוכה. הבטן נאספת פנימה.',
+    mob_no_pain: 'איכות לפני כמות. תנועה קטנה ומדויקת עדיפה.',
+    mob_close: 'מסיימים. נותנים לגוף להתארך ולנוח.',
   },
   // מאמני הריצה: בלי "לאכול חלבון" ובלי חדר כושר
   guy: { workout_start: 'יוצאים לריצה. אני איתך לאורך כל הדרך.', streak: 'רצף אימונים! ככה בונים סבולת — ריצה אחרי ריצה.' },
@@ -183,8 +198,11 @@ const coachTrack = (coach) => COACHES[coach]?.track || 'gym';
 // האם המאמן אומר את המשפט הזה בכלל (לא מייצרים ולא מורידים קליפים שלא יושמעו לעולם)
 export function coachSays(key, coach) {
   const track = coachTrack(coach), cali = track === 'cali';
+  const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
-  if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.includes(track); }
+  if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.some((t) => all.includes(t)); }
+  if (PIL_ONLY.includes(key)) return all.includes('pil');
+  if (MOB_ONLY.includes(key) && all.includes('pil')) return true;
   if (HIIT_ONLY.includes(key)) return track === 'hiit';
   if (track === 'hiit') return HIIT_SAYS.includes(key);
   if (RUN_ONLY.includes(key)) return track === 'run';
