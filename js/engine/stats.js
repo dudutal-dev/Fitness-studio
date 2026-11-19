@@ -2,6 +2,7 @@
 import { EX } from '../data/exercises.js';
 import { bestSet } from './progression.js';
 import { isCali, hasCali, caliProgress } from './cali.js';
+import { isMob, mobScore, mobTested } from './mob.js';
 
 export const RANKS = [
   { xp: 0, name: 'מתחילים', icon: 'rank1' },
@@ -95,8 +96,10 @@ export function combatReadiness({ profile, history, sessions, runs, weights }) {
   // סבולת: זמן 3 ק״מ (10:30 = 100, 18:00 = 0)
   const tests = runs.filter((r) => r.type === 'test' && r.timeSec);
   const best3k = tests.length ? Math.min(...tests.map((r) => r.timeSec)) : profile.run3k;
-  const endurance = cali && pureCali ? null : best3k ? Math.max(0, Math.min(100, ((18 * 60 - best3k) / (7.5 * 60)) * 100)) : null;
-  const skill = cali ? cali.skill : null;
+  const endurance = (cali && pureCali) || isMob(profile) ? null : best3k ? Math.max(0, Math.min(100, ((18 * 60 - best3k) / (7.5 * 60)) * 100)) : null;
+  let skill = cali ? cali.skill : null;
+  // מוביליטי בלבד: הציון הוא ציון מבחן הטווחים (במקום כוח וסבולת)
+  if (isMob(profile)) { strength = null; skill = mobTested(profile.mob) ? mobScore(profile.mob) : null; }
 
   // עקביות: אימונים ב-28 יום אחרונים מול מתוכנן
   const now = Date.now();

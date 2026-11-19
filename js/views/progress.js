@@ -12,6 +12,8 @@ import { pickAndImport, garminHelp } from './garmin.js';
 import { openSessionEditor, openRunEditor } from './history.js';
 import { fmtPace } from '../engine/running.js';
 import { isCali, hasCali, rungState, LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, ladderOpen } from '../engine/cali.js';
+import { isMob, hasMob } from '../engine/mob.js';
+import { mobProgress, mobTestSheet } from './mob-ui.js';
 
 let tab = 'week';
 let liftSel = null;
@@ -22,7 +24,8 @@ export function renderProgress(root) {
   const p = s.profile;
   const cali = isCali(p);
   // קליסתניקס: סולמות במקום גרפי משקלים, ולשונית הריצה מופיעה רק אם יש ריצות (מיובאות)
-  const tabs = [['week', 'שבוע'], ['weight', 'משקל'], ...(cali ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...(cali && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
+  const mob = isMob(p);
+  const tabs = [['week', 'שבוע'], ...(hasMob(p) ? [['mob', 'טווחים']] : []), ['weight', 'משקל'], ...(cali || mob ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...((cali || mob) && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
   if (!tabs.some(([k]) => k === tab)) tab = 'week';
   root.innerHTML = html`<div class="page-head"><div class="eyebrow">מעקב ומדדים</div><div class="h1">ההתקדמות שלך</div></div>
     <div class="seg" style="margin-bottom:14px">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`)}</div>
@@ -36,22 +39,24 @@ export function renderProgress(root) {
   on(root, 'click', '[data-act="hist-all"]', () => { showAll = !showAll; renderProgress(root); });
   on(root, 'click', '[data-act="garmin"]', () => pickAndImport(() => renderProgress(root)));
   on(root, 'click', '[data-act="garmin-help"]', () => garminHelp());
+  on(root, 'click', '[data-mobtest]', () => mobTestSheet(() => renderProgress(root)));
 }
 
 const TABS = {
+  mob: (s) => mobProgress(s),
   // סיכום שבועי: 7 הימים האחרונים מול השבוע שלפניו
   week(s) {
     const w = weekSummary(s), c = w.cur, pv = w.prev;
-    const cali = isCali(s.profile);
+    const mobOnly = isMob(s.profile), cali = isCali(s.profile) || mobOnly;
     const delta = (a, b, unit = '') => { const d = Math.round((a - b) * 10) / 10; return d ? `<small class="${d > 0 ? 'up' : 'down'}"><span class="ltr">${d > 0 ? '+' : ''}${d.toLocaleString('he-IL')}</span>${unit} מהשבוע שעבר</small>` : '<small>כמו בשבוע שעבר</small>'; };
     const kpi = (ic, tone, val, label, sub) => `<div class="wk"><div class="row">${ib(ic, tone, 'sm')}<span class="sub t-cap">${label}</span></div><b class="num">${val}</b>${sub || ''}</div>`;
     const pct = (v, of) => Math.min(100, Math.round((v / Math.max(1, of)) * 100));
     return html`<div class="card tight advice"><b>${esc(w.verdict)}</b></div>
       <div class="wk-grid">
-        ${kpi('dumbbell', 'pri', `${c.workouts}${w.planned ? `<small> / ${w.planned}</small>` : ''}`, 'אימוני כוח', delta(c.workouts, pv.workouts))}
+        ${kpi('dumbbell', 'pri', `${c.workouts}${w.planned ? `<small> / ${w.planned}</small>` : ''}`, mobOnly ? 'אימונים' : 'אימוני כוח', delta(c.workouts, pv.workouts))}
         ${kpi('clock', '', c.minutes, 'דקות אימון', delta(c.minutes, pv.minutes))}
         ${cali ? kpi('chart', 'pri', c.sets, 'סטים', delta(c.sets, pv.sets)) : kpi('chart', 'pri', c.volume.toLocaleString('he-IL'), 'ק״ג נפח', delta(c.volume, pv.volume))}
-        ${cali ? kpi('rocket', 'pri', c.ups, 'עליות בסולמות', '') : kpi('trophy', 'pri', c.prs, 'שיאים אישיים', '')}
+        ${mobOnly ? '' : cali ? kpi('rocket', 'pri', c.ups, 'עליות בסולמות', '') : kpi('trophy', 'pri', c.prs, 'שיאים אישיים', '')}
         ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'ימים פעילים', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? 'ק״מ ריצה' : 'ריצות', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
         ${kpi('scale', '', w.weight ? w.weight.kg : '—', 'משקל (ק״ג)', w.weight?.delta != null ? `<small><span class="ltr">${w.weight.delta > 0 ? '+' : ''}${w.weight.delta}</span> מהשקילה הקודמת</small>` : '<small>אין שקילה השבוע</small>')}
       </div>

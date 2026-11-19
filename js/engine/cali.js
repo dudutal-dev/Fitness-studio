@@ -7,11 +7,12 @@ import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, LADDER_OF, MAX_ACTIVE_SKILLS 
 export const isCali = (profile) => profile?.track === 'cali';            // קליסתניקס בלבד
 export const isMix = (profile) => profile?.track === 'mix' && !!profile.cali;
 export const hasCali = (profile) => (profile?.track === 'cali' || profile?.track === 'mix') && !!profile.cali;
-export const hasGym = (profile) => profile?.track !== 'cali';
+export const hasGym = (profile) => profile?.track !== 'cali' && profile?.track !== 'mob';
 // מי מאמן: במסלול משולב כל אימון עם המאמן של המסלול שלו — מאיה בקליסתניקס, אורי/נועה בחדר הכושר
-export const sessionCoach = (profile, workout) => (profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
+// אימון מוביליטי תמיד עם תמר, גם כשהוא משולב בשבוע של מסלול אחר
+export const sessionCoach = (profile, workout) => (workout?.track === 'mob' ? 'tamar' : profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
 // מי מדגים תרגיל מחוץ לאימון (ספרייה, סולמות)
-export const exCoach = (profile, exId) => (profile?.track === 'mix' ? (EX[exId]?.cali ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
+export const exCoach = (profile, exId) => (EX[exId]?.mob ? 'tamar' : profile?.track === 'mix' ? (EX[exId]?.cali ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
 const DAY = 864e5;
 
 // ───── ציוד ─────
@@ -231,7 +232,13 @@ export function buildCaliWeek(profile, { blockIndex = 0, weekInBlock = 0 } = {})
   return { blockIndex, weekInBlock, phase: CALI_PHASE, week: CALI_WEEKS[weekInBlock % 4], sessions };
 }
 // מסלול משולב: כמה מאימוני השבוע הם קליסתניקס (ברירת מחדל: חצי, מעוגל למטה; תמיד נשאר לפחות אימון אחד מכל סוג)
-export const mixCaliCount = (profile) => { const days = Math.min(6, Math.max(3, profile.days || 4)); return Math.min(days - 1, Math.max(1, profile.mixCali ?? Math.floor(days / 2))); };
+// כשמשולבים גם אימוני מוביליטי (profile.mobN), החלוקה היא של האימונים שנשארו
+export const mixCaliCount = (profile) => {
+  const all = Math.min(6, Math.max(3, profile.days || 4));
+  const mobN = profile.mob ? Math.max(0, Math.min(profile.mobN || 0, all - 2)) : 0;
+  const days = all - mobN;
+  return Math.min(days - 1, Math.max(1, profile.mixCali ?? Math.floor(days / 2)));
+};
 // אימון בלי שום ציוד (בשטח, בנסיעה) — אותם סולמות, רק מה שאפשר על הרצפה
 export const buildCaliFieldWorkout = (profile) => ({ ...buildCaliWorkout('cFull', profile, { equip: [], minutes: Math.min(45, profile.sessionMin || 45) }), name: 'אימון בלי ציוד', focus: 'הסולמות שלך — רק רצפה וקיר' });
 

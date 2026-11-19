@@ -2,7 +2,7 @@
 import { get } from './store.js';
 import { icon } from './ui/dom.js';
 import { renderOnboarding } from './views/onboarding.js';
-import { renderHome, nextSession, checkIn } from './views/home.js';
+import { renderHome, nextSession, begin } from './views/home.js';
 import { renderPlan } from './views/plan.js';
 import { renderProgress } from './views/progress.js';
 import { renderNutrition } from './views/nutrition.js';
@@ -56,7 +56,7 @@ function route() {
     const ns = nextSession(s);
     history.replaceState(null, '', '#/home');
     r = 'home';
-    if (ns) checkIn((rd) => startWorkout(ns, { readiness: rd }));
+    if (ns) begin(ns);
   }
   if (!ROUTES[r]) r = 'home';
   const view = document.getElementById('view');

@@ -13,6 +13,8 @@ export const GROUPS = {
 };
 
 import { CALI_EXERCISES } from './cali-exercises.js';
+import { MOB_EXERCISES } from './mob-exercises.js';
+import { STRETCH_REGION } from './mob.js';
 
 const E = (o) => ({ unilateral: false, compound: false, inc: 2.5, tempo: [2, 0, 1], alts: [], ...o });
 
@@ -198,6 +200,8 @@ export const EXERCISES = [
     muscles: ['lower_back', 'lats', 'shoulders'], equip: 'מזרן', level: 1, cues: ['ישבן לעקבים', 'ידיים מושטות קדימה', 'נשימות איטיות לגב'] }),
   // ───── קליסתניקס (js/data/cali-exercises.js) ─────
   ...CALI_EXERCISES.map(E),
+  // ───── מוביליטי וגמישות (js/data/mob-exercises.js) ─────
+  ...MOB_EXERCISES.map(E),
 ];
 
 // סדר שלבי החזרה: רוב התרגילים מתחילים בירידה (אקסצנטרי). בתרגילים שמתחילים מלמטה/ממצב מתוח — מתחילים במאמץ (קונצנטרי).
@@ -214,7 +218,9 @@ const PRESS = ['rope_pushdown', 'cable_fly', 'woodchop'];
 const SHARED = ['pushup', 'pullup', 'dips', 'plank', 'hanging_leg_raise', 'air_squat', 'bw_lunge', 'glute_bridge', 'burpee', 'mountain_climber'];
 for (const e of EXERCISES) {
   if (NEEDS[e.id]) e.needs = NEEDS[e.id];
-  e.tracks = e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali'] : ['gym'];
+  // תרגילי המוביליטי של תמר שייכים רק למסלול שלה; שש המתיחות הוותיקות משותפות לכל המסלולים
+  e.tracks = e.mob ? ['mob'] : e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali', ...(STRETCH_REGION[e.id] ? ['mob'] : [])] : ['gym'];
+  if (STRETCH_REGION[e.id]) { e.region = STRETCH_REGION[e.id]; e.kind = 'static'; }
   e.first = CON_FIRST.includes(e.id) ? 'con' : 'ecc';
   e.cueCon = PULL.includes(e.id) ? 'pull' : PRESS.includes(e.id) ? 'press' : 'up';
   e.cueEcc = e.neg ? 'slow_down' : PULL.includes(e.id) || PRESS.includes(e.id) ? 'release' : 'down'; // שלילי: "לאט למטה..."

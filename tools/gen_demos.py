@@ -12,14 +12,17 @@ DEMOS = json.load(open(os.path.join(os.path.dirname(__file__), "demos.json")))
 COACH_GEN = json.load(open(os.path.join(SRC, "coaches.json")))
 WHO = {"ori": "the same man from the reference image (same face, hair, stubble, same black t-shirt with lime piping and black shorts)",
        "noa": "the same woman from the reference image (same face, dark ponytail, same black sports top with lime piping and black leggings)",
-       "maya": "the same woman from the reference image (same face, light-brown curly hair in a high bun, same black sleeveless top with amber piping and black leggings)"}
+       "maya": "the same woman from the reference image (same face, light-brown curly hair in a high bun, same black sleeveless top with amber piping and black leggings)",
+       "tamar": "the same woman from the reference image (same face, straight shoulder-length auburn-brown hair, same fitted black long-sleeve top with thin amber piping and black leggings, barefoot)"}
 GYM = ("in a dark premium modern gym with teal and electric-lime accent lighting. Full body visible, centered, vertical 9:16 framing, "
        "photorealistic. No text, no logos, no brand names.")
 SCENES = {"ori": GYM, "noa": GYM,
           "maya": ("in a dark premium calisthenics studio with a steel rig, warm amber and soft teal accent lighting. Anatomically correct body, two arms and two legs. "
-                   "Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")}
-# מי מדגים כל תרגיל: האיבר השלישי ב-demos.json — "cali" = רק מאיה, "all" = כולם, בלי = אורי ונועה
-COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "all": ("ori", "noa", "maya")}
+                   "Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names."),
+          "tamar": ("in a calm premium movement studio with a light wooden floor, rolled mats in the background, warm amber and soft teal accent lighting. "
+                    "Anatomically correct body, two arms and two legs. Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")}
+# מי מדגים כל תרגיל: האיבר השלישי ב-demos.json — "cali" = רק מאיה, "mob" = רק תמר, "all" = אורי, נועה ומאיה, "stretch" = כולם, בלי = אורי ונועה
+COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
 def coaches_for(ex):
     return COACHES_FOR[DEMOS[ex][2] if len(DEMOS[ex]) > 2 else "gym"]
 lock = threading.Lock()

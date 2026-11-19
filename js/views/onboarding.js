@@ -3,6 +3,9 @@ import { html, esc, on, $, toast, icon } from '../ui/dom.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
 import { GOALS, INJURIES, estimateLevel, LEVEL_NAMES, goalsFor, goalForTrack } from '../engine/program.js';
 import { newCali, caliLevel, mixCaliCount, recommendTrack } from '../engine/cali.js';
+import { newMob, mobLevel, mobScore } from '../engine/mob.js';
+import { TEST_IDS } from '../data/mob.js';
+import { mobTestHtml, bindMobTest, flagChips, flagNotes } from './mob-ui.js';
 import { EQUIP } from '../data/cali.js';
 import { runLevelFrom3k } from '../engine/running.js';
 import { ANCHOR_LIFTS } from '../engine/progression.js';
@@ -17,15 +20,19 @@ const GOAL_DESC = {
   strength: 'להרים כבד יותר — סקוואט, דדליפט, לחיצות.',
   cut: 'הורדת אחוזי שומן תוך שמירה על שריר וכוח.',
   skill: 'כוח יחסי ושליטה: מתח, מקבילים, עמידת ידיים, ומשם למיומנויות המתקדמות.',
+  flex: 'טווחי תנועה גדולים יותר בכל הגוף: ירכיים, כתפיים, גב וקרסוליים.',
+  posture: 'לפתוח את מה שמתקצר בישיבה ממושכת: גב עליון, חזה, מכופפי ירך וצוואר.',
 };
+const MOB_GOAL_DESC = { cut: 'ירידה בשומן דרך התזונה, עם תנועה יומית שקל להתמיד בה.' };
 const CALI_GOAL_DESC = { muscle: 'בניית שריר במשקל גוף: יותר נפח וסטים, עם עודף קלורי קטן.', cut: 'ירידה בשומן תוך שמירה על כוח. גוף קל יותר — מיומנויות קלות יותר.' };
-export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goal]) || GOAL_DESC[goal];
+export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goal]) || (track === 'mob' && MOB_GOAL_DESC[goal]) || GOAL_DESC[goal];
 // "2 אימוני חדר כושר + אימון קליסתניקס אחד"
 const nWorkouts = (n, kind) => (n === 1 ? `אימון ${kind} אחד` : `${n} אימוני ${kind}`);
 export const splitText = (gym, cali) => `${nWorkouts(gym, 'חדר כושר')} + ${nWorkouts(cali, 'קליסתניקס')}`;
 export const TRACKS = {
   gym: { name: 'חדר כושר', sub: 'משקולות, מכונות וריצה', desc: 'תוכנית כוח וכושר עם אורי או נועה: משקלים שמתעדכנים לבד, ריצות ומבדק 3 ק״מ.' },
-  mix: { name: 'משולב', sub: 'חדר כושר + קליסתניקס באותו שבוע', desc: 'חלק מהאימונים בחדר הכושר עם אורי או נועה, וחלק במשקל גוף עם מאיה. משקלים וסולמות מתקדמים במקביל, ואפשר לקבוע כמה אימונים מכל סוג.' },
+  mix: { name: 'משולב', sub: 'חדר כושר + קליסתניקס באותו שבוע', desc: 'חלק מהאימונים בחדר הכושר עם אורי או נועה, וחלק במשקל גוף עם מאיה. משקלים וסולמות מתקדמים במקביל, ואפשר לקבוע כמה אימונים מכל סוג — ולצרף גם אימוני מוביליטי עם תמר.' },
+  mob: { name: 'מוביליטי', sub: 'גמישות וטווחי תנועה — מזרן וקיר', desc: 'אימוני מוביליטי וגמישות עם תמר: מבחן טווחים ביתי, אימון של 10 עד 30 דקות לפי הזמן שיש, והתמקדות באזורים שהכי צריכים. בלי ציוד ובלי כאב.' },
   cali: { name: 'קליסתניקס', sub: 'משקל גוף — בבית או בפארק', desc: 'אימוני משקל גוף עם מאיה: סולמות התקדמות מהשלב הראשון ועד מתח, עמידת ידיים, עליית כוח ופלאנש. עובד גם בלי ציוד בכלל.' },
 };
 
@@ -33,7 +40,7 @@ export function renderOnboarding(root, done) {
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [],
+    injuries: [], dislikes: [], dislikedFoods: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [],
   };
   let step = 0;
   const STEPS = 11;
@@ -43,32 +50,39 @@ export function renderOnboarding(root, done) {
   const undecided = () => d.auto && !d.decided;
   const cali = () => (undecided() ? d.gymAccess === 'no' : d.track === 'cali');      // קליסתניקס בלבד
   const mix = () => (undecided() ? d.gymAccess !== 'no' : d.track === 'mix');        // משולב
-  const anyCali = () => undecided() || d.track !== 'gym';
+  const anyCali = () => undecided() || d.track === 'cali' || d.track === 'mix';
+  const mob = () => !undecided() && d.track === 'mob';                                // מוביליטי בלבד
+  // כמה אימוני מוביליטי אפשר לשלב בשבוע של מסלול אחר (נשאר לפחות אימון אחד לכל חלק אחר)
+  const mobMax = () => Math.min(3, d.days - (mix() ? 2 : 1));
+  const mobN = () => (mob() ? 0 : Math.max(0, Math.min(d.mobN || 0, mobMax())));
+  const withMob = () => mob() || mobN() > 0;
+  const dm = () => ({ ...d, mobN: mobN(), mob: mobN() ? {} : null });                // לחישוב החלוקה במשולב כשיש גם מוביליטי
+  const testDone = () => TEST_IDS.every((id) => d.mobTest[id] != null);
   const rec = () => recommendTrack({ gymAccess: d.auto ? d.gymAccess : 'yes', goal: d.goalWanted || d.goal, days: d.days, injuries: d.injuries });
   // מחיל מסלול (המלצה או בחירה ידנית בשלב ההמלצה)
   const decide = (track, mixCali) => {
     d.decided = true; d.track = track; d.goal = goalForTrack(d.goalWanted || d.goal, track);
     if (track === 'mix') d.mixCali = mixCali ?? rec().mixCali ?? undefined; else delete d.mixCali;
-    d.coach = track === 'cali' ? 'maya' : (d.gymCoach || 'ori');
+    d.coach = track === 'cali' ? 'maya' : track === 'mob' ? 'tamar' : (d.gymCoach || 'ori');
   };
   const fem = () => !!COACHES[d.coach].f;
-  const recMix = () => { const r = recommendTrack({ gymAccess: 'yes', goal: d.goal, days: d.days, injuries: d.injuries }); return r.track === 'mix' ? r.mixCali : Math.floor(d.days / 2); };
+  const recMix = () => { const r = recommendTrack({ gymAccess: 'yes', goal: d.goal, days: d.days - mobN(), injuries: d.injuries }); return r.track === 'mix' ? r.mixCali : Math.floor((d.days - mobN()) / 2); };
 
   const views = [
     // 0 — פתיחה
     () => html`<div class="splash">
-        <div class="duo"><img src="${COACHES.ori.img}" alt=""><img src="${COACHES.maya.img}" alt=""><img src="${COACHES.noa.img}" alt=""></div>
+        <div class="duo"><img src="${COACHES.ori.img}" alt=""><img src="${COACHES.maya.img}" alt=""><img src="${COACHES.noa.img}" alt=""><img src="${COACHES.tamar.img}" alt=""></div>
         <div class="copy">
           <div class="eyebrow">מאמן אישי וירטואלי</div>
           <div class="logo">${BRAND.name}</div>
           <div class="h1" style="font-size:24px;margin-top:10px">מאמן אישי לכל מסלול, בכל רמה.</div>
-          <p class="sub" style="font-size:15px">חדר כושר וריצה, קליסתניקס במשקל גוף — או שילוב של השניים. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
+          <p class="sub" style="font-size:15px">חדר כושר וריצה, קליסתניקס במשקל גוף, מוביליטי וגמישות — או שילוב ביניהם. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
           ${lohemData() ? `<button class="btn block" style="margin-top:14px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ-LOHEM</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית LOHEM נשארת כמו שהיא.</p>` : ''}
         </div></div>`,
     // 1 — מסלול
     () => html`<div class="eyebrow">שלב 1 · המסלול</div><div class="q">איך ${d.sex === 'f' ? 'את מתאמנת' : 'אתה מתאמן'}?</div>
       <p class="sub">אפשר לבחור מסלול אחד או לשלב. מחליפים בהגדרות בכל רגע, בלי לאבד היסטוריה.</p>
-      ${['gym', 'cali', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
+      ${['gym', 'cali', 'mob', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
         <div class="tc-img">${(id === 'mix' ? Object.values(COACHES) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('')}</div>
         <div><b>${t.name}</b><span class="tc-sub">${t.sub}</span><span>${t.desc}</span></div></button>`)}
       <button class="track-card auto ${d.auto ? 'on' : ''}" data-track="auto"><div class="tc-ico">${icon('sparkle')}</div>
@@ -81,6 +95,11 @@ export function renderOnboarding(root, done) {
       <p class="sub">בבית, בפארק או בחצר. אפשר לסמן כמה, ואפשר גם כלום.</p>
       <div class="chips">${Object.entries(EQUIP).map(([id, x]) => `<button class="chip ${d.equip.includes(id) ? 'on' : ''}" data-equip="${id}">${x.name}</button>`).join('')}</div>
       <div class="card tight" style="margin-top:14px"><b>בסוף ההיכרות נמליץ על מסלול.</b><div class="sub">לפי המטרה, הימים, הציוד והפציעות. ההחלטה נשארת אצלך — ואת המאמן בוחרים שם, כשיודעים באיזה מסלול מדובר.</div></div>`
+      : mob() ? html`<div class="eyebrow">שלב 2 · המאמנת</div><div class="q">${esc(COACHES.tamar.name)} תאמן אותך</div>
+      <div class="coach-solo"><img src="${COACHES.tamar.img}" alt="${COACHES.tamar.name}"><div><b>${COACHES.tamar.name}</b><span>${COACHES.tamar.title}</span><p class="sub">${esc(COACHES.tamar.bio)}</p>
+        <button class="btn sm teal" data-coach="tamar">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
+      <div class="card tight" style="margin-top:16px"><b>מה צריך?</b><div class="sub">מזרן או שטיח, קיר פנוי וכיסא. בלי ציוד נוסף, ואפשר גם בסלון.</div></div>
+      <div class="card tight" style="margin-top:10px"><b>איך נראה אימון?</b><div class="sub">פותחים בתנועה איטית, ממשיכים להחזקות רגועות של 30 שניות, ומסיימים בנשימה. לפני כל אימון בוחרים כמה זמן יש: 10, 20 או 30 דקות.</div></div>`
       : cali() ? html`<div class="eyebrow">שלב 2 · המאמנת והציוד</div><div class="q">${esc(COACHES.maya.name)} תאמן אותך</div>
       <div class="coach-solo"><img src="${COACHES.maya.img}" alt="${COACHES.maya.name}"><div><b>${COACHES.maya.name}</b><span>${COACHES.maya.title}</span><p class="sub">${esc(COACHES.maya.bio)}</p>
         <button class="btn sm teal" data-coach="maya">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
@@ -115,7 +134,10 @@ export function renderOnboarding(root, done) {
       ${(undecided() ? ['combat', 'muscle', 'strength', 'cut', 'skill'] : goalsFor(d.track)).map((id) => html`<button class="goal-card ${d.goal === id ? 'on' : ''}" data-goal="${id}">
         <div class="gi">${icon(GOALS[id].icon)}</div><div><b>${GOALS[id].name}</b><span>${goalDesc(id, d.track)}</span></div></button>`)}`,
     // 5 — מבדק רמה
-    () => (cali() ? html`<div class="eyebrow">שלב 5 · מבדק רמה</div><div class="q">איפה ${d.sex === 'f' ? 'את עומדת' : 'אתה עומד'} היום?</div>
+    () => (mob() ? html`<div class="eyebrow">שלב 5 · מבחן טווחים</div><div class="q">שישה מבחנים קצרים</div>
+      <p class="sub">בבית, בלי ציוד: עושים כל מבחן פעם אחת, בלי חימום ובלי כוח, ומסמנים את מה שהכי קרוב. לפי התוצאות ${esc(COACHES.tamar.name)} תקבע במה להתמקד. אין זמן עכשיו? אפשר להמשיך ולעשות את המבחן אחר כך, מתוך מסך התוכנית.</p>
+      ${mobTestHtml(d.mobTest)}`
+      : cali() ? html`<div class="eyebrow">שלב 5 · מבדק רמה</div><div class="q">איפה ${d.sex === 'f' ? 'את עומדת' : 'אתה עומד'} היום?</div>
       <p class="sub">לפי התשובות ייקבע השלב ההתחלתי בכל סולם. לא ${d.sex === 'f' ? 'בטוחה' : 'בטוח'}? עדיף להעריך נמוך — עלייה בשלב קורית מהר, אחרי אימון טוב אחד.</p>
       <div class="grid2">
         <label class="field"><span>שכיבות סמיכה ברצף (מקס׳)</span><input class="input num" name="pushups" type="number" inputmode="numeric" value="${d.pushups}"></label>
@@ -147,16 +169,23 @@ export function renderOnboarding(root, done) {
     // 6 — לו"ז
     () => html`<div class="eyebrow">שלב 6 · זמנים</div><div class="q">כמה ${d.sex === 'f' ? 'את יכולה' : 'אתה יכול'} להתאמן?</div>
       <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${[3, 4, 5, 6].map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
-      ${mix() && !undecided() ? `<label class="field"><span>כמה מהם קליסתניקס? (השאר בחדר הכושר)</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(d) === v ? 'on' : ''}">${v}${recMix() === v ? ' ★' : ''}</button>`).join('')}</div>
+      ${mix() && !undecided() ? `<label class="field"><span>כמה מהם קליסתניקס? (השאר בחדר הכושר)</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${recMix() === v ? ' ★' : ''}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">★ המלצת המערכת לפי המטרה שלך. אפשר לבחור אחרת.</div></label>` : ''}
-      <label class="field"><span>משך אימון (דקות)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`)}</div></label>
-      ${cali() ? `<div class="card tight" style="margin-top:8px"><b>3 אימונים בשבוע מספיקים.</b><div class="sub">זו ההמלצה המקובלת למתחילים: גוף מלא, עם יום מנוחה בין אימון לאימון. 4 ומעלה — האימונים מתפצלים לפלג עליון, רגליים, דחיפה ומשיכה.</div></div>`
+      ${mob() ? `<label class="field"><span>אורך אימון רגיל (דקות)</span><div class="seg" data-seg="mobMin">${[10, 20, 30].map((v) => `<button data-v="${v}" class="${d.mobMin == v ? 'on' : ''}">${v}</button>`).join('')}</div>
+        <div class="sub" style="font-size:12px;margin-top:4px">זו רק ברירת המחדל — לפני כל אימון אפשר לבחור אחרת.</div></label>`
+    : html`<label class="field"><span>משך אימון (דקות)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`)}</div></label>
+      <label class="field"><span>לשלב אימוני מוביליטי וגמישות עם ${COACHES.tamar.name}?</span><div class="seg" data-seg="mobN">${Array.from({ length: mobMax() + 1 }, (_, i) => `<button data-v="${i}" class="${mobN() === i ? 'on' : ''}">${i === 0 ? 'בלי' : i}</button>`).join('')}</div>
+        <div class="sub" style="font-size:12px;margin-top:4px">${mobN() ? `${mobN() === 1 ? 'אימון אחד' : `${mobN()} אימונים`} מתוך ${d.days} בשבוע ${mobN() === 1 ? 'יהיה' : 'יהיו'} מוביליטי (10–30 דקות), והשאר במסלול שבחרת.` : 'אפשר להוסיף גם אחר כך, בהגדרות.'}</div></label>`}
+      ${mob() ? `<div class="card tight" style="margin-top:8px"><b>קצר ותכוף עדיף על ארוך ונדיר.</b><div class="sub">עשר דקות ארבע פעמים בשבוע משפרות טווח תנועה יותר מאימון ארוך אחד. היעד הוא כעשר דקות בשבוע לכל אזור בגוף.</div></div>`
+    : cali() ? `<div class="card tight" style="margin-top:8px"><b>3 אימונים בשבוע מספיקים.</b><div class="sub">זו ההמלצה המקובלת למתחילים: גוף מלא, עם יום מנוחה בין אימון לאימון. 4 ומעלה — האימונים מתפצלים לפלג עליון, רגליים, דחיפה ומשיכה.</div></div>`
     : `<div class="card tight" style="margin-top:8px"><b>הלו״ז משתנה?</b><div class="sub">אין בעיה — האימונים לא צמודים לימים בשבוע. פשוט עושים את האימון הבא בתור. ואם אין חדר כושר, יש "אימון בלי ציוד".</div></div>`}`,
     // 7 — פציעות
     () => html`<div class="eyebrow">שלב 7 · בטיחות</div><div class="q">יש כאבים או פציעות?</div>
       <p class="sub">נחליף תרגילים שעלולים להחמיר. במקרה של כאב חד — לעצור ולפנות לרופא.</p>
       <div class="chips">${Object.entries(INJURIES).map(([id, x]) => `<button class="chip no ${d.injuries.includes(id) ? 'on' : ''}" data-inj="${id}">${x.name}</button>`)}</div>
-      <p class="sub" style="margin-top:14px">${d.injuries.length ? '' : 'אין פציעות — מצוין.'}</p>`,
+      <p class="sub" style="margin-top:14px">${d.injuries.length ? '' : 'אין פציעות — מצוין.'}</p>
+      ${withMob() ? `<div class="q" style="font-size:20px;margin-top:8px">ולפני מתיחות — יש אחד מאלה?</div>
+        <p class="sub">תרגילים שלא מתאימים למצב לא ייכנסו לאימוני המוביליטי.</p>${flagChips(d.flags)}${flagNotes(d.flags)}` : ''}`,
     // 8 — תזונה
     () => html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">מה ${d.sex === 'f' ? 'את' : 'אתה'} <span style="color:var(--red)">לא</span> ${d.sex === 'f' ? 'אוכלת' : 'אוכל'}?</div>
       <p class="sub">${d.sex === 'f' ? 'סמני הכל — התפריט ייבנה רק ממה שאת כן אוכלת' : 'סמן הכל — התפריט ייבנה רק ממה שאתה כן אוכל'}, עם חלופות חכמות (למשל: לא אוכל ירקות? נשלים ויטמינים ממקורות אחרים).</p>
@@ -164,24 +193,25 @@ export function renderOnboarding(root, done) {
     // 9 — המלצת המערכת (רק במצב "תמליצו לי")
     () => {
       const r = rec();
-      const isRec = d.track === r.track && (r.track !== 'mix' || mixCaliCount(d) === r.mixCali);
+      const isRec = d.track === r.track && (r.track !== 'mix' || mixCaliCount(dm()) === r.mixCali);
       return html`<div class="eyebrow">שלב 9 · המלצת המערכת</div><div class="q">${isRec ? 'זה המסלול שמתאים לך' : 'בחרת מסלול אחר'}</div>
       <div class="track-card on rec"><div class="tc-img">${(d.track === 'mix' ? Object.values(COACHES) : coachesFor(d.track)).map((c) => `<img src="${c.face}" alt="">`).join('')}</div>
-        <div><b>${TRACKS[d.track].name}</b><span class="tc-sub">${d.track === 'mix' ? `${splitText(d.days - mixCaliCount(d), mixCaliCount(d))} בשבוע` : TRACKS[d.track].sub}</span>
+        <div><b>${TRACKS[d.track].name}</b><span class="tc-sub">${d.track === 'mix' ? `${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} בשבוע` : TRACKS[d.track].sub}</span>
         ${isRec ? r.why.map((w) => `<span class="why">${icon('check', 'width="14" height="14"')} ${esc(w)}</span>`).join('') : `<span>ההמלצה הייתה: ${TRACKS[r.track].name}${r.track === 'mix' ? ` (${splitText(d.days - r.mixCali, r.mixCali)})` : ''}.</span>`}</div></div>
       ${isRec ? '' : `<button class="btn sm teal" data-rec>${icon('sparkle', 'width="16" height="16"')} חזרה להמלצת המערכת</button>`}
-      ${d.track === 'mix' ? `<label class="field" style="margin-top:14px"><span>כמה מהאימונים קליסתניקס?</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(d) === v ? 'on' : ''}">${v}${r.track === 'mix' && r.mixCali === v ? ' ★' : ''}</button>`).join('')}</div></label>` : ''}
-      ${d.track !== 'cali' ? html`<div style="font-weight:700;margin:14px 0 8px">מי יאמן אותך בחדר הכושר?</div>
+      ${d.track === 'mix' ? `<label class="field" style="margin-top:14px"><span>כמה מהאימונים קליסתניקס?</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${r.track === 'mix' && r.mixCali === v ? ' ★' : ''}</button>`).join('')}</div></label>` : ''}
+      ${d.track !== 'cali' && d.track !== 'mob' ? html`<div style="font-weight:700;margin:14px 0 8px">מי יאמן אותך בחדר הכושר?</div>
         <div class="coach-pick mini">${coachesFor('gym').map((c) => `<button class="coach-card ${d.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span><div class="cap"><b>${c.name}</b></div></button>`).join('')}</div>` : ''}
       <div style="font-weight:700;margin:16px 0 8px">${d.sex === 'f' ? 'מעדיפה' : 'מעדיף'} אחרת?</div>
-      <div class="seg" data-pick-track>${['gym', 'cali', 'mix'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
+      <div class="seg" data-pick-track>${['gym', 'cali', 'mix', 'mob'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
       <p class="sub" style="font-size:12px;margin-top:8px">ההמלצה היא נקודת פתיחה. אפשר לשנות מסלול וחלוקה בכל רגע בהגדרות.</p>`;
     },
     // 10 — בנייה
     () => html`<div class="build-anim"><div class="core"></div>
       <div class="h1" style="font-size:24px">${esc(COACHES[d.coach].name)} ${fem() ? 'בונה' : 'בונה'} לך תוכנית…</div>
       <ul id="buildList">
-        ${cali() ? '<li>קובעת שלב התחלתי בכל סולם</li><li>מתאימה תרגילים לציוד ולפציעות</li><li>בוחרת מיומנויות ראשונות</li><li>בונה שבוע אימונים</li><li>מחשבת יעדי תזונה ותפריט</li>'
+        ${mob() ? `<li>${testDone() ? 'מנתחת את מבחן הטווחים' : 'מאזנת בין כל אזורי הגוף'}</li><li>מתאימה תרגילים לפציעות ולמצב</li><li>בונה שבוע של אימוני מוביליטי</li><li>מחשבת יעדי תזונה ותפריט</li>`
+    : cali() ? '<li>קובעת שלב התחלתי בכל סולם</li><li>מתאימה תרגילים לציוד ולפציעות</li><li>בוחרת מיומנויות ראשונות</li><li>בונה שבוע אימונים</li><li>מחשבת יעדי תזונה ותפריט</li>'
     : '<li>מנתח רמת כושר ויעדים</li><li>מתאים תרגילים למכשירים ולפציעות</li><li>בונה מחזור אימונים של 12 שבועות</li><li>משלב תוכנית ריצה לשיפור 3 ק״מ</li><li>מחשב יעדי תזונה ותפריט</li>'}</ul></div>`,
   ];
 
@@ -213,7 +243,7 @@ export function renderOnboarding(root, done) {
     readInputs();
     if (t.dataset.act === 'back') { if (step === REC) { d.decided = false; d.goal = d.goalWanted || d.goal; } step--; paint(); return; }
     if (step === 3 && !d.name) { toast('איך קוראים לך?'); return; }
-    if (step === 5 && !cali() && d.run3kStr && !parse3k(d.run3kStr)) { toast('פורמט זמן: דקות:שניות, למשל 13:30'); return; }
+    if (step === 5 && !cali() && !mob() && d.run3kStr && !parse3k(d.run3kStr)) { toast('פורמט זמן: דקות:שניות, למשל 13:30'); return; }
     if (step === REC - 1) {
       if (!d.auto) { step = BUILD; paint(); return; }
       const r = rec(); decide(r.track, r.mixCali);       // נכנסים לשלב ההמלצה עם ההמלצה מוחלת
@@ -223,7 +253,7 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-coach]', (e, t) => {
     unlock(); readInputs();
     d.coach = t.dataset.coach;
-    if (!cali()) d.gymCoach = d.coach;
+    if (!COACHES[d.coach].track) d.gymCoach = d.coach; // רק אורי/נועה הם מאמני חדר הכושר
     set((s) => { s.profile = s.profile || {}; s.profile.coach = d.coach; return s; });
     stop(); say(`hello_${d.coach}`, { priority: true });
     paint();
@@ -235,7 +265,7 @@ export function renderOnboarding(root, done) {
     if (d.auto) { d.goalWanted = d.goal; paint(); return; }
     delete d.goalWanted;
     d.track = t.dataset.track;
-    d.coach = cali() ? 'maya' : (d.gymCoach || 'ori');
+    d.coach = cali() ? 'maya' : mob() ? 'tamar' : (d.gymCoach || 'ori');
     d.goal = goalForTrack(d.goal, d.track);
     if (cali() && d.days > 3 && !d.daysTouched) d.days = 3;
     set((s) => { s.profile = s.profile || {}; s.profile.coach = d.coach; return s; });
@@ -254,6 +284,8 @@ export function renderOnboarding(root, done) {
     paint();
   });
   on(root, 'click', '[data-inj]', (e, t) => { toggle(d.injuries, t.dataset.inj); paint(); });
+  on(root, 'click', '[data-flag]', (e, t) => { toggle(d.flags, t.dataset.flag); paint(); });
+  bindMobTest(root, d.mobTest);
   on(root, 'click', '[data-dis]', (e, t) => { toggle(d.dislikes, t.dataset.dis); paint(); });
 
   function runBuild() {
@@ -264,9 +296,10 @@ export function renderOnboarding(root, done) {
       const hM = (d.heightCm || 175) / 100;
       const caliState = anyCali() ? newCali({ pushups: d.pushups, pullups: mix() || d.equip.includes('bar') || d.equip.includes('rings') ? d.pullups : 0, squats: d.squats,
         dips: d.equip.includes('pbars') || d.equip.includes('rings') ? d.dips : 0, plankSec: d.plankSec, bmi: d.weightKg / (hM * hM) }, d.equip) : null;
-      const level = caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
+      const mobState = withMob() ? { ...newMob(testDone() ? d.mobTest : null, d.flags), minutes: d.mobMin } : null;
+      const level = mob() ? mobLevel(mobState) : caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
       const profile = {
-        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mix() ? { mixCali: mixCaliCount(d) } : {}), gymCoach: d.gymCoach || 'ori',
+        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori',
         coach: d.coach, name: d.name, age: d.age, sex: d.sex, heightCm: d.heightCm, weightKg: d.weightKg, targetWeight: d.targetWeight,
         goal: d.goal, level, days: d.days, sessionMin: d.sessionMin, run3k, runLevel: runLevelFrom3k(run3k), injuries: d.injuries,
         dislikes: d.dislikes, dislikedFoods: [], createdAt: new Date().toISOString(),
@@ -277,7 +310,7 @@ export function renderOnboarding(root, done) {
         s.plan = createPlan(profile);
         s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
-        s.events = [{ type: 'coach', text: mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mixCaliCount(d), mixCaliCount(d))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
+        s.events = [{ type: 'coach', text: mob() ? `התוכנית מוכנה! ${GOALS[d.goal].name}.${testDone() ? ` ציון טווחים: ${mobScore(mobState)} מתוך 100.` : ' מבחן הטווחים מחכה במסך התוכנית.'}` : mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
         return s;
       });
       done();

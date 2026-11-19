@@ -92,6 +92,7 @@ function voiceFiles() {
   const slug = nameEntry(p)?.slug;
   // משולב: שני מאמנים — זה של חדר הכושר ומאיה
   const coaches = p.track === 'mix' ? [p.gymCoach || p.coach || 'ori', 'maya'] : [get().profile?.coach || 'ori'];
+  if (p.mob && p.mobN > 0 && !coaches.includes('tamar')) coaches.push('tamar'); // אימוני מוביליטי משולבים — גם תמר
   return Object.keys(VOICE_TIMING).filter((k) => coaches.includes(k.split('/')[0]) && (!k.includes('/names/') || (slug && k.includes(`/names/${slug}/`))))
     .map((k) => `assets/voice/${k}.mp3`);
 }
@@ -126,7 +127,7 @@ let warmed = '';
 export async function warmVoiceCache() {
   const p = get().profile;
   if (!p || !navigator.onLine || get().settings?.voice === false) return;
-  const key = (p.track || '') + (p.coach || '') + (nameEntry(p)?.slug || '');
+  const key = (p.track || '') + (p.coach || '') + (p.mobN || 0) + (nameEntry(p)?.slug || '');
   if (warmed === key) return;
   warmed = key;
   const st = await voiceCacheStatus();

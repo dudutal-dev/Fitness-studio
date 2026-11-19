@@ -9,11 +9,13 @@ import { fmtTime } from '../ui/dom.js';
 import { fmtPace } from '../engine/running.js';
 import { startWorkout, infoSheet } from './workout.js';
 import { startRun } from './run.js';
-import { checkIn, estMinutes } from './home.js';
+import { begin, estMinutes } from './home.js';
 import { warmupFor, cooldownFor, blockedSet } from '../engine/program.js';
 import { isCali, isMix, hasCali, sessionCoach, exCoach, mixCaliCount } from '../engine/cali.js';
 import { laddersSection, bindLadders } from './cali-ui.js';
 import { EQUIP } from '../data/cali.js';
+import { isMob, hasMob, mobCount, mobScore, mobTested, weakRegions, REGIONS } from '../engine/mob.js';
+import { mobTestSheet, quickMobSheet } from './mob-ui.js';
 
 let libFilter = 'all';
 let libAll = false;
@@ -25,20 +27,20 @@ export function renderPlan(root) {
   const doneDays = new Set(plan.completedDays);
   const blocks = [0, 1, 2].map((b) => phaseFor(p, Math.floor(plan.blockIndex / 3) * 3 + b));
   const curInCycle = plan.blockIndex % 3;
-  const cali = isCali(p);
-  const mix = isMix(p), withCali = hasCali(p);
-  const tracks = mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym'];
+  const cali = isCali(p), mob = isMob(p), single = cali || mob; // מסלול בלי בלוקים מתחלפים: בלוק אחד של 4 שבועות
+  const mix = isMix(p), withCali = hasCali(p), withMob = hasMob(p), mobN = mobCount(p);
+  const tracks = [...(mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
   const inTracks = (e) => e.tracks.some((t) => tracks.includes(t));
   const libList = EXERCISES.filter((e) => inTracks(e) && (libFilter === 'all' || e.group === libFilter));
 
   root.innerHTML = html`
     <div class="page-head"><div class="h1">${icon(GOALS[p.goal].icon)} ${GOALS[p.goal].name}</div>
-    <div class="sub">${cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`} · ${p.days} אימונים בשבוע · ${p.sessionMin} דק׳</div></div>
+    <div class="sub">${mob ? `מוביליטי וגמישות${mobTested(p.mob) ? ` · ציון טווחים ${mobScore(p.mob)}` : ''}` : cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`}${mobN ? ` · כולל ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`}` : ''} · ${p.days} אימונים בשבוע · ${mob ? `${p.mob.minutes || 20}` : p.sessionMin} דק׳</div></div>
 
     <div class="card cycle" style="margin-top:4px">
-      <div class="row between"><b>${esc(plan.week.phase.name)} · ${esc(plan.week.week.name)}</b><span class="sub t-cap num">${cali ? `שבוע ${plan.weekInBlock + 1} / 4` : `שבוע ${curInCycle * 4 + plan.weekInBlock + 1} / 12`}</span></div>
-      <div class="cycle-bar">${(cali ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${cali ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${cali ? 'בלוק של 4 שבועות' : esc(ph.name)}</span></div>`)}</div>
-      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
+      <div class="row between"><b>${esc(plan.week.phase.name)} · ${esc(plan.week.week.name)}</b><span class="sub t-cap num">${single ? `שבוע ${plan.weekInBlock + 1} / 4` : `שבוע ${curInCycle * 4 + plan.weekInBlock + 1} / 12`}</span></div>
+      <div class="cycle-bar">${(single ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${single ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${single ? 'בלוק של 4 שבועות' : esc(ph.name)}</span></div>`)}</div>
+      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
     </div>
 
     <div class="h2">השבוע<span class="more" data-act="regen">בנה מחדש</span></div>
@@ -47,9 +49,9 @@ export function renderPlan(root) {
       <div class="content">
         ${x.items.map((it) => { const e = EX[it.exId]; const sg = suggest(it.exId, it, s.history[it.exId], p); return html`
           <div class="ex-row" data-info="${it.exId}" data-coach="${sessionCoach(p, x)}"><div class="ex-thumb"><img src="${demoPoster(sessionCoach(p, x), it.exId)}" alt="" loading="lazy"></div>
-            <div><div class="t">${esc(e.name)}</div><div class="s">${it.sets} × ${it.reps[0]}–${it.reps[1]}${it.unit === 'sec' ? ' שנ׳' : ''} · מנוחה ${fmtTime(it.rest)}</div></div>
-            <div class="w">${sg.w ? `${sg.w}<small>ק״ג</small>` : `<small>${it.role === 'skill' ? 'מיומנות' : it.vol ? 'נפח' : 'משקל גוף'}</small>`}</div></div>`; })}
-        ${s.settings.warmup !== false ? `<div class="mob-line"><span><b>חימום:</b> ${(x.warmup || warmupFor(x.items, blockedSet(p))).map((m) => EX[m.exId].name).join(' · ')}</span><span><b>מתיחות:</b> ${(x.cooldown || cooldownFor(x.items)).map((m) => EX[m.exId].name).join(' · ')}</span></div>` : ''}
+            <div><div class="t">${esc(e.name)}</div><div class="s">${it.role === 'mob' ? `${it.sets > 1 ? `${it.sets} × ` : ''}${e.unilateral ? `${Math.round(it.reps[0] / 2)} שנ׳ לכל צד` : `${it.reps[0]} שנ׳`} · ${e.kind === 'static' ? 'החזקה' : 'תנועה'}` : `${it.sets} × ${it.reps[0]}–${it.reps[1]}${it.unit === 'sec' ? ' שנ׳' : ''} · מנוחה ${fmtTime(it.rest)}`}</div></div>
+            <div class="w">${it.role === 'mob' ? `<small>${REGIONS[it.region] || ''}</small>` : sg.w ? `${sg.w}<small>ק״ג</small>` : `<small>${it.role === 'skill' ? 'מיומנות' : it.vol ? 'נפח' : 'משקל גוף'}</small>`}</div></div>`; })}
+        ${s.settings.warmup !== false && x.track !== 'mob' ? `<div class="mob-line"><span><b>חימום:</b> ${(x.warmup || warmupFor(x.items, blockedSet(p))).map((m) => EX[m.exId].name).join(' · ')}</span><span><b>מתיחות:</b> ${(x.cooldown || cooldownFor(x.items)).map((m) => EX[m.exId].name).join(' · ')}</span></div>` : ''}
         ${x.finisher ? `<div class="card tight" style="margin-top:10px"><b>${esc(x.finisher.name)}</b><div class="sub">${x.finisher.rounds} סבבים: ${x.finisher.items.map(([id, n]) => `${EX[id].name} ${n}${['time', 'cardio'].includes(EX[id].type) ? ' שנ׳' : ''}`).join(' + ')}</div></div>` : ''}
         ${x.run ? html`<div class="card tight" style="margin-top:10px"><div class="row"><b>${emi(x.run.icon)} ${esc(x.run.name)}</b><span class="spacer"></span><span class="tag teal">${x.run.type === 'test' ? 'מבדק' : `${Math.round(x.run.totalSec / 60)} דק׳`}</span></div>
           <div class="sub">${x.run.segs.filter((g) => !['warm', 'cool'].includes(g.kind)).slice(0, 1).map((g) => esc(g.label))} ${x.run.type === 'intervals' ? `· קצב ספרינט ${fmtPace(x.run.pace.fast)}/ק״מ` : x.run.type === 'tempo' ? `· קצב ${fmtPace(x.run.pace.tempo)}/ק״מ` : x.run.type === 'easy' ? `· קצב ${fmtPace(x.run.pace.easy)}/ק״מ` : ''}</div>
@@ -57,7 +59,11 @@ export function renderPlan(root) {
         <button class="btn primary block" style="margin-top:12px" data-start="${x.day}">${doneDays.has(x.day) ? 'בצע שוב' : 'התחל אימון'}</button>
       </div></details>`)}
 
-    ${withCali ? laddersSection(p) : ''}${cali ? '' : html`<div class="h2">רמת קושי${mix ? ' · חדר כושר' : ''}</div>
+    ${withMob ? html`<div class="h2">מוביליטי וגמישות</div>
+    <div class="card"><div class="row between"><b>${mobTested(p.mob) ? `ציון טווחים: ${mobScore(p.mob)} מתוך 100` : 'מבחן הטווחים עוד לא נעשה'}</b><button class="btn sm teal" data-act="mob-test">${icon('target', 'width="16" height="16"')} ${mobTested(p.mob) ? 'מבחן חוזר' : 'למבחן'}</button></div>
+      <div class="sub t-foot" style="margin-top:6px">${mobTested(p.mob) ? `האזורים שמקבלים הכי הרבה זמן: <b>${weakRegions(p.mob).map((r) => REGIONS[r]).join(' · ')}</b>.` : 'שישה מבחנים ביתיים קצרים. עד אז האימונים מאוזנים בין כל האזורים.'} לפני כל אימון בוחרים כמה זמן יש: 10, 20 או 30 דקות.</div>
+      <button class="btn sm block" style="margin-top:10px" data-act="quick-mob">${icon('sparkle', 'width="16" height="16"')} אימון חופשי לפי אזור</button></div>` : ''}
+    ${withCali ? laddersSection(p) : ''}${single ? '' : html`<div class="h2">רמת קושי${mix ? ' · חדר כושר' : ''}</div>
     <div class="card"><b>רמה ${p.level} — ${LEVEL_NAMES[p.level]}</b><div class="sub t-foot">הרמה מתעדכנת אוטומטית בסוף כל בלוק לפי עקביות, התקדמות ומאמץ.</div>
       <div class="lvl-dots">${[1, 2, 3, 4, 5].map((l) => `<i class="${l <= p.level ? 'on' : ''}"></i>`).join('')}</div>
       <div class="grid2"><button class="btn sm" data-lvl="-1" ${p.level <= 1 ? 'disabled' : ''}>קל יותר</button><button class="btn sm" data-lvl="1" ${p.level >= 5 ? 'disabled' : ''}>קשה יותר</button></div></div>`}
@@ -73,8 +79,10 @@ export function renderPlan(root) {
   if (withCali) bindLadders(root, () => renderPlan(root));
   on(root, 'click', '[data-filter]', (e, t) => { libFilter = t.dataset.filter; libAll = false; renderPlan(root); });
   on(root, 'click', '[data-act="lib-all"]', () => { libAll = !libAll; renderPlan(root); });
-  on(root, 'click', '[data-start]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.start)); checkIn((r) => startWorkout(ses, { readiness: r })); });
+  on(root, 'click', '[data-start]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.start)); begin(ses); });
   on(root, 'click', '[data-run]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.run)); startRun(ses.run, { day: ses.day }); });
+  on(root, 'click', '[data-act="mob-test"]', () => mobTestSheet(() => renderPlan(root)));
+  on(root, 'click', '[data-act="quick-mob"]', () => quickMobSheet((w) => startWorkout(w)));
   on(root, 'click', '[data-act="regen"]', () => { set((s2) => regenerateWeek(s2)); toast('השבוע נבנה מחדש'); renderPlan(root); });
   on(root, 'click', '[data-lvl]', (e, t) => {
     set((s2) => { s2.profile.level = Math.min(5, Math.max(1, s2.profile.level + Number(t.dataset.lvl))); return regenerateWeek(s2); });

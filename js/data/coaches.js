@@ -1,4 +1,4 @@
-// המאמנים הווירטואליים: אורי ונועה למסלול חדר הכושר, מאיה למסלול הקליסתניקס. תמונות ודמויות נוצרו ב-ElevenLabs (Gemini Flash Image + Veo 3.1 Fast).
+// המאמנים הווירטואליים: אורי ונועה למסלול חדר הכושר, מאיה למסלול הקליסתניקס, תמר למסלול המוביליטי. תמונות ודמויות נוצרו ב-ElevenLabs (Gemini Flash Image + Veo 3.1 Fast).
 export const COACHES = {
   ori: {
     id: 'ori', name: 'אורי', title: 'מאמן כוח וכושר', voice: 'Dorian (ElevenLabs)',
@@ -15,10 +15,15 @@ export const COACHES = {
     bio: 'רגועה, סבלנית ומדויקת. מאמינה ששליטה בגוף נבנית שלב אחרי שלב — בלי לדלג ובלי למהר.',
     style: 'רגוע-מדויק', img: 'assets/coaches/maya.webp', face: 'assets/coaches/maya_face.webp',
   },
+  tamar: {
+    id: 'tamar', name: 'תמר', title: 'מאמנת מוביליטי וגמישות', voice: 'Jessica (ElevenLabs)', track: 'mob', f: true,
+    bio: 'רגועה, קשובה ומדויקת. מאמינה שטווח תנועה נבנה בנשימה ובהתמדה — כמה דקות ביום, בלי כאב ובלי כוח.',
+    style: 'רגוע-קשוב', img: 'assets/coaches/tamar.webp', face: 'assets/coaches/tamar_face.webp',
+  },
 };
 COACHES.noa.f = true;
-// המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה
-export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.track || 'gym') === (track === 'cali' ? 'cali' : 'gym'));
+// המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה; מוביליטי — תמר
+export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.track || 'gym') === (track === 'cali' || track === 'mob' ? track : 'gym'));
 
 export const demoVideo = (coach, exId) => `assets/demos/${coach}/${exId}.mp4`;
 export const demoPoster = (coach, exId) => `assets/demos/${coach}/${exId}.webp`;

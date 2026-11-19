@@ -198,32 +198,32 @@
  "quad_stretch": [
   "standing on one leg holding the other ankle behind the glutes, knees together, one hand on a rack for balance, side view",
   "holds a standing quadriceps stretch calmly, breathing slowly, small natural movements",
-  "all"
+  "stretch"
  ],
  "hamstring_stretch": [
   "sitting on a gym mat with one leg straight forward and the other bent, reaching toward the toes of the straight leg, side view",
   "holds a seated hamstring stretch calmly, breathing slowly and reaching slightly further",
-  "all"
+  "stretch"
  ],
  "hip_flexor_stretch": [
   "kneeling on one knee on a gym mat in a low lunge: right foot forward with the front knee bent 90 degrees, left knee resting on the mat behind, torso upright, hands on the front knee, side view",
   "holds a kneeling hip flexor stretch calmly, gently pressing the hips forward while breathing",
-  "all"
+  "stretch"
  ],
  "chest_stretch": [
   "standing beside a squat rack upright, one forearm placed flat against the upright at shoulder height, side view",
   "holds a chest stretch by gently rotating the torso away from the arm, breathing slowly",
-  "all"
+  "stretch"
  ],
  "shoulder_stretch": [
   "standing tall pulling one straight arm across the chest with the other arm, front three-quarter view",
   "holds a cross-body shoulder stretch calmly, breathing slowly",
-  "all"
+  "stretch"
  ],
  "child_pose": [
   "kneeling on a gym mat sitting back on the heels, torso folded forward, arms stretched forward on the mat, side view",
   "holds the child's pose stretch, breathing slowly and deeply, back relaxing",
-  "all"
+  "stretch"
  ],
  "air_squat": [
   "standing upright on the gym floor with feet shoulder-width apart and both arms extended straight forward at shoulder height, no equipment, side view",
@@ -609,5 +609,190 @@
   "in a high plank push-up position with straight locked arms, side view",
   "performs scapular push-ups: keeping the arms straight, lets the chest sink between the shoulder blades, then pushes the floor away spreading the shoulder blades",
   "cali"
+ ],
+ "m_neck_side": [
+  "standing upright, head tilted so the right ear drops toward the right shoulder, right hand resting lightly on the left side of the head, left arm relaxed down, front view",
+  "holds the gentle side neck stretch, breathing slowly, shoulders relaxed",
+  "mob"
+ ],
+ "m_wall_slide": [
+  "standing with the back, head and forearms flat against a plain wall, elbows bent at 90 degrees at shoulder height like a goalpost, front view",
+  "slowly slides both arms up the wall until they are almost straight overhead, then slides them back down to the goalpost position",
+  "mob"
+ ],
+ "m_shoulder_cars": [
+  "standing upright side-on to the camera with the right arm straight down by the side, left hand on the hip, side view",
+  "slowly draws one very large controlled circle with the straight right arm: forward, overhead, behind and back down to the side",
+  "mob"
+ ],
+ "m_overhead_lat": [
+  "standing with feet hip-width, right arm reaching overhead, left hand holding the right wrist, torso leaning to the left in a side bend, front view",
+  "holds the standing side-bend lat stretch, breathing slowly",
+  "mob"
+ ],
+ "m_back_scratch": [
+  "standing upright, right elbow pointing to the ceiling with the right hand between the shoulder blades, left hand gently holding the right elbow, front view",
+  "holds the overhead triceps stretch calmly, breathing slowly",
+  "mob"
+ ],
+ "m_wrist_stretch": [
+  "kneeling on all fours on a grey exercise mat, palms flat on the mat with the fingers pointing back toward the knees, arms straight, side view",
+  "gently leans the hips back toward the heels to stretch the forearms, then returns",
+  "mob"
+ ],
+ "m_cat_cow": [
+  "kneeling on all fours on a grey exercise mat with a flat neutral back, hands under shoulders and knees under hips, side view",
+  "slowly arches the back and lifts the gaze, then slowly rounds the back up toward the ceiling tucking the chin, and returns to the flat back",
+  "mob"
+ ],
+ "m_thread_needle": [
+  "kneeling on all fours on a grey exercise mat, left hand on the mat, right arm reaching straight up to the ceiling with the chest rotated open, front three-quarter view",
+  "slowly threads the right arm under the body until the right shoulder rests on the mat, then rotates back and reaches the right arm up to the ceiling again",
+  "mob"
+ ],
+ "m_open_book": [
+  "lying on her left side on a grey exercise mat facing the camera, knees bent at 90 degrees and stacked on top of each other, both arms extended straight forward on the floor with the palms together, head resting on the mat, eye-level side view from the front, camera horizontal",
+  "slowly lifts the top arm and opens it in a wide arc over the body until it rests on the floor behind her, rotating the chest toward the ceiling while the knees stay together, then slowly closes it back",
+  "mob"
+ ],
+ "m_puppy": [
+  "kneeling on a grey exercise mat with the hips directly above the knees, arms stretched far forward on the mat, chest and forehead lowered toward the mat, side view",
+  "holds the puppy pose calmly, chest sinking, breathing slowly",
+  "mob"
+ ],
+ "m_seated_twist": [
+  "sitting upright on a grey exercise mat, left leg straight, right knee bent with the right foot placed outside the left knee, torso twisted to the right, left elbow against the right knee, right hand on the mat behind, front view",
+  "holds the seated spinal twist tall, breathing slowly",
+  "mob"
+ ],
+ "m_cobra": [
+  "lying face down on a grey exercise mat in a low cobra: hands under the shoulders, chest lifted, hips and legs on the mat, shoulders down, side view",
+  "holds the low cobra calmly, breathing slowly",
+  "mob"
+ ],
+ "m_knees_to_chest": [
+  "lying on her back on a grey exercise mat hugging both knees to the chest with both hands, head resting on the mat, side view",
+  "holds the knees-to-chest position and rocks very gently",
+  "mob"
+ ],
+ "m_supine_twist": [
+  "lying on her back on a grey exercise mat, arms spread out to the sides in a T shape, the right knee bent and dropped across the body to her left side resting toward the floor, the left leg straight, both shoulders flat on the mat, eye-level side view, camera horizontal",
+  "holds the lying spinal twist calmly, breathing slowly",
+  "mob"
+ ],
+ "m_pelvic_tilt": [
+  "lying on her back on a grey exercise mat with knees bent and feet flat on the mat, arms relaxed at the sides, side view",
+  "slowly flattens the lower back into the mat by tilting the pelvis, then slightly arches the lower back, a small slow pelvic movement",
+  "mob"
+ ],
+ "m_happy_baby": [
+  "lying on her back on a grey exercise mat in the happy baby pose: knees bent wide toward the armpits, hands holding the outer edges of the feet, soles facing the ceiling, front view",
+  "holds the happy baby pose calmly",
+  "mob"
+ ],
+ "m_side_bend": [
+  "standing with feet slightly apart, left hand on the hip, right arm reaching overhead, torso bending to the left, front view",
+  "holds the standing side bend, breathing slowly",
+  "mob"
+ ],
+ "m_couch": [
+  "in a couch stretch next to a plain wall: right knee on a folded mat against the wall with the right shin up the wall, left foot forward in a lunge, torso upright, hands on the left knee, side view",
+  "holds the couch stretch with an upright torso, breathing slowly",
+  "mob"
+ ],
+ "m_lizard": [
+  "in a deep low lunge on a grey exercise mat: left foot forward, right knee on the mat, both hands on the mat inside the left foot, hips sinking low, side view",
+  "holds the lizard lunge stretch, hips sinking gently",
+  "mob"
+ ],
+ "m_worlds_greatest": [
+  "in a deep lunge on a grey exercise mat: left foot forward, right leg straight back, right hand on the mat inside the left foot, left arm reaching straight up to the ceiling with the chest rotated open, front three-quarter view",
+  "slowly lowers the raised arm down toward the mat inside the front foot, then rotates the chest open and reaches the arm up to the ceiling again",
+  "mob"
+ ],
+ "m_figure4": [
+  "lying on her back on a grey exercise mat in a figure-four stretch: right ankle crossed over the left knee, both hands pulling the left thigh toward the chest, head on the mat, side view",
+  "holds the lying figure-four glute stretch calmly",
+  "mob"
+ ],
+ "m_pigeon": [
+  "in a pigeon pose on a grey exercise mat: right leg bent in front with the shin across, left leg straight back, hips square, torso upright with fingertips on the mat, side view",
+  "holds the pigeon pose calmly, breathing slowly",
+  "mob"
+ ],
+ "m_9090": [
+  "sitting on the floor on a grey exercise mat with the buttocks on the mat: the front leg lies flat on the mat bent at 90 degrees in front of the body, the other leg lies flat on the mat bent at 90 degrees out to the side and behind, both knees and both shins resting on the mat, torso upright, fingertips resting lightly on the mat, front three-quarter view",
+  "sits tall in the 90/90 hip stretch and leans the chest slightly forward over the front shin, then returns upright",
+  "mob"
+ ],
+ "m_9090_switch": [
+  "sitting on a grey exercise mat in a 90/90 position with both knees pointing to the right, hands on the mat behind the hips for support, front view",
+  "slowly lifts both knees and rotates them over to the left side into the mirrored 90/90 position, then rotates back to the right",
+  "mob"
+ ],
+ "m_hip_cars": [
+  "kneeling on all fours on a grey exercise mat with a flat back, hands under the shoulders, the right knee bent and lifted out to the side at hip height like a fire-hydrant exercise, the left knee on the mat, view from behind at a slight angle",
+  "slowly moves the lifted bent right leg in a large controlled circle: knee forward toward the elbow, out to the side, and back behind, keeping the back and hips still",
+  "mob"
+ ],
+ "m_hip_circles": [
+  "standing with feet shoulder-width apart, hands on the hips, front view",
+  "keeps the feet planted, hands on the hips, chest and face toward the camera; slowly sways the hips in a wide circle: to the right, back, to the left and forward, like a slow dance warm-up. Empty hands, no hoop, no props, no objects appear",
+  "mob"
+ ],
+ "m_deep_squat": [
+  "sitting in a deep resting squat, heels flat on the floor, elbows pressing the knees outward with palms together in front of the chest, chest lifted, front view",
+  "holds the deep squat calmly, gently shifting weight from side to side",
+  "mob"
+ ],
+ "m_butterfly": [
+  "sitting on a grey exercise mat in a butterfly stretch: soles of the feet together, knees dropped out to the sides, hands holding the feet, back long, front view",
+  "holds the butterfly stretch, leaning slightly forward from the hips",
+  "mob"
+ ],
+ "m_frog": [
+  "in a frog stretch on a grey exercise mat: resting on the forearms and on both knees, the knees spread very wide apart out to the sides with the inner thighs facing the floor, shins and feet pointing outward, hips low and in line with the knees, back flat, front view",
+  "holds the frog stretch calmly and gently rocks the hips slightly backward and forward",
+  "mob"
+ ],
+ "m_side_lunge": [
+  "standing in a very wide stance in a side lunge: right knee bent with weight on the right leg, left leg straight with the heel on the floor, hands together in front of the chest, front view",
+  "keeps both feet planted in the wide stance; slowly bends the right knee deeply and shifts the hips far over the right foot while the left leg stays straight, then slowly shifts across to bend the left knee deeply while the right leg straightens, and returns",
+  "mob"
+ ],
+ "m_forward_fold": [
+  "standing forward fold: feet hip-width, torso folded down from the hips, arms and head hanging heavy toward the floor, knees slightly soft, side view",
+  "holds the standing forward fold, relaxing a little deeper with each breath",
+  "mob"
+ ],
+ "m_down_dog": [
+  "in a downward-facing dog on a grey exercise mat: hands and feet on the mat, hips high, body in an inverted V shape, arms and back in one long line, side view",
+  "holds the downward dog, gently pedalling the heels toward the mat",
+  "mob"
+ ],
+ "m_active_ham": [
+  "lying on her back on a grey exercise mat, left leg straight on the mat, right leg lifted straight up toward the ceiling, arms relaxed at the sides, side view",
+  "slowly lowers the straight right leg down to the mat, then lifts it straight up again as high as possible",
+  "mob"
+ ],
+ "m_calf_wall": [
+  "standing facing a plain wall with both hands on it, left foot forward with the knee bent, right leg straight back with the heel on the floor, leaning forward, side view",
+  "holds the standing calf stretch against the wall",
+  "mob"
+ ],
+ "m_knee_to_wall": [
+  "in a half-kneeling position facing a plain wall: left foot flat on the floor a short distance from the wall, right knee on a mat, hands on the wall, side view",
+  "slowly drives the left knee forward over the toes until it touches the wall keeping the heel down, then returns",
+  "mob"
+ ],
+ "m_ankle_circles": [
+  "standing on the left leg with the right foot lifted slightly off the floor in front, one hand resting on a chair back for balance, side view",
+  "slowly draws large circles with the toes of the lifted right foot, only the ankle moving",
+  "mob"
+ ],
+ "m_breathing": [
+  "lying on her back on a grey exercise mat with knees bent and feet on the mat, one hand on the belly and one hand on the chest, eyes closed, side view",
+  "breathes slowly and deeply, the belly rising and falling",
+  "mob"
  ]
 }

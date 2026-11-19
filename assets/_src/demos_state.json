@@ -826,5 +826,177 @@
  "maya/back_lever_straddle": {
   "img": "z1GEsAh8veJfN4FHCS2B",
   "vid": "g65J76tC7ABygnrDDUyr"
+ },
+ "tamar/quad_stretch": {
+  "img": "AKWrs7YIII9KCoHL6VCT",
+  "vid": "y1p7FDQPXgs6PSvGsvjS"
+ },
+ "tamar/hamstring_stretch": {
+  "img": "4JxdKA6wkcvAOBBsAssp",
+  "vid": "leHXQvQffA3FGoWTVjBG"
+ },
+ "tamar/hip_flexor_stretch": {
+  "img": "F2jbEgNC7XSHHcm5lbEP",
+  "vid": "yZLXFR6LmZ1Dx4x80ovj"
+ },
+ "tamar/chest_stretch": {
+  "img": "k2Qo2I0rVFKledIk3FZY",
+  "vid": "nLXZMO8zD5mHvo51IrO2"
+ },
+ "tamar/shoulder_stretch": {
+  "img": "6XnZKXfy31GTTW5S0fGl",
+  "vid": "ScODz3oCIyXcfpMOEfz4"
+ },
+ "tamar/child_pose": {
+  "img": "lGPZczEGKXN7HtIH0eWX",
+  "vid": "cys25fn7YiyfDig53wYq"
+ },
+ "tamar/m_neck_side": {
+  "img": "ULV0fQOz6WD5una1btcs",
+  "vid": "BjpSbt1W81FxtxKXEZuu"
+ },
+ "tamar/m_wall_slide": {
+  "img": "0Q635QAiORR9sSuvXT1c",
+  "vid": "UIg81PxMFK0nE0g5D7Fm"
+ },
+ "tamar/m_shoulder_cars": {
+  "img": "n1aQFkbqvEBpgEshVFqm",
+  "vid": "KtMWjoVw1TsMKo1n80w3"
+ },
+ "tamar/m_overhead_lat": {
+  "img": "dfWlt4emIGXJ8AVEDyOp",
+  "vid": "N1Kc58MIcdZs15tOmaA5"
+ },
+ "tamar/m_back_scratch": {
+  "img": "d42htL7TQEucAibAq7OZ",
+  "vid": "jZfhoc3xkX05tCZxaLLL"
+ },
+ "tamar/m_wrist_stretch": {
+  "img": "JsnIYwO2PAAifLY0ssJ2",
+  "vid": "9eZvRz0VlvAKTCDUhEJa"
+ },
+ "tamar/m_cat_cow": {
+  "img": "xuY18AZmNI0atygJubiz",
+  "vid": "eJXwWllzjXjvIrPOtdNe"
+ },
+ "tamar/m_thread_needle": {
+  "img": "Hn1xm0n4oEUyu6QJ5Wtf",
+  "vid": "3UkoFNnpvRwd9v6MbuYf"
+ },
+ "tamar/m_puppy": {
+  "img": "mKhkNKPMZBQcGkxmtHSn",
+  "vid": "iChYwbK5UgevQyM3FTHF"
+ },
+ "tamar/m_seated_twist": {
+  "img": "A42YYlCEnKdE7EahOR8N",
+  "vid": "tl5lf1WxdBHkrgpi228r"
+ },
+ "tamar/m_cobra": {
+  "img": "NNtP45oMPGTiPLXci8y8",
+  "vid": "bUPoDpNDXmZ7Fcy2LCvn"
+ },
+ "tamar/m_knees_to_chest": {
+  "img": "3Ev12Y8Eenp7WonykyZF",
+  "vid": "wYnNYJO9PxrTlyOmqJ8F"
+ },
+ "tamar/m_pelvic_tilt": {
+  "img": "FvgHh9aSAHe8wAbyy1kp",
+  "vid": "Ztdy2ekxwudKOQmaYQ36"
+ },
+ "tamar/m_happy_baby": {
+  "img": "m87Ukn1T04luibtjsWH0",
+  "vid": "elJnWC2FclQjjXbzJDDG"
+ },
+ "tamar/m_side_bend": {
+  "img": "1TAFUmcfte7nvYVd2TID",
+  "vid": "tpp03Lhbs67OL1n3o57w"
+ },
+ "tamar/m_couch": {
+  "img": "M2I72NljwL1t5R3vdsFA",
+  "vid": "ugzDlacLxusOikyjuBqr"
+ },
+ "tamar/m_lizard": {
+  "img": "eeRzwgUh87ieRdHlhpYm",
+  "vid": "SWdS936qTYkVCCYBZv6M"
+ },
+ "tamar/m_worlds_greatest": {
+  "img": "gMwh8ZjNAOigHJSzsThG",
+  "vid": "uUcu9KW9Vd5TxbympRT7"
+ },
+ "tamar/m_figure4": {
+  "img": "xn12CrSUwgzBJRGQLgNE",
+  "vid": "tSkMmuFySIRWvNYzJP59"
+ },
+ "tamar/m_pigeon": {
+  "img": "lvx1tvhMq1Jp6IheNoLY",
+  "vid": "J65HdHBRo6HdZjrVFKvP"
+ },
+ "tamar/m_9090_switch": {
+  "img": "4r9wzL0pMqlXkyQDW79R",
+  "vid": "1Xgtej9ESmej7LGt952c"
+ },
+ "tamar/m_hip_circles": {
+  "img": "taAKuIA1ScGU3Pkh8hM6",
+  "vid": "8r5zU1p2TSdqlooWytNd"
+ },
+ "tamar/m_deep_squat": {
+  "img": "LJYve4jSczmuLHJhgUfE",
+  "vid": "Uhe0WGGdv5xGxeJYGcR0"
+ },
+ "tamar/m_butterfly": {
+  "img": "4taRQgT7M0lPENXj09WB",
+  "vid": "C7l4c7xsfyDEQPecGT4t"
+ },
+ "tamar/m_side_lunge": {
+  "img": "3vuX9PLNGKTsTQOzN9W2",
+  "vid": "pVHxcQv97oZPEGYyX8jY"
+ },
+ "tamar/m_forward_fold": {
+  "img": "BsrBrdLeLn09uBWcAsqL",
+  "vid": "TnSFs3mzwWb1jVmzq1mt"
+ },
+ "tamar/m_down_dog": {
+  "img": "9r2zjKZRyNj9XOXJtRn9",
+  "vid": "aTV9xIELKUxuZdwsa4D6"
+ },
+ "tamar/m_active_ham": {
+  "img": "wYxZizhxvdsVGOo6UK1L",
+  "vid": "Etf8vIUltYjRQHyuAq8w"
+ },
+ "tamar/m_calf_wall": {
+  "img": "vNuSTr0SIs8xqnXz0FMR",
+  "vid": "CW9uc9Bk6U7xsBUyMNRe"
+ },
+ "tamar/m_knee_to_wall": {
+  "img": "Ukn61cM45YpL7jbx99WX",
+  "vid": "WXJxK9wFZxGNW3ENQdDW"
+ },
+ "tamar/m_ankle_circles": {
+  "img": "Z7EOi11yt71E0JyxQzzT",
+  "vid": "dn9rgMf93CjJq6uL8zGt"
+ },
+ "tamar/m_breathing": {
+  "img": "jJumQfuH98CT5bH5DcYS",
+  "vid": "r8eoQxwvANMS55DaDRFp"
+ },
+ "tamar/m_open_book": {
+  "img": "FOGBFTxQlFsJe1Nd7OjY",
+  "vid": "fUYMivxOj0sJP8EQsaxI"
+ },
+ "tamar/m_supine_twist": {
+  "img": "ZeVRQNJWyUnX9IIZgka7",
+  "vid": "kV1XWOARUstCYAZBZCNj"
+ },
+ "tamar/m_hip_cars": {
+  "img": "msmBG68D8SxvoLrfxkDf",
+  "vid": "4nOC4zWCMyHCJMSo4jXM"
+ },
+ "tamar/m_9090": {
+  "img": "2oQtjFM9PsFk3BAVwHqY",
+  "vid": "PcGkdNvlLAI4CyQ5Ayei"
+ },
+ "tamar/m_frog": {
+  "img": "id2hxtv7sQdueEBsk2h4",
+  "vid": "MN2NhDjJvAPlgqXIFOE9"
  }
 }

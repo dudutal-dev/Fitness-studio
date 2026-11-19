@@ -20,6 +20,8 @@ export const ACTIVITY = {
 export function activityKey(profile) {
   if (ACTIVITY[profile.activityLevel]) return profile.activityLevel;
   const d = profile.days || 4;
+  // מוביליטי בלבד: האימונים קלים, ולכן ההוצאה נספרת כפעילות קלה גם ב-3–5 אימונים בשבוע
+  if (profile.track === 'mob') return d >= 6 ? 'base' : 'light';
   return d <= 2 ? 'light' : d <= 5 ? 'base' : 'training';
 }
 
@@ -51,7 +53,9 @@ export function targets(profile) {
   // בגירעון יותר (Helms 2014: 2.3–3.1 ג׳ לק״ג מסה רזה ≈ 2.2 לק״ג משקל גוף). בעודף משקל מחשבים לפי משקל ב-BMI 30,
   // אחרת היעד מתנפח לפי רקמת שומן שלא צריכה חלבון.
   const refW = Math.min(w, 30 * hM * hM);
-  const perKg = profile.goal === 'cut' ? 2.2 : 2.0;
+  // מוביליטי בלבד (בלי אימוני כוח): 1.4 ג׳/ק״ג — הקצה התחתון של טווח ה-ISSN לאנשים פעילים; בגירעון 1.8
+  const mobOnly = profile.track === 'mob';
+  const perKg = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : profile.goal === 'cut' ? 2.2 : 2.0;
   const protein = Math.round(refW * perKg);
   // שומן: 25% מהאנרגיה — בתוך הטווח 20–35% (IOM, AMDR), ולא פחות מ-0.5 ג׳/ק״ג (Iraki 2019: 0.5–1.5 ג׳/ק״ג).
   const fat = Math.round(Math.max((kcal * 0.25) / 9, 0.5 * w));
@@ -61,7 +65,7 @@ export function targets(profile) {
   // שתייה: EFSA — צריכה מספקת 2.5 ל׳ (גברים) / 2.0 ל׳ (נשים) מכל המקורות; כ-70–80% ממשקאות ≈ 2.0 / 1.6 ל׳.
   // + 0.5 ל׳ לכל שעת אימון (ACSM 2007: קצבי הזעה 0.5–2.0 ל׳/שעה — לוקחים את הקצה הנמוך; בחום ובשטח יותר).
   const base = profile.sex === 'f' ? 1.6 : 2.0;
-  const waterL = Math.round((base + 0.5 * ((profile.sessionMin || 60) / 60)) * 10) / 10;
+  const waterL = Math.round((base + 0.5 * ((mobOnly ? profile.mob?.minutes || 20 : profile.sessionMin || 60) / 60)) * 10) / 10;
   return { kcal, protein, fat, carbs, fiber, waterL, tdee: Math.round(tdee), bmr: Math.round(rest), delta, adjust, activity: act, perKg, refW: Math.round(refW) };
 }
 
