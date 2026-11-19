@@ -12,7 +12,7 @@ import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
 
 const GOAL_DESC = {
-  combat: 'כוח + ריצה + סבולת שטח. מוכנות מלאה למסעות ולאימונים.',
+  combat: 'כוח + ריצה + סבולת. כושר מאוזן לכל מה שהחיים דורשים.',
   muscle: 'בניית מסת שריר ונפח, עם ריצה לשמירה על כושר.',
   strength: 'להרים כבד יותר — סקוואט, דדליפט, לחיצות.',
   cut: 'הורדת אחוזי שומן תוך שמירה על שריר וכוח.',
@@ -21,8 +21,8 @@ const GOAL_DESC = {
 const CALI_GOAL_DESC = { muscle: 'בניית שריר במשקל גוף: יותר נפח וסטים, עם עודף קלורי קטן.', cut: 'ירידה בשומן תוך שמירה על כוח. גוף קל יותר — מיומנויות קלות יותר.' };
 export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goal]) || GOAL_DESC[goal];
 export const TRACKS = {
-  gym: { name: 'חדר כושר', sub: 'משקולות, מכונות וריצה', desc: 'תוכנית כוח וכושר קרבי עם אורי או נועה: משקלים שמתעדכנים לבד, ריצות ומבדק 3 ק״מ.' },
-  cali: { name: 'קליסתניקס', sub: 'משקל גוף — בבית, בפארק או בבסיס', desc: 'אימוני משקל גוף עם מאיה: סולמות התקדמות מהשלב הראשון ועד מתח, עמידת ידיים, עליית כוח ופלאנש. עובד גם בלי ציוד בכלל.' },
+  gym: { name: 'חדר כושר', sub: 'משקולות, מכונות וריצה', desc: 'תוכנית כוח וכושר עם אורי או נועה: משקלים שמתעדכנים לבד, ריצות ומבדק 3 ק״מ.' },
+  cali: { name: 'קליסתניקס', sub: 'משקל גוף — בבית או בפארק', desc: 'אימוני משקל גוף עם מאיה: סולמות התקדמות מהשלב הראשון ועד מתח, עמידת ידיים, עליית כוח ופלאנש. עובד גם בלי ציוד בכלל.' },
 };
 
 export function renderOnboarding(root, done) {
@@ -41,10 +41,10 @@ export function renderOnboarding(root, done) {
     () => html`<div class="splash">
         <div class="duo"><img src="${COACHES.ori.img}" alt=""><img src="${COACHES.maya.img}" alt=""><img src="${COACHES.noa.img}" alt=""></div>
         <div class="copy">
-          <div class="eyebrow">AI FITNESS STUDIO</div>
+          <div class="eyebrow">מאמן אישי וירטואלי</div>
           <div class="logo">${BRAND.name}</div>
-          <div class="h1" style="font-size:24px;margin-top:10px">סטודיו כושר אישי, עם מאמן לכל מסלול.</div>
-          <p class="sub" style="font-size:15px">חדר כושר וכושר קרבי, או קליסתניקס במשקל גוף. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
+          <div class="h1" style="font-size:24px;margin-top:10px">מאמן אישי לכל מסלול, בכל רמה.</div>
+          <p class="sub" style="font-size:15px">חדר כושר וריצה, או קליסתניקס במשקל גוף. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
           ${lohemData() ? `<button class="btn block" style="margin-top:14px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ-LOHEM</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית LOHEM נשארת כמו שהיא.</p>` : ''}
         </div></div>`,
     // 1 — מסלול
@@ -113,10 +113,10 @@ export function renderOnboarding(root, done) {
       <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${[3, 4, 5, 6].map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
       <label class="field"><span>משך אימון (דקות)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`)}</div></label>
       ${cali() ? `<div class="card tight" style="margin-top:8px"><b>3 אימונים בשבוע מספיקים.</b><div class="sub">זו ההמלצה המקובלת למתחילים: גוף מלא, עם יום מנוחה בין אימון לאימון. 4 ומעלה — האימונים מתפצלים לפלג עליון, רגליים, דחיפה ומשיכה.</div></div>`
-    : `<div class="card tight" style="margin-top:8px"><b>בצבא הלו״ז משתנה.</b><div class="sub">אין בעיה — האימונים לא צמודים לימים בשבוע. פשוט עושים את האימון הבא בתור. ואם אין חדר כושר, יש "אימון שטח" בלי ציוד.</div></div>`}`,
+    : `<div class="card tight" style="margin-top:8px"><b>הלו״ז משתנה?</b><div class="sub">אין בעיה — האימונים לא צמודים לימים בשבוע. פשוט עושים את האימון הבא בתור. ואם אין חדר כושר, יש "אימון בלי ציוד".</div></div>`}`,
     // 7 — פציעות
     () => html`<div class="eyebrow">שלב 7 · בטיחות</div><div class="q">יש כאבים או פציעות?</div>
-      <p class="sub">נחליף תרגילים שעלולים להחמיר. במקרה של כאב חד — לפנות לרופא היחידה.</p>
+      <p class="sub">נחליף תרגילים שעלולים להחמיר. במקרה של כאב חד — לעצור ולפנות לרופא.</p>
       <div class="chips">${Object.entries(INJURIES).map(([id, x]) => `<button class="chip no ${d.injuries.includes(id) ? 'on' : ''}" data-inj="${id}">${x.name}</button>`)}</div>
       <p class="sub" style="margin-top:14px">${d.injuries.length ? '' : 'אין פציעות — מצוין.'}</p>`,
     // 8 — תזונה

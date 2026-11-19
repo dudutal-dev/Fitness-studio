@@ -1,7 +1,7 @@
 // המאמנים הווירטואליים: אורי ונועה למסלול חדר הכושר, מאיה למסלול הקליסתניקס. תמונות ודמויות נוצרו ב-ElevenLabs (Gemini Flash Image + Veo 3.1 Fast).
 export const COACHES = {
   ori: {
-    id: 'ori', name: 'אורי', title: 'מאמן כוח וכושר קרבי', voice: 'Dorian (ElevenLabs)',
+    id: 'ori', name: 'אורי', title: 'מאמן כוח וכושר', voice: 'Dorian (ElevenLabs)',
     bio: 'ישיר, אנרגטי ולא מוותר. מאמין שכוח אמיתי נבנה מטכניקה מושלמת ועקביות.',
     style: 'קשוח-חם', img: 'assets/coaches/ori.webp', face: 'assets/coaches/ori_face.webp',
   },

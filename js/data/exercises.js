@@ -9,7 +9,7 @@ export const MUSCLES = {
 };
 
 export const GROUPS = {
-  legs: 'רגליים', back: 'גב', chest: 'חזה', shoulders: 'כתפיים', arms: 'ידיים', core: 'ליבה', conditioning: 'כושר קרבי', mobility: 'חימום ומתיחות',
+  legs: 'רגליים', back: 'גב', chest: 'חזה', shoulders: 'כתפיים', arms: 'ידיים', core: 'ליבה', conditioning: 'כושר פונקציונלי', mobility: 'חימום ומתיחות',
 };
 
 import { CALI_EXERCISES } from './cali-exercises.js';

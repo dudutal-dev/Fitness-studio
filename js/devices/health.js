@@ -142,7 +142,7 @@ export function mergeHealth(state, data) {
   state.weights.sort((a, b) => a.date.localeCompare(b.date));
   if (added.weights && state.profile) state.profile.weightKg = state.weights[state.weights.length - 1].kg;
   const have = new Set([...state.runs, ...state.sessions].map((x) => x.importId).filter(Boolean));
-  const NAME = { running: 'ריצה', walking: 'הליכה', hiking: 'מסע / הליכה', cycling: 'אופניים', swimming: 'שחייה', strength: 'אימון כוח', training: 'אימון', other: 'פעילות' };
+  const NAME = { running: 'ריצה', walking: 'הליכה', hiking: 'טיול / הליכה', cycling: 'אופניים', swimming: 'שחייה', strength: 'אימון כוח', training: 'אימון', other: 'פעילות' };
   for (const w of data.workouts) {
     if (have.has(w.id)) continue;
     const hr = w.avgHr ? { avg: w.avgHr, max: w.maxHr || w.avgHr } : undefined;

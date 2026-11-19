@@ -99,8 +99,8 @@ export function buildICS(settings, { name = '', coach = 'אורי' } = {}) {
   if (settings.workout?.on && settings.workout.days?.length) {
     const first = Math.min(...settings.workout.days.map((d) => (d - now.getDay() + 7) % 7));
     const d = new Date(now); d.setDate(d.getDate() + first);
-    add('workout', `💪 אימון LOHEM STUDIO${name ? ` — ${name}` : ''}`, `${coach} מחכה לך באפליקציה. https://dudutal-dev.github.io/Fitness-studio/`, dt(d, settings.workout.time), `FREQ=WEEKLY;BYDAY=${settings.workout.days.map((x) => ICS_DAYS[x]).join(',')}`, 60);
+    add('workout', `💪 אימון בסטודיו כושר${name ? ` — ${name}` : ''}`, `${coach} מחכה לך באפליקציה. https://dudutal-dev.github.io/Fitness-studio/`, dt(d, settings.workout.time), `FREQ=WEEKLY;BYDAY=${settings.workout.days.map((x) => ICS_DAYS[x]).join(',')}`, 60);
   }
   if (settings.weigh?.on) add('weigh', '⚖️ שקילה שבועית', 'בבוקר, לפני אוכל — לרשום באפליקציה.', dt(nextDate(Number(settings.weigh.day)), settings.weigh.time), `FREQ=WEEKLY;BYDAY=${ICS_DAYS[Number(settings.weigh.day)]}`, 5);
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LOHEM//Reminders//HE', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:LOHEM STUDIO', ...ev, 'END:VCALENDAR'].join('\r\n');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LOHEM//Reminders//HE', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:סטודיו כושר', ...ev, 'END:VCALENDAR'].join('\r\n');
 }

@@ -4,12 +4,12 @@ import { bestSet } from './progression.js';
 import { isCali, caliProgress } from './cali.js';
 
 export const RANKS = [
-  { xp: 0, name: 'טירון', icon: 'rank1' },
-  { xp: 600, name: 'לוחם', icon: 'medal' },
-  { xp: 1800, name: 'לוחם ותיק', icon: 'shield' },
-  { xp: 4000, name: 'לוחם עילית', icon: 'rank3' },
-  { xp: 7500, name: 'מפקד כוח', icon: 'star' },
-  { xp: 12000, name: 'אגדת חטיבה', icon: 'crown' },
+  { xp: 0, name: 'מתחילים', icon: 'rank1' },
+  { xp: 600, name: 'מתמידים', icon: 'medal' },
+  { xp: 1800, name: 'ותיקים', icon: 'shield' },
+  { xp: 4000, name: 'מתקדמים', icon: 'rank3' },
+  { xp: 7500, name: 'נבחרת', icon: 'star' },
+  { xp: 12000, name: 'אגדת הסטודיו', icon: 'crown' },
 ];
 
 export function rankFor(xp) {

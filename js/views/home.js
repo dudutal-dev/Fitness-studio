@@ -30,7 +30,7 @@ function coachLine(s) {
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
   if (!s.sessions.length && !s.runs.length) return { key: 'workout_start', text: `<b>${esc(p.name)}</b>, התוכנית שלך מוכנה. האימון הראשון הוא הכי חשוב — ${g('בוא', 'בואי')} נעשה אותו יחד.` };
-  if (st >= 3) return { key: 'streak', text: `רצף של <b>${st} ימים</b>! ${isCali(p) ? 'ככה בונים שליטה בגוף.' : 'ככה בונים לוחם.'} ${ns ? `היום: ${esc(ns.name)}.` : ''}` };
+  if (st >= 3) return { key: 'streak', text: `רצף של <b>${st} ימים</b>! ${isCali(p) ? 'ככה בונים שליטה בגוף.' : 'ככה בונים כושר.'} ${ns ? `היום: ${esc(ns.name)}.` : ''}` };
   const key = MOTIVATION_KEYS[new Date().getDate() % MOTIVATION_KEYS.length];
   return { key, text: `${esc(lineFor(key, p.coach, p.sex))} ${ns ? `<br>המשימה הבאה: <b>${esc(ns.name)}</b>.` : ''}` };
 }
@@ -144,9 +144,9 @@ export function checkIn(cb, onlyLog = false) {
   if (existing != null && !onlyLog) return cb(existing);
   const q = { sleep: 3, energy: 3, soreness: 3, stress: 3 };
   const Q = [['sleep', 'איך ישנת?', [1, 2, 3, 4, 5]], ['energy', 'רמת אנרגיה', [1, 2, 3, 4, 5]],
-    ['soreness', 'כאבי שרירים', [5, 4, 3, 2, 1]], ['stress', 'עומס בצבא / לחץ', [5, 4, 3, 2, 1]]];
+    ['soreness', 'כאבי שרירים', [5, 4, 3, 2, 1]], ['stress', 'לחץ ועומס', [5, 4, 3, 2, 1]]];
   sheet(html`<div class="eyebrow">צ׳ק־אין לפני אימון</div><div class="h1" style="font-size:24px">${g('איך אתה מרגיש', 'איך את מרגישה')} היום?</div>
-    <p class="sub">המאמן יתאים את עומס האימון למצב שלך — אחרי יום שטח קשה מורידים, ביום טוב מגבירים.</p>
+    <p class="sub">המאמן יתאים את עומס האימון למצב שלך — אחרי יום קשה מורידים, ביום טוב מגבירים.</p>
     ${Q.map(([k, t, em]) => html`<div style="margin:14px 0 6px;font-weight:700">${t}</div>
       <div class="rpe" style="grid-template-columns:repeat(5,1fr)" data-q="${k}">${em.map((x, i) => `<button data-v="${i + 1}" class="${q[k] === i + 1 ? 'on' : ''}" aria-label="${i + 1} מתוך 5"><span>${icon(`face${x}`)}</span></button>`)}</div>`)}
     <button class="btn primary block xl" style="margin-top:20px" data-go>${onlyLog ? 'שמור' : 'יאללה, לאימון'}</button>`, {

@@ -9,7 +9,7 @@ export const PHASES = [
     main: [4, 8, 10], second: [3, 8, 12], acc: [3, 10, 15], restMain: 120, restAcc: 75 },
   { id: 'strength', name: 'כוח', desc: 'משקלים כבדים, מעט חזרות — בונים כוח גולמי.',
     main: [5, 4, 6], second: [4, 6, 8], acc: [3, 8, 12], restMain: 180, restAcc: 90 },
-  { id: 'power', name: 'כוח מתפרץ וסבולת קרבית', desc: 'שילוב כוח, פיצוץ וסבולת — מוכנות לשטח.',
+  { id: 'power', name: 'כוח מתפרץ וסבולת', desc: 'שילוב כוח, פיצוץ וסבולת.',
     main: [4, 5, 6], second: [3, 8, 10], acc: [3, 12, 15], restMain: 150, restAcc: 60 },
 ];
 
@@ -21,7 +21,7 @@ export const WEEK_IN_BLOCK = [
 ];
 
 export const GOALS = {
-  combat: { name: 'כושר קרבי', icon: 'shield', runs: 3, finisher: true, phaseOrder: ['base', 'strength', 'power'] },
+  combat: { name: 'כושר כללי', icon: 'shield', runs: 3, finisher: true, phaseOrder: ['base', 'strength', 'power'] },
   muscle: { name: 'מסה ושריר', icon: 'dumbbell', runs: 1, finisher: false, phaseOrder: ['base', 'base', 'strength'] },
   strength: { name: 'כוח מקסימלי', icon: 'bolt', runs: 1, finisher: false, phaseOrder: ['base', 'strength', 'strength'] },
   cut: { name: 'חיטוב והורדת שומן', icon: 'flame', runs: 2, finisher: true, phaseOrder: ['base', 'power', 'base'] },
@@ -68,7 +68,7 @@ const T = {
   legs: { name: 'רגליים', focus: 'כוח ועוצמת רגליים', slots: [
     S('main', 'back_squat', 'leg_press'), S('main', 'rdl', 'deadlift'), S('second', 'bulgarian_split', 'db_lunge'), S('acc', 'leg_curl'),
     S('acc', 'leg_ext'), S('acc', 'calf_raise'), S('core', 'hanging_leg_raise', 'plank')] },
-  field: { name: 'אימון שטח (ללא ציוד)', focus: 'משקל גוף — בכל מקום', slots: [
+  field: { name: 'אימון בלי ציוד', focus: 'משקל גוף — בכל מקום', slots: [
     S('main', 'pushup'), S('main', 'air_squat'), S('second', 'bw_lunge'), S('second', 'burpee'), S('acc', 'glute_bridge'), S('acc', 'mountain_climber'), S('core', 'plank')] },
 };
 
@@ -82,13 +82,13 @@ const SPLITS = {
 // אימון בלי ציוד: רק תרגילים שאפשר לעשות בכל מקום (בלי מוט מתח, משקולות או מכונות)
 const NO_EQUIP = new Set(['משקל גוף', 'מזרן', 'עמידה']);
 export const isBodyweight = (id) => NO_EQUIP.has(EX[id]?.equip);
-const FIELD_FINISHER = { name: 'פיניש שטח: קפיצות פיסוק + ברכיים גבוהות', items: [['jumping_jacks', 30], ['high_knees', 30]], rounds: 3 };
+const FIELD_FINISHER = { name: 'פיניש: קפיצות פיסוק + ברכיים גבוהות', items: [['jumping_jacks', 30], ['high_knees', 30]], rounds: 3 };
 
 const FINISHERS = [
-  { name: 'פיניש קרבי: סבב סווינג + ברפי', items: [['kb_swing', 15], ['burpee', 10]], rounds: 3 },
-  { name: 'פיניש קרבי: חבלים + חקלאי', items: [['battle_rope', 30], ['farmer_carry', 40]], rounds: 3 },
-  { name: 'פיניש קרבי: מזחלת + קפיצות', items: [['sled_push', 25], ['box_jump', 6]], rounds: 3 },
-  { name: 'פיניש קרבי: חתירה ספרינט', items: [['rower', 45], ['burpee', 8]], rounds: 4 },
+  { name: 'פיניש: סבב סווינג + ברפי', items: [['kb_swing', 15], ['burpee', 10]], rounds: 3 },
+  { name: 'פיניש: חבלים + חקלאי', items: [['battle_rope', 30], ['farmer_carry', 40]], rounds: 3 },
+  { name: 'פיניש: מזחלת + קפיצות', items: [['sled_push', 25], ['box_jump', 6]], rounds: 3 },
+  { name: 'פיניש: חתירה ספרינט', items: [['rower', 45], ['burpee', 8]], rounds: 4 },
 ];
 
 // פציעות → תרגילים לחסימה
@@ -229,7 +229,7 @@ export function applyReadiness(workout, readiness) {
   if (readiness < 0.4) {
     w.items = w.items.map((it) => ({ ...it, sets: Math.max(2, it.sets - 1), loadAdj: 0.9, rpe: Math.min(it.rpe, 7) }));
     delete w.finisher;
-    w.note = 'יום עמוס בצבא? הורדתי נפח ועומס ב-10%. איכות לפני כמות.';
+    w.note = 'יום עמוס? הורדתי נפח ועומס ב-10%. איכות לפני כמות.';
   } else if (readiness < 0.6) {
     w.items = w.items.map((it) => ({ ...it, loadAdj: 0.95 }));
     w.note = 'מוכנות בינונית — עומס מופחת ב-5%.';

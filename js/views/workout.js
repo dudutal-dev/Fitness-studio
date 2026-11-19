@@ -488,7 +488,7 @@ export function startWorkout(workout, { readiness = null } = {}) {
     : c.type === 'gated' ? `נשארים בשלב עוד ${c.daysLeft} ימים — גידים מסתגלים לאט יותר מהשריר.` : 'עוד אימון אחד כזה — ועולים שלב.'}</div></div></div>`)}</div>` : ''}
       ${hrSummaryHtml(hr)}
       ${prs.length ? html`<div class="card tight" style="margin-top:12px">${prs.map((id) => `<div class="row" style="padding:4px 0"><span class="pr-badge">PR</span><b>${esc(EX[id].name)}</b><span class="spacer"></span><span class="num">${bestSet(exercises.find((x) => x.exId === id).sets).w} ק״ג</span></div>`)}</div>` : ''}
-      <div class="card tight" style="margin-top:12px"><div class="row">${ib('star', 'pri', 'lg')}<div><b>+${gained} XP</b>${rk.rankUp ? `<div class="sub">עלית דרגה: ${rk.rankUp.name}!</div>` : ''}</div></div>
+      <div class="card tight" style="margin-top:12px"><div class="row">${ib('star', 'pri', 'lg')}<div><b>+${gained} XP</b>${rk.rankUp ? `<div class="sub">דרגה חדשה: ${rk.rankUp.name}!</div>` : ''}</div></div>
         ${weekMsg ? `<div class="sub" style="margin-top:8px;color:var(--pri-ink);font-weight:700">${esc(weekMsg)}</div>` : ''}</div>
       ${workout.run && !partial ? `<button class="btn teal block xl" style="margin-top:14px" data-act="run-now">${icon('run')} המשך לריצה: ${esc(workout.run.name)}</button>` : ''}
       <button class="btn primary block xl" style="margin-top:10px" data-act="close">סיום</button>`;

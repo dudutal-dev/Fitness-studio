@@ -9,7 +9,7 @@ import { connectWatch, watchStatusText, isIOS } from '../devices/ui.js';
 import { fmtPace } from '../engine/running.js';
 import { saveRun } from './run.js';
 
-const SPORT_HE = { running: 'ריצה', strength: 'אימון כוח', cycling: 'אופניים', walking: 'הליכה', hiking: 'מסע / הליכה', training: 'אימון', fitness: 'כושר', swimming: 'שחייה', other: 'פעילות' };
+const SPORT_HE = { running: 'ריצה', strength: 'אימון כוח', cycling: 'אופניים', walking: 'הליכה', hiking: 'טיול / הליכה', training: 'אימון', fitness: 'כושר', swimming: 'שחייה', other: 'פעילות' };
 
 export function pickAndImport(onDone) {
   const inp = document.createElement('input');

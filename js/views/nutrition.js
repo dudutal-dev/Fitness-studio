@@ -9,7 +9,7 @@ import { dayKey } from '../engine/stats.js';
 import { lookupBarcode, startScanner } from '../barcode.js';
 
 let tab = 'today';
-let ctx = 'base';
+let ctx = 'home';
 let seed = new Date().getDate();
 let editDislikes = false;
 let dislikeQuery = '';
@@ -31,7 +31,7 @@ export function renderNutrition(root) {
   const t = plan.targets;
   const dd = daily();
   const eaten = dayTotals(dd, custom);
-  const ctxs = [['base', 'בבסיס'], ['field', 'בשטח'], ['home', 'בבית']];
+  const ctxs = [['home', 'בבית'], ['base', 'בעבודה'], ['field', 'בדרכים']]; // base = יש חדר אוכל/מסעדה · field = בלי מטבח
   const log = (dd.foods || []).map((it, i) => ({ ...it, i, f: foodLookup(it.id, custom) })).filter((x) => x.f);
   const left = t.kcal - eaten.kcal;
   const actKey = activityKey(p);
@@ -115,7 +115,7 @@ export function renderNutrition(root) {
 
     <div class="h2">מידע</div>
     ${plan.noVeg ? html`<details class="card acc"><summary>בלי ירקות — ככה משלימים</summary><div class="acc-body">${NO_VEG_TIPS.map(tip)}</div></details>` : ''}
-    <details class="card acc"><summary>טיפים לחייל</summary><div class="acc-body">${ARMY_TIPS.map(tip)}</div></details>
+    <details class="card acc"><summary>טיפים</summary><div class="acc-body">${ARMY_TIPS.map(tip)}</div></details>
     <details class="card acc method"><summary>איך זה מחושב</summary><div class="acc-body">
       ${p.track === 'cali' ? `<div class="m-row"><b>קליסתניקס</b><span>${p.goal === 'muscle' ? 'העודף הקלורי נשאר קטן בכוונה: כל קילו נוסף הוא קילו שצריך להרים במתח ובמקבילים.' : p.goal === 'cut' ? 'ירידה איטית שומרת על הכוח. כל קילו שומן שיורד מקל ישירות על מתח, לברים ועמידת ידיים.' : 'איזון קלורי עם חלבון גבוה: בונים כוח בלי לעלות במשקל, כי הכוח כאן נמדד ביחס למשקל הגוף.'}</span></div>` : ''}
       <div class="m-row"><b>קלוריות</b><span>BMR לפי Mifflin-St Jeor (<span class="num">${t.bmr}</span>) × מקדם פעילות ${t.activity.factor} = <span class="num">${t.tdee}</span>${t.delta ? ` ${t.delta > 0 ? '+' : '−'} <span class="num">${Math.abs(t.delta)}</span> (${p.goal === 'cut' ? 'ירידה של ~0.5% ממשקל הגוף בשבוע' : 'עודף של ~10% — עלייה של 0.25–0.5% בשבוע'})` : ' (תחזוקה)'}${t.adjust ? ` ${t.adjust > 0 ? '+' : '−'} <span class="num">${Math.abs(t.adjust)}</span> (כיול לפי מגמת המשקל שלך)` : ''}</span></div>
@@ -123,7 +123,7 @@ export function renderNutrition(root) {
       <div class="m-row"><b>שומן</b><span>25% מהקלוריות (טווח מומלץ 20–35%), לא פחות מ-0.5 ג׳ לק״ג</span></div>
       <div class="m-row"><b>פחמימה</b><span>יתרת הקלוריות — <span class="num">${(t.carbs / (p.weightKg || 70)).toFixed(1)}</span> ג׳ לק״ג (ACSM: 5–7 לאימון בינוני, 3–5 לקל)</span></div>
       <div class="m-row"><b>סיבים</b><span>14 ג׳ לכל 1,000 קק״ל (IOM)</span></div>
-      <div class="m-row"><b>שתייה</b><span>${p.sex === 'f' ? '1.6' : '2.0'} ל׳ ממשקאות (EFSA) + 0.5 ל׳ לשעת אימון (ACSM); בחום ובשטח יותר</span></div>
+      <div class="m-row"><b>שתייה</b><span>${p.sex === 'f' ? '1.6' : '2.0'} ל׳ ממשקאות (EFSA) + 0.5 ל׳ לשעת אימון (ACSM); בחום ובמאמץ ממושך יותר</span></div>
       <div class="m-row"><b>כיול</b><span>אחרי שבועיים של שקילות, היעד מושווה לקצב השינוי בפועל ומוצע תיקון של 150 קק״ל</span></div>
       <div class="m-row"><b>ערכי מזון</b><span>מאגר התזונה הלאומי של משרד הבריאות — ${FOODS.length} מאכלים, משקל מנה מטבלת המשקלים של המאגר</span></div>
       ${t.adjust ? '<button class="btn sm block mt-3" data-adjust="reset">איפוס הכיול האישי</button>' : ''}

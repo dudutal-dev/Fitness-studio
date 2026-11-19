@@ -96,8 +96,8 @@ test('running sessions progress', () => {
 });
 
 test('stats', () => {
-  assert.equal(rankFor(0).name, 'טירון');
-  assert.equal(rankFor(700).name, 'לוחם');
+  assert.equal(rankFor(0).name, 'מתחילים');
+  assert.equal(rankFor(700).name, 'מתמידים');
   assert.ok(readinessScore({ sleep: 5, energy: 5, soreness: 1, stress: 1 }) === 1);
   const cri = combatReadiness({ profile: P, history: {}, sessions: [], runs: [], weights: [] });
   assert.ok(cri.score > 0 && cri.score < 100);

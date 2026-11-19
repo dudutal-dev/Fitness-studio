@@ -71,7 +71,7 @@ export function addXP(amount, reason) {
   const before = rankFor(state.xp).idx;
   set((s) => { s.xp += amount; return s; });
   const after = rankFor(state.xp);
-  if (after.idx > before) pushEvent({ type: 'rank', text: `עלית דרגה: ${after.name}!` });
+  if (after.idx > before) pushEvent({ type: 'rank', text: `דרגה חדשה: ${after.name}!` });
   return { amount, reason, rankUp: after.idx > before ? after : null };
 }
 

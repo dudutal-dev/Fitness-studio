@@ -1,8 +1,8 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-20261119.071630';
-const MEDIA = 'studio-media-20261119.071630';
+const VERSION = 'studio-20261119.072241';
+const MEDIA = 'studio-media-20261119.072241';
 const MEDIA_CACHE = 'studio-media';
 const MEDIA_TAG = 'x-studio-media';
 const CORE = [

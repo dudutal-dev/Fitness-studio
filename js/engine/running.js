@@ -4,7 +4,7 @@ export const RUN_TYPES = {
   intervals: { name: 'אינטרוולים', icon: 'bolt', desc: 'ספרינטים קצרים לשיפור מהירות ו-VO2max' },
   tempo: { name: 'ריצת טמפו', icon: 'target', desc: 'קצב קשה-נשלט — מעלה סף לקטט' },
   easy: { name: 'ריצת נפח קלה', icon: 'leaf', desc: 'בסיס אירובי, קצב שיחה' },
-  test: { name: 'מבדק 3 ק״מ', icon: 'flag', desc: 'מבדק זמן — המדד העיקרי לכושר קרבי' },
+  test: { name: 'מבדק 3 ק״מ', icon: 'flag', desc: 'מבדק זמן — המדד העיקרי לכושר האירובי' },
 };
 
 // רמת ריצה 1..5 לפי זמן 3 ק״מ בשניות
