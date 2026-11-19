@@ -1,7 +1,7 @@
 {
   "name": "ניהול קישורי הפעלה",
   "short_name": "ניהול כושר",
-  "description": "הנפקה ומעקב של קישורי הפעלה ל-LOHEM, לסטודיו כושר ולקליסתניקס",
+  "description": "הנפקה ומעקב של קישורי הפעלה ל\"חוד\", ל-MOVA ולקליסתניקס",
   "lang": "he", "dir": "rtl",
   "start_url": "./", "scope": "./",
   "display": "standalone",

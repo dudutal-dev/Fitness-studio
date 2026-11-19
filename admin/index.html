@@ -74,7 +74,7 @@
 <body>
 <header class="top"><div class="top-in">
   <img src="icon-192.png" alt="">
-  <div><h1>קישורי הפעלה</h1><p>LOHEM · סטודיו כושר · קליסתניקס</p></div>
+  <div><h1>קישורי הפעלה</h1><p>חוד · MOVA · קליסתניקס</p></div>
   <button class="out" id="logout" type="button" hidden>יציאה</button>
 </div></header>
 <main>
@@ -129,7 +129,7 @@
 const API = (window.__LIC_API || 'https://lohem-reminders.dudu-tal.workers.dev') + '/lic/admin';
 const BASE = { lohem: 'https://dudutal-dev.github.io/Fitness-center/', studio: 'https://dudutal-dev.github.io/Fitness-studio/', calisthenics: 'https://dudutal-dev.github.io/Calisthenics/' };
 const mem0 = k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
-const HE = { lohem: 'LOHEM', studio: 'סטודיו כושר', calisthenics: 'קליסתניקס' };
+const HE = { lohem: 'חוד', studio: 'MOVA', calisthenics: 'קליסתניקס' };
 const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + 'assets/icons/icon-192.png'])), COL = ['#c2551b', '#0f9f94', '#e5587f', '#d98a1c', '#7b61f0', '#2b8a3e'];
 // האפליקציה שנבחרה בפעם הקודמת בטופס ההנפקה
 const HERE = BASE[mem0('fitlicapp')] ? mem0('fitlicapp') : 'studio';

@@ -92,7 +92,7 @@ export function renderOnboarding(root, done) {
           <div class="logo">${BRAND.name}</div>
           <div class="h1" style="font-size:24px;margin-top:10px">מאמן אישי לכל מסלול, בכל רמה.</div>
           <p class="sub" style="font-size:15px">חדר כושר, קליסתניקס, ריצה, HIIT, פילאטיס, מוביליטי — או שילוב ביניהם. תוכנית שמשתנה איתך, ספירת חזרות בקול, תזונה ומעקב — הכל במקום אחד.</p>
-          ${lohemData() ? `<button class="btn block" style="margin-top:14px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ-LOHEM</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית LOHEM נשארת כמו שהיא.</p>` : ''}
+          ${lohemData() ? `<button class="btn block" style="margin-top:14px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ"חוד"</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית "חוד" נשארת כמו שהיא.</p>` : ''}
         </div></div>`,
     // 1 — מסלול
     () => html`<div class="eyebrow">שלב 1 · המסלול</div><div class="q">איך ${d.sex === 'f' ? 'את מתאמנת' : 'אתה מתאמן'}?</div>
@@ -312,7 +312,7 @@ export function renderOnboarding(root, done) {
     stop(); say(pil() ? 'pil_hello' : `hello_${d.coach}`, { priority: true });
     paint();
   });
-  on(root, 'click', '[data-lohem]', () => { if (importFromLohem()) { toast('הנתונים מ-LOHEM הועתקו'); done(); } });
+  on(root, 'click', '[data-lohem]', () => { if (importFromLohem()) { toast('הנתונים מ"חוד" הועתקו'); done(); } });
   on(root, 'click', '[data-track]', (e, t) => {
     readInputs();
     d.auto = t.dataset.track === 'auto'; d.decided = false;

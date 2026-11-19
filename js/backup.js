@@ -12,7 +12,7 @@ export async function backupNow() {
   try {
     const file = new File([json], name, { type: 'application/json' });
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'גיבוי סטודיו כושר' });
+      await navigator.share({ files: [file], title: 'גיבוי MOVA' });
       ok = true;
     }
   } catch (e) {
