@@ -18,7 +18,7 @@ const POOLS = {
   high: n('hiit', 7),
   run: n('run', 9),
   yoga: n('yoga', 4),
-  tai: [...n('tai', 2), 'yoga_2', 'yoga_4'],   // שתי רצועות ייעודיות, ועוד שתיים שקטות מהיוגה
+  tai: n('tai', 4),
   pil: n('pil', 4),
   mob: n('mob', 3),
 };

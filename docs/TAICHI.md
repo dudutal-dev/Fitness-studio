@@ -38,5 +38,4 @@
 
 ## נכסים
 - מיי: מאמנת חדשה (`COACHES.mei`). דיוקן: `content/character/front.png` מהריפו. קול: הקול של המורה מהריפו.
-- מוזיקה: מאגר `tai` ב-`js/coach/music.js` — שתי רצועות ייעודיות (`tai_1`, `tai_2`; ההנחיות ב-`tools/gen_music.sh`) ושתיים שקטות מהיוגה.
-  ב-`gen_music.sh` יש הנחיות לעוד שתיים (`tai_3`, `tai_4`) שלא נוצרו: מכסת ElevenLabs נגמרה ב-20.11.2026.
+- מוזיקה: מאגר `tai` ב-`js/coach/music.js` — ארבע רצועות ייעודיות (`tai_1`–`tai_4`; ההנחיות ב-`tools/gen_music.sh`).
