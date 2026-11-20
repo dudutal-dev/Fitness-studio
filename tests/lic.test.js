@@ -92,8 +92,9 @@ test('licences: handing a link from iPhone Safari to the home-screen app', async
   const fp = '390x844|he-IL|Asia/Jerusalem|iPhone';
   assert.equal((await post(env, 'hand-put', { app: 'calisthenics', fp, k: 'not-a-token' })).error, 'bad token');
   assert.equal((await post(env, 'hand-put', { app: 'calisthenics', fp, k: token })).ok, true);
-  assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp }, '9.9.9.9')).k, undefined, 'another network does not get it');
+  assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp: fp + '|x' })).k, undefined, 'another device does not get it');
+  assert.equal((await post(env, 'hand-put', { app: 'calisthenics', fp, k: token }, '8.8.8.8')).ok, true);
   assert.equal((await post(env, 'hand-get', { app: 'studio', fp })).k, undefined, 'another app does not get it');
-  assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp })).k, token);
+  assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp }, '9.9.9.9')).k, token, 'same phone on another network (cellular / private relay) gets it');
   assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp })).k, undefined, 'collected once');
 });

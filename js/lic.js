@@ -17,6 +17,9 @@ if (!dev) { dev = Math.random().toString(36).slice(2, 10).padEnd(8, 'x') + Date.
 let L = get(K), cfg = get(KC) || { enforce: false }, why = '', gateEl = null;
 const kParam = (() => { const m = TOKEN.exec(new URLSearchParams(location.search).get('k') || ''); return m ? m[0] : ''; })();
 const valid = () => !!L && L.exp > Date.now() && Date.now() - (L.t || 0) < GRACE;
+// אייפון, בדפדפן, עם קישור הפעלה: מסירים את ה-manifest, כדי ש"הוסף למסך הבית" ישמור את הכתובת הנוכחית — עם הקישור בתוכה.
+// כך האפליקציה שבמסך הבית (אחסון נפרד מהדפדפן) נפתחת עם הקישור ומופעלת לבד, בלי תלות ברשת או בשרת.
+if (kParam && isIOS() && !isStandalone()) document.querySelector('link[rel="manifest"]')?.remove();
 // תיאור המכשיר: זהה בספארי ובאפליקציה שבמסך הבית — כך הקישור עובר ביניהן דרך השרת
 const fp = () => [screen.width, screen.height, devicePixelRatio, navigator.language, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
 const api = async (path, body) => (await fetch(`${WORKER}/lic/${path}`, body ? { method: 'POST', body: JSON.stringify(body) } : undefined)).json();
@@ -99,16 +102,17 @@ export async function initLicense() {
   gate();
   try { const c = await api(`cfg?app=${APP_ID}`); if (typeof c.enforce === 'boolean') { cfg = { enforce: c.enforce }; put(KC, cfg); } } catch { /* אין רשת: לפי ההגדרה האחרונה שנשמרה */ }
   const browserOnIos = isIOS() && !isStandalone();
-  if (kParam && (!L || L.token !== kParam)) {
+  // אפליקציה מותקנת שנפתחת עם הקישור שבכתובת שלה: מפעילים רק כשאין קישור בתוקף (ולא דורסים קישור חדש יותר שהודבק)
+  if (kParam && (!L || L.token !== kParam) && !(isStandalone() && valid())) {
     // באייפון מפעילים רק מהאפליקציה שבמסך הבית, כדי שההפעלה האחת לא תתבזבז על הדפדפן. הקישור מחכה לה בשרת רבע שעה.
     if (browserOnIos) api('hand-put', { app: APP_ID, fp: fp(), k: kParam }).catch(() => {});
     else { await activate(kParam); try { history.replaceState(null, '', location.pathname + location.hash); } catch { /* */ } return; }
-  } else if (!valid() && isIOS() && isStandalone()) {
-    // האפליקציה שבמסך הבית נפתחה בלי קישור: בודקים אם מחכה לה אחד מהדפדפן (עד כמה ניסיונות, בפתיחות הראשונות)
+  } else if (cfg.enforce && !valid() && isIOS() && isStandalone()) {
+    // האפליקציה שבמסך הבית נפתחה בלי קישור: בודקים אם מחכה לה אחד מהדפדפן — בכל פתיחה נעולה (בפתיחות הראשונות כמה ניסיונות)
     const asked = get(KH) || 0;
-    if (asked < 6) {
-      put(KH, asked + 1);
-      for (let n = 0; n < 3 && !valid(); n++) {
+    {
+      put(KH, Math.min(9, asked + 1));
+      for (let n = 0; n < (asked < 6 ? 3 : 1) && !valid(); n++) {
         try { const r = await api('hand-get', { app: APP_ID, fp: fp() }); if (r?.k) { put(KH, 9); await activate(r.k); return; } } catch { break; }
         await new Promise((res) => setTimeout(res, 3000));
       }

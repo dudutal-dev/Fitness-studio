@@ -108,7 +108,8 @@ export async function lic(req, env, url, json, now = Date.now()) {
   // הדפדפן משאיר כאן את הקישור לרבע שעה, לפי תיאור המכשיר (מסך, שפה, אזור זמן), והאפליקציה אוספת אותו בפתיחה הראשונה.
   if (path === 'hand-put' || path === 'hand-get') {
     if (!APPS.includes(b.app)) return json({ error: 'bad app' }, 400);
-    const who = b.app + '|' + String(b.fp || '').slice(0, 160) + '|' + (req.headers.get('cf-connecting-ip') || 'local');
+    // בלי כתובת ה-IP: ברשת סלולרית ועם iCloud Private Relay היא שונה בין הדפדפן לאפליקציה שבמסך הבית, והקישור לא הגיע
+    const who = b.app + '|' + String(b.fp || '').slice(0, 160);
     const hk = 'lic:hand:' + b64u(await crypto.subtle.digest('SHA-256', te.encode(who))).slice(0, 32);
     if (path === 'hand-put') {
       if (!TOKEN_RE.test(String(b.k || ''))) return json({ error: 'bad token' }, 400);
