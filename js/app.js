@@ -1,4 +1,5 @@
 // נקודת כניסה: ניתוב (hash), ניווט תחתון, אונבורדינג, רישום Service Worker.
+import { playIntro } from './intro.js';
 import { get } from './store.js';
 import { icon } from './ui/dom.js';
 import { renderOnboarding } from './views/onboarding.js';
@@ -70,6 +71,7 @@ function route() {
 addEventListener('hashchange', route);
 addEventListener('pointerdown', unlock, { passive: true }); // כל נגיעה מוודאת שהאודיו פתוח (אייפון משהה אותו ברקע)
 route();
+playIntro();
 
 initUpdater();
 initLicense();   // קישור הפעלה אישי — חוסם רק כשהאכיפה מופעלת במסך הניהול
