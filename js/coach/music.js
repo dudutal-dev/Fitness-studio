@@ -1,4 +1,4 @@
-// מוזיקת רקע: לשיעורים (יוגה, פילאטיס, מוביליטי) ולקליסתניקס. רצועות מקוריות שנוצרו עבור האפליקציה (ElevenLabs Music; ההנחיות ב-tools/gen_music.sh).
+// מוזיקת רקע לכל סוגי האימון: שיעורים (יוגה, פילאטיס, מוביליטי), קליסתניקס, חדר כושר, HIIT וריצה. רצועות מקוריות שנוצרו עבור האפליקציה (ElevenLabs Music; ההנחיות ב-tools/gen_music.sh).
 // קליסתניקס: רצועה רגועה לחימום, אחריה שש רצועות היפ־הופ אינסטרומנטלי (הסדר מתחלף מיום ליום), ורצועה רגועה לסיום.
 // כבויה כברירת מחדל (settings.music). מתנגנת בשקט מתחת למאמנת, ומנמיכה את עצמה כשהיא מדברת.
 // הנגן הוא <audio> שמחובר למנוע ה-Web Audio של הקול — כך אפשר לשלוט בעוצמה גם באייפון (שם audio.volume לא ניתן לשינוי).
@@ -6,7 +6,9 @@ import { get } from '../store.js';
 import { onSpeaking, audioCtx } from './voice.js';
 
 const CALI = ['cali_1', 'cali_2', 'cali_3', 'cali_4', 'cali_5', 'cali_6'];
-const TRACKS = { yoga: ['yoga_1', 'yoga_2'], pil: ['pil_1', 'pil_2'], mob: ['mob_2', 'mob_1'], cali: ['cali_warm', ...CALI, 'cali_cool'] };
+const six = (k, n = 6) => Array.from({ length: n }, (_, i) => `${k}_${i + 1}`);
+const TRACKS = { yoga: ['yoga_1', 'yoga_2'], pil: ['pil_1', 'pil_2'], mob: ['mob_2', 'mob_1'], cali: ['cali_warm', ...CALI, 'cali_cool'],
+  gym: six('gym'), hiit: six('hiit', 4), run: six('run') };   // חדר כושר: רצועות חזקות; HIIT: אנרגיה גבוהה; ריצה: קצב של צעדים
 const FULL = 0.42, DUCK = 0.13;
 // קובץ שקט קצר: מתנגן מיד בתוך הנגיעה, כדי שאייפון ירשה לנגן אחר כך את הרצועה עצמה (שנטענת ברקע)
 const SILENCE = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';

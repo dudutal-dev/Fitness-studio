@@ -73,7 +73,8 @@ export function renderHome(root) {
   // כרטיס התזונה של היום: כמה נשאר, שלושת אבות המזון, והארוחה הבאה מהתפריט (אותו תפריט שבמסך התזונה)
   const nutCard = () => {
     const left = t.kcal - eaten.kcal, nf = (n) => Math.round(n).toLocaleString('he-IL');
-    const plan = mealPlan(p, { ctx: 'home', seed: new Date().getDate(), t });
+    const ms = dd.menu && dd.menu.seed === new Date().getDate() && dd.menu.ctx === 'home' ? dd.menu : {};
+    const plan = mealPlan(p, { ctx: 'home', seed: new Date().getDate(), t, swaps: ms.swaps, dishes: ms.dishes });
     const h = new Date().getHours();
     const order = h < 10 ? ['breakfast', 'snack1', 'lunch'] : h < 12 ? ['snack1', 'lunch'] : h < 15 ? ['lunch', 'post', 'dinner'] : h < 18 ? ['post', 'dinner'] : ['dinner'];
     const meal = order.map((id) => plan.meals.find((m) => m.id === id)).find(Boolean) || plan.meals[plan.meals.length - 1];
@@ -83,7 +84,7 @@ export function renderHome(root) {
         <div class="grow"><div class="eyebrow">${icon('food', 'width="14" height="14"')} התזונה של היום</div>
           <div class="nh-left">${left >= 0 ? `נשארו <b class="num">${nf(left)}</b> קק״ל` : `<b class="num">${nf(-left)}</b> קק״ל מעל היעד`}<small> מתוך ${nf(t.kcal)}</small></div>
           <div class="nh-macros">${bar('חלבון', eaten.p, t.protein, 'var(--pri)')}${bar('פחמימה', eaten.c, t.carbs, 'var(--acc)')}${bar('שומן', eaten.f, t.fat, 'var(--orange)')}</div></div></div>
-      ${meal ? `<div class="nh-next"><span class="sub">הארוחה הבאה · ${meal.name}</span><b>${meal.items.slice(0, 3).map((it) => esc(FOOD[it.id].name)).join(' · ')}</b><span class="chev">${icon('chev', 'width="16" height="16"')}</span></div>` : ''}
+      ${meal ? `<div class="nh-next"><span class="sub">הארוחה הבאה · ${meal.name}</span><b>${meal.dish ? esc(meal.dish.name) : meal.items.slice(0, 3).map((it) => esc(FOOD[it.id].name)).join(' · ')}</b><span class="chev">${icon('chev', 'width="16" height="16"')}</span></div>` : ''}
     </button>`;
   };
   const tile = (act, ic, val, unit, label, bar) => `<button class="card tight tracker" data-act="${act}"><div class="tr-top">${ic}<span class="tr-add">＋</span></div>

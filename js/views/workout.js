@@ -94,6 +94,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     ...(flowW ? ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'] : []),
     ...MOTIVATION_KEYS, ...items.map((it) => `ex_${it.exId}`), ...items.filter((it) => MOBILITY_TIPS[it.exId]).map((it) => `tip_${it.exId}`)].filter((key) => coachSays(key, coach))); // רק מה שהמאמן הזה באמת אומר
 
+  const mKey = workout.track || 'gym';   // איזו מוזיקה: לפי סוג האימון; אימון בלי סוג הוא אימון חדר כושר
   const deferFirst = ['warmup', 'mob', 'cooldown'].includes(items[0]?.role) && items[0]?.unit === 'sec';
   let firstShown = false;
   const root = el(`<div class="live" role="dialog" aria-label="אימון חי">
@@ -101,7 +102,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       <div class="hud-top"><button class="icon-btn" data-act="exit" aria-label="יציאה">${icon('close', 'width="20" height="20"')}</button>
         <div class="progress"></div><span class="clock num">0:00</span>
         <button class="icon-btn" data-act="tv" aria-label="מצב טלוויזיה">${icon('tv', 'width="20" height="20"')}</button>
-        ${hasMusic(workout.track) ? `<button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>` : ''}
+        ${hasMusic(mKey) ? `<button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>` : ''}
         <button class="icon-btn" data-act="voice" aria-label="קול">${icon(get().settings.voice ? 'vol' : 'mute', 'width="20" height="20"')}</button></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"></div></div>
@@ -603,7 +604,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (a === 'tv') tvMode(!tvOn);
     if (a === 'music') {
       set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
-      if (musicOn()) startMusic(workout.track); else stopMusic();
+      if (musicOn()) startMusic(mKey); else stopMusic();
       t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
       toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
     }
@@ -703,8 +704,8 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
 
   // פתיחה
   // מוזיקת רקע (יוגה, פילאטיס, מוביליטי, קליסתניקס) — רק למי שהפעיל; בפעם הראשונה מזכירים שיש כפתור
-  if (hasMusic(workout.track)) {
-    if (musicOn()) startMusic(workout.track);
+  if (hasMusic(mKey)) {
+    if (musicOn()) startMusic(mKey);
     else if (!get().settings.musicHint) { set((s2) => { s2.settings.musicHint = true; return s2; }); setTimeout(() => root.isConnected && toast('רוצים מוזיקת רקע? כפתור התו למעלה', 3200), 5000); }
   }
   say(pilW ? 'pil_hello' : `hello_${coach}`, { priority: true });

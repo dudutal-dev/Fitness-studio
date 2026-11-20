@@ -8,6 +8,7 @@ import { coachSays } from '../data/voice-lines.js';
 import { maybeAdvanceWeek } from './workout.js';
 import { sessionCoach } from '../engine/cali.js';
 import { say, sayNow, stop, onSpeaking, unlock, preload, useCoach } from '../coach/voice.js';
+import { musicOn, startMusic, stopMusic } from '../coach/music.js';
 import { gpsTracker } from '../devices/gps.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
 import { hrPill, hrSummaryHtml } from '../devices/ui.js';
@@ -52,6 +53,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     <div class="stage" style="flex:0 0 34%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
       <video muted playsinline loop autoplay src="${demoVideo(coach, demo)}"></video>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>
+        <button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>
         <span class="clock num" id="tot">0:00</span></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"><div class="eyebrow">${emi(run.icon)} ${esc(run.name)}</div><div class="name" style="font-size:22px">קצב יעד: <span class="num" id="pace"></span></div></div></div>
@@ -71,6 +73,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <button class="btn primary block xl" style="margin-top:10px;display:none" data-act="test-done" id="testDone">סיימתי 3 ק״מ</button>
     </div></div>`);
   document.body.append(root);
+  if (musicOn()) startMusic('run');
   document.body.style.overflow = 'hidden';
   const $ = (q) => root.querySelector(q);
   const pill = hrPill();
@@ -189,7 +192,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   }
 
   function close() {
-    clearInterval(timer); offSpeak(); stop(); gps.stop(); hrRec.stop(); pill._destroy?.();
+    clearInterval(timer); offSpeak(); stop(); stopMusic(); gps.stop(); hrRec.stop(); pill._destroy?.();
     if (forced) useCoach(null);
     try { wakeLock?.release(); } catch { /* */ }
     root.remove();
@@ -199,6 +202,13 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
 
   on(root, 'click', '[data-act]', (e, t) => {
     const a = t.dataset.act;
+    if (a === 'music') {
+      set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
+      if (musicOn()) startMusic('run'); else stopMusic();
+      t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
+      toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
+      return;
+    }
     if (a === 'pause') {
       paused = !paused;
       gps.pause(paused);

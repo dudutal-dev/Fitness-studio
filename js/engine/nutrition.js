@@ -1,5 +1,6 @@
 // מנוע תזונה: יעדים קלוריים ומאקרו, ובניית תפריט יומי שמכבד את מה שהמשתמש לא אוכל.
 import { FOODS, FOOD } from '../data/foods.js';
+import { DISHES, DISH } from '../data/dishes.js';
 
 // ───── יעדים — כל רכיב מבוסס מקור (ראו docs/NUTRITION_SOURCES.md) ─────
 // BMR: משוואת Mifflin-St Jeor (1990).
@@ -204,6 +205,9 @@ function planCost(meals, t, minMealP) {
     const gk = t.kcal * m.share;
     cost += 0.15 * ((s.kcal - gk) / gk) ** 2;
     if (s.p < minMealP) cost += 0.6 * ((minMealP - s.p) / minMealP) ** 2;
+    // מנה אמיתית נשארת מנה: המרכיבים שלה גדלים וקטנים יחד, בערך באותו יחס (לא חצי פלאפל עם שתיים וחצי פיתות)
+    const dishIt = m.items.filter((it) => it.base);
+    if (dishIt.length > 1) { const rs = dishIt.map((it) => it.qty / it.base), avg = rs.reduce((a, b) => a + b, 0) / rs.length; cost += 0.05 * rs.reduce((a, x) => a + (x - avg) ** 2, 0) / rs.length; }
   }
   const rel = (v, g) => (v - g) / Math.max(1, g);
   const ep = rel(day.p, t.protein);
@@ -216,7 +220,7 @@ function fitQuantities(meals, t, minMealP) {
   for (let iter = 0; iter < 200; iter++) {
     let move = null;
     for (const m of meals) for (const it of m.items) {
-      const cat = FOOD[it.id].cat, lo = QMIN[cat] ?? 0.5, hi = QCAP[cat] || 2, q0 = it.qty;
+      const cat = FOOD[it.id].cat, lo = it.base ? 0.5 : QMIN[cat] ?? 0.5, hi = QCAP[cat] || 2, q0 = it.qty;   // מרכיב של מנה לא יורד לאפס
       for (const d of [0.5, -0.5]) {
         const q = q0 + d;
         if (q < lo || q > hi) continue;
@@ -234,11 +238,20 @@ function fitQuantities(meals, t, minMealP) {
 
 // בניית תפריט יומי. ctx: base | field | home
 // התפריט נבנה רק מהמאכלים שנבחרו לו ידנית; מאכלי הרחבת המאגר (plan: false) משמשים לחיפוש וליומן בלבד.
-export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, recent = [] } = {}) {
+// המאכלים שמותר לבנות מהם תפריט למתאמן הזה, במקום הזה (בית / עבודה / דרכים): בלי מה שהוא לא אוכל, בלי מה שחסום בתזונה או באלרגיה
+export function planPool(profile, ctx = 'base') {
+  const blk = blockedBy(profile), plant = profile.diet === 'veg' || profile.diet === 'vegan';
+  return FOODS.filter((f) => planAllowed(f, profile, blk) && (f.ctx.includes(ctx) || (plant && PLANT_ANYWHERE.has(f.id))) && f.cat !== 'meal' && (f.plan !== false || (plant && PLANT_PLAN.has(f.id))) && !NOT_IN_PLAN.has(f.id));
+}
+const mixesMeatMilk = (ids) => ids.some((id) => isMeat(FOOD[id])) && ids.some((id) => isDairy(FOOD[id]));
+// מנה מתאימה לארוחה כשכל המרכיבים שלה מותרים וזמינים, ובכשרות — בלי בשר וחלב יחד
+const dishFits = (d, code, ids, kosher) => d.meals.includes(code) && d.items.every(([id]) => ids.has(id)) && !(kosher && mixesMeatMilk(d.items.map(([id]) => id)));
+
+// בניית תפריט יומי. swaps: החלפות של פריט בודד ({ 'מזהה ארוחה|מזהה מאכל': מאכל חדש }); dishes: מנה שנבחרה ידנית לארוחה ({ מזהה ארוחה: מזהה מנה })
+export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, recent = [], swaps = {}, dishes = {} } = {}) {
   const t = dayT || targets(profile);   // dayT: יעדי היום (dayTargets) — כשהתפריט נבנה ליום מסוים
   const rnd = seeded(seed);
-  const blk = blockedBy(profile), plant = profile.diet === 'veg' || profile.diet === 'vegan';
-  const pool = FOODS.filter((f) => planAllowed(f, profile, blk) && (f.ctx.includes(ctx) || (plant && PLANT_ANYWHERE.has(f.id))) && f.cat !== 'meal' && (f.plan !== false || (plant && PLANT_PLAN.has(f.id))) && !NOT_IN_PLAN.has(f.id));
+  const pool = planPool(profile, ctx), poolIds = new Set(pool.map((f) => f.id));
   const usedToday = new Set();
   // מה שסומן כמועדף, או נרשם ביומן לאחרונה, מקבל עדיפות בהגרלה (פי 3 / פי 2)
   const fav = new Set(profile.favFoods || []), seen = new Set(recent);
@@ -250,15 +263,41 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, rece
   };
   // כשרות (profile.kosher): באותה ארוחה אין בשר עם חלב
   const fits = (items, f) => !profile.kosher || !(isMeat(f) ? items.some((it) => isDairy(FOOD[it.id])) : isDairy(f) && items.some((it) => isMeat(FOOD[it.id])));
+  // מנה אמיתית לכל ארוחה (data/dishes.js): מה שנבחר ידנית, אחרת הגרלה מבין המנות שמתאימות — בלי לחזור על אותו מקור חלבון באותו יום.
+  // כשאין מנה מתאימה (הגבלות רבות, או מקום בלי מטבח) הארוחה מורכבת ממאכלים בודדים, כמו קודם.
+  const usedDish = new Set();
+  const pickDish = (m) => {
+    const forced = DISH[dishes[m.id]];
+    if (forced && dishFits(forced, m.code, poolIds, profile.kosher)) { usedDish.add(forced.id); return forced; }
+    let opts = DISHES.filter((d) => dishFits(d, m.code, poolIds, profile.kosher) && !usedDish.has(d.id) && !d.items.some(([id]) => usedToday.has(id) && ['protein', 'dairy'].includes(FOOD[id].cat)));
+    if (!opts.length) return null;
+    // מי שצריך הרבה חלבון (ירידה במשקל, משקל גוף גבוה) מקבל מנות עשירות בחלבון: מסננים לפי צפיפות החלבון שהארוחה דורשת
+    const dens = (d) => { const x = d.items.reduce((a, [id, q]) => { a.p += FOOD[id].p * q; a.k += FOOD[id].kcal * q; return a; }, { p: 0, k: 1 }); return x.p / x.k; };
+    const need = (t.protein * m.pShare) / (t.kcal * m.share);
+    const rich = opts.filter((d) => dens(d) >= need * 0.8);
+    if (rich.length >= 2) opts = rich; else if (opts.length > 3) opts = [...opts].sort((a, b) => dens(b) - dens(a)).slice(0, 3);
+    const w = opts.map((d) => Math.max(...d.items.map(([id]) => (fav.has(id) ? 3 : seen.has(id) ? 2 : 1))));
+    let r = rnd() * w.reduce((a, b) => a + b, 0), i = 0;
+    while (i < opts.length - 1 && (r -= w[i]) >= 0) i++;
+    usedDish.add(opts[i].id); return opts[i];
+  };
   const meals = mealsFor(profile).map((m) => {
     const items = [];
-    for (const cats of m.slots) {
+    const dish = pickDish(m);
+    if (dish) for (const [id, qty] of dish.items) { items.push({ id, qty, base: qty }); usedToday.add(id); }
+    else for (const cats of m.slots) {
       let opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id) && fits(items, f));
       // לא אוכל ירקות? המשבצת מקבלת פרי או שומן בריא במקום להישאר ריקה
       if (!opts.length && cats.includes('veg')) opts = pool.filter((f) => ['fruit', 'fat'].includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id));
       if (opts.length) items.push(pick(opts));
     }
-    return { ...m, items };
+    // החלפת פריט בודד: המאכל החדש נכנס במקום הישן (אם הוא עדיין מותר ומתאים לארוחה), והכמויות מותאמות מחדש
+    let swapped = false;
+    for (const it of items) {
+      const to = swaps[`${m.id}|${it.id}`];
+      if (to && poolIds.has(to) && !items.some((x) => x.id === to) && fits(items.filter((x) => x !== it), FOOD[to])) { it.from = it.id; it.id = to; swapped = true; usedToday.add(to); }
+    }
+    return { ...m, items, ...(dish && !swapped ? { dish: { id: dish.id, name: dish.name } } : {}) };
   });
   // רצפת חלבון לארוחה: 0.25 ג׳/ק״ג, בין 15 ל-30 ג׳ (ארוחת ביניים קטנה — חצי מזה)
   const minMealP = Math.min(30, Math.max(15, 0.25 * (profile.weightKg || 70)));
@@ -275,7 +314,7 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, rece
     for (const { m } of order) {
       const opts = pool.filter((f) => cats.includes(f.cat) && f.meals.includes(m.code) && !usedToday.has(f.id) && fits(m.items, f));
       if (!opts.length) continue;
-      m.items.push(pick(opts)); added = true; break;
+      m.items.push({ ...pick(opts), extra: true }); added = true; break;   // תוספת מעבר למנה — מוצגת בנפרד
     }
     if (!added) break;
     fitQuantities(meals, t, minMealP);
@@ -285,6 +324,30 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, rece
   const noVeg = (profile.dislikes || []).includes('vegetables');
   // short: התפריט רחוק מהיעד (מעט מדי מאכלים מתאימים) — המסך מציג על זה הערה
   return { targets: t, meals, total, noVeg, short: total.p < t.protein * 0.85 || total.kcal < t.kcal * 0.9 };
+}
+
+// חלופות לפריט בתפריט: עד שלושה מאכלים מאותו סוג שמתאימים לארוחה, קרובים בקלוריות ובחלבון
+export function swapOptions(profile, plan, mealIdx, foodId, { ctx = 'base' } = {}) {
+  const m = plan.meals[mealIdx], cur = FOOD[foodId];
+  if (!m || !cur) return [];
+  const rest = m.items.filter((x) => x.id !== foodId).map((x) => FOOD[x.id]);
+  const inPlan = new Set(plan.meals.flatMap((x) => x.items.map((it) => it.id)));
+  const okKosher = (f) => !profile.kosher || !(isMeat(f) ? rest.some(isDairy) : isDairy(f) && rest.some(isMeat));
+  const dist = (f) => Math.abs(f.kcal - cur.kcal) / Math.max(60, cur.kcal) + Math.abs(f.p - cur.p) / Math.max(6, cur.p);
+  return planPool(profile, ctx).filter((f) => f.cat === cur.cat && f.id !== foodId && !inPlan.has(f.id) && f.meals.includes(m.code) && okKosher(f))
+    .sort((a, b) => dist(a) - dist(b)).slice(0, 3);
+}
+// מנות אחרות לאותה ארוחה: עד שלוש, מבין אלה שמתאימות למתאמן ולמקום
+export function dishOptions(profile, plan, mealIdx, { ctx = 'base' } = {}) {
+  const m = plan.meals[mealIdx];
+  if (!m) return [];
+  const ids = new Set(planPool(profile, ctx).map((f) => f.id)), used = new Set(plan.meals.map((x) => x.dish?.id).filter(Boolean));
+  const others = new Set(plan.meals.filter((x) => x !== m).flatMap((x) => x.items.map((it) => it.id)).filter((id) => ['protein', 'dairy'].includes(FOOD[id].cat)));
+  const list = DISHES.filter((d) => dishFits(d, m.code, ids, profile.kosher) && !used.has(d.id));
+  const fresh = list.filter((d) => !d.items.some(([id]) => others.has(id)));
+  const rot = (plan.meals.reduce((a, x) => a + x.items.length, 0) + mealIdx) % Math.max(1, fresh.length || list.length);
+  const src = fresh.length >= 3 ? fresh : list;
+  return [...src.slice(rot), ...src.slice(0, rot)].slice(0, 3);
 }
 
 export function qtyLabel(q) {

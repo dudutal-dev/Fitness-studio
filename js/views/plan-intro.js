@@ -87,7 +87,7 @@ export function openPlanIntro(onDone) {
       </div>
       <div class="card tight"><b>יום לדוגמה</b><span class="sub t-foot"> · ${plan.total.kcal.toLocaleString('he-IL')} קק״ל · ${plan.total.p} ג׳ חלבון</span>
         ${plan.meals.map((m) => html`<div class="pi-meal"><div class="pm-top"><b>${emi(m.icon)} ${m.name}</b><span class="num">${m.total.kcal} קק״ל</span></div>
-          <div class="sub">${m.items.map((it) => esc(FOOD[it.id].name)).join(' · ')}</div></div>`)}
+          <div class="sub">${m.dish ? esc(m.dish.name) : m.items.map((it) => esc(FOOD[it.id].name)).join(' · ')}</div></div>`)}
         <div class="sub t-foot" style="margin-top:8px">${(p.dislikes || []).length ? `התפריט נבנה בלי מה שסימנת ש${fem ? 'את לא אוכלת' : 'אתה לא אוכל'}. ` : ''}זו הצעה, לא חובה: במסך התזונה יש תפריט מתחלף לפי מקום (בבית, בעבודה, בדרכים), ורישום של מה שאוכלים בפועל.</div>
       </div>
 ` : ''}

@@ -225,7 +225,8 @@ test('meal plan: no chicken / meat / fish at breakfast; foods fit their meal; no
     const plan = mealPlan({ ...P, dislikes: [] }, { ctx, seed });
     for (const m of plan.meals) for (const it of m.items) {
       const f = FOOD[it.id];
-      assert.ok(f.meals.includes(code[m.id]), `${f.name} not allowed in ${m.id}`);
+      // מרכיב של מנה אמיתית (it.base) נקבע לפי המנה; מאכל בודד — לפי השדה meals שלו
+      if (!it.base) assert.ok(f.meals.includes(code[m.id]), `${f.name} not allowed in ${m.id}`);
       assert.notEqual(f.cat, 'meal');
       if (m.id === 'breakfast') assert.ok(!f.tags.some((t) => MEAT.includes(t)), `breakfast has ${f.name} (${ctx}, seed ${seed})`);
     }

@@ -3,7 +3,7 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
-import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits } from '../engine/nutrition.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
@@ -60,7 +60,9 @@ export function renderNutrition(root) {
   const dd = daily();
   // היעדים והתפריט של היום — לפי האימון של היום (ראו dayType / dayTargets במנוע התזונה)
   const dt = dayType(s, Date.now(), dd.dayType);
-  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s) });
+  // החלפות שנעשו בתפריט של היום נשמרות ברשומה היומית, כל עוד לא ביקשו "תפריט אחר" ולא שינו מקום
+  const ms = dd.menu && dd.menu.seed === seed && dd.menu.ctx === ctx ? dd.menu : { seed, ctx, swaps: {}, dishes: {} };
+  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s), swaps: ms.swaps, dishes: ms.dishes });
   const t = plan.targets;
   const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
@@ -132,11 +134,13 @@ export function renderNutrition(root) {
     <div class="seg">${ctxs.map(([k, v]) => `<button data-ctx="${k}" class="${ctx === k ? 'on' : ''}">${v}</button>`)}</div>
     <div class="row between menu-sum"><div class="sub t-foot">התפריט: <b class="num">${nf(plan.total.kcal)}</b> קק״ל · <b class="num">${plan.total.p}</b> ג׳ חלבון<br>יעד: <span class="num">${nf(t.kcal)}</span> קק״ל · <span class="num">${t.protein}</span> ג׳ חלבון</div>
       <button class="btn sm" data-act="shuffle">${icon('swap', 'width="16" height="16"')} תפריט אחר</button></div>
+    <div class="sub t-foot swap-hint">לחיצה על מנה או על מאכל מציעה חלופות, והכמויות מתעדכנות ליעד.</div>
     ${plan.short ? '<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים כדי להגיע ליעד. כדאי להשלים ממה שיש בהישג יד, או לנסות "תפריט אחר".</div>' : ''}
     ${plan.meals.map((m, mi) => html`<div class="card tight meal">
       <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}</b><span class="num sub t-foot">${m.total.kcal} קק״ל · ${m.total.p} ג׳ חלבון</span></div>
         <button class="eat-btn" data-eat-meal="${mi}" aria-label="אכלתי את ${esc(m.name)}">${icon('check')} אכלתי</button></div>
-      ${m.items.map((it) => { const f = FOOD[it.id]; return `<div class="mi"><span>${esc(f.name)}</span><small>${qtyLabel(it.qty)}${esc(f.portion)}</small></div>`; })}
+      <button class="dish-line" data-dish="${mi}">${m.dish ? `<b>${esc(m.dish.name)}</b>` : '<b class="sub" style="font-weight:600">הרכב לפי המאכלים</b>'}<span>${icon('swap')} מנה אחרת</span></button>
+      ${m.items.map((it) => { const f = FOOD[it.id]; return `<button class="mi" data-swap="${mi}|${it.id}"><span>${it.extra ? '<span class="tag">תוספת</span>' : ''}${esc(f.name)}</span><small>${qtyLabel(it.qty)}${esc(f.portion)}</small><i>${icon('swap')}</i></button>`; })}
     </div>`)}
     <div class="sub t-foot center-t mt-3">סה״כ ביום: <span class="num">${plan.total.c}</span> ג׳ פחמימה · <span class="num">${plan.total.f}</span> ג׳ שומן · <span class="num">${plan.total.fib}</span> ג׳ סיבים (יעד ${t.fiber})</div>`;
 
@@ -198,6 +202,37 @@ export function renderNutrition(root) {
   });
   on(root, 'click', '[data-activity] button', (e, b) => { set((s2) => { s2.profile.activityLevel = b.dataset.v; return s2; }); rerender(); });
   on(root, 'click', '[data-ctx]', (e, b) => { ctx = b.dataset.ctx; rerender(); });
+  // החלפת פריט בודד בתפריט
+  on(root, 'click', '[data-swap]', (e, b) => {
+    const [mi, id] = b.dataset.swap.split('|'), meal = plan.meals[Number(mi)], it = meal.items.find((x) => x.id === id);
+    const key = `${meal.id}|${it.from || it.id}`, opts = swapOptions(p, plan, Number(mi), id, { ctx });
+    sheet(html`<div class="eyebrow">${esc(meal.name)}</div><div class="h1" style="font-size:22px">במקום ${esc(FOOD[id].name)}</div>
+      ${opts.length ? opts.map((f) => `<button class="swap-opt" data-to="${f.id}"><span><b>${esc(f.name)}</b><small>${esc(f.portion)}</small></span><span class="num"><b>${Math.round(f.kcal)}</b><small>${Math.round(f.p)} ג׳ חלבון</small></span></button>`).join('') : '<p class="sub" style="margin-top:10px">אין כרגע חלופה מתאימה לארוחה הזאת עם ההעדפות שלך.</p>'}
+      ${it.from ? `<button class="btn block" style="margin-top:12px" data-to="">להחזיר את ${esc(FOOD[it.from].name)}</button>` : ''}
+      <button class="btn ghost block" style="margin-top:8px" data-close>ביטול</button>`, {
+      onMount(sh, close) {
+        on(sh, 'click', '[data-to]', (ev, o) => {
+          const swaps = { ...ms.swaps }; if (o.dataset.to) swaps[key] = o.dataset.to; else delete swaps[key];
+          setDaily({ menu: { seed, ctx, swaps, dishes: ms.dishes } }); close(); rerender();
+        });
+      },
+    });
+  });
+  // החלפת המנה כולה
+  on(root, 'click', '[data-dish]', (e, b) => {
+    const mi = Number(b.dataset.dish), meal = plan.meals[mi], opts = dishOptions(p, plan, mi, { ctx });
+    sheet(html`<div class="eyebrow">${esc(meal.name)}</div><div class="h1" style="font-size:22px">מנה אחרת</div>
+      ${opts.length ? opts.map((d) => `<button class="swap-opt" data-to="${d.id}"><span><b>${esc(d.name)}</b><small>${d.items.map(([id]) => esc(FOOD[id].name)).join(' · ')}</small></span></button>`).join('') : '<p class="sub" style="margin-top:10px">אין כרגע מנה אחרת שמתאימה לארוחה הזאת עם ההעדפות שלך ובמקום הזה.</p>'}
+      <button class="btn ghost block" style="margin-top:12px" data-close>ביטול</button>`, {
+      onMount(sh, close) {
+        on(sh, 'click', '[data-to]', (ev, o) => {
+          // מנה חדשה: ההחלפות הקודמות של הארוחה הזאת כבר לא רלוונטיות
+          const swaps = Object.fromEntries(Object.entries(ms.swaps).filter(([k]) => !k.startsWith(meal.id + '|')));
+          setDaily({ menu: { seed, ctx, swaps, dishes: { ...ms.dishes, [meal.id]: o.dataset.to } } }); close(); rerender();
+        });
+      },
+    });
+  });
   bindNutPrefs(root, on, (mutate) => { set((s2) => { mutate(s2.profile); return s2; }); rerender(); });
   on(root, 'click', '[data-act="nut-off"]', () => { set((s2) => { s2.profile.nutrition = false; return s2; }); tab = 'today'; toast('ליווי התזונה כובה. אפשר להפעיל שוב מכאן.'); rerender(); });
   on(root, 'click', '[data-act="shuffle"]', () => { seed++; rerender(); });
