@@ -1,8 +1,8 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-20261120.201728';
-const MEDIA = 'studio-media-20261120.120410';
+const VERSION = 'studio-20261120.204154';
+const MEDIA = 'studio-media-20261120.204154';
 const MEDIA_CACHE = 'studio-media';
 const MEDIA_TAG = 'x-studio-media';
 const CORE = [
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (e) => {
   if (req.headers.has('range')) return; // וידאו: בקשות טווח הולכות ישר לרשת
   if (url.pathname.endsWith('/version.json')) { e.respondWith(fetch(req, { cache: 'no-store' }).catch(() => caches.match(req))); return; }
   if (url.origin !== location.origin) return; // בקשות לשירותים חיצוניים (מאגר הברקודים) עוברות ישר לרשת
-  const isMedia = /\/assets\/(demos|voice|music)\//.test(url.pathname);
+  const isMedia = /\/assets\/(demos|voice|voice-en|music)\//.test(url.pathname);
   if (isMedia) {
     e.respondWith(caches.open(MEDIA_CACHE).then((c) => c.match(req)).then((hit) => {
       if (hit) {

@@ -16,7 +16,7 @@ const emit = (v, text) => listeners.forEach((f) => f(v, text));
 let activeCoach = null;
 export const useCoach = (id) => { activeCoach = id || null; };
 export const coachId = () => activeCoach || get().profile?.coach || 'ori';
-export const clipUrl = (clip, coach = coachId()) => `../assets/voice/${coach}/${clip}.mp3`;
+export const clipUrl = (clip, coach = coachId()) => `../assets/voice-en/${coach}/${clip}.mp3`;
 export const clipDur = (clip, coach = coachId()) => VOICE_TIMING[`${coach}/${clip}`] ?? 1;
 
 let ctx = null, gain = null;
@@ -125,7 +125,7 @@ function voiceFiles() {
   const coaches = p.track === 'mix' ? [p.gymCoach || p.coach || 'ori', 'maya'] : [get().profile?.coach || 'ori'];
   if (p.mob && p.mobN > 0 && !coaches.includes('tamar')) coaches.push('tamar'); // אימוני מוביליטי משולבים — גם תמר
   return Object.keys(VOICE_TIMING).filter((k) => coaches.includes(k.split('/')[0]) && (!k.includes('/names/') || (slug && k.includes(`/names/${slug}/`))))
-    .map((k) => `../assets/voice/${k}.mp3`);
+    .map((k) => `../assets/voice-en/${k}.mp3`);
 }
 // כמה מהקבצים כבר שמורים במכשיר
 export async function voiceCacheStatus() {
@@ -201,7 +201,7 @@ function toEntry(item) {
 export function say(item, { priority = false, keep = false } = {}) {
   const e = toEntry(item);
   if (keep) e.keep = true;
-  if (!false) { emit(false, e.text); return; }
+  if (!get().settings.voice) { emit(false, e.text); return; }
   if (priority) stop();
   queue.push(e);
   if (!current) next();
@@ -210,7 +210,7 @@ export function say(item, { priority = false, keep = false } = {}) {
 // השמעה קריטית (ספירה/טמפו): קוטעת את מה שמתנגן ומשמיעה מיד את הרצף. מחזיר את משך הרצף בשניות.
 export function sayNow(items) {
   const entries = items.filter(Boolean).map((i) => ({ ...toEntry(i), critical: true }));
-  if (!false || !entries.length) return 0;
+  if (!get().settings.voice || !entries.length) return 0;
   stopCurrent();
   queue = [...entries, ...queue.filter((q) => !q.critical)];
   next();

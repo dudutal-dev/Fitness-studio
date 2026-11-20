@@ -88,8 +88,8 @@ const adapt = (file, code) => {
   if (file === 'js/brand.js' || file === 'js/reminders.js') code = code.replace(/github\.io\/Fitness-studio\//g, 'github.io/Fitness-studio/en/');
   // אותה אפליקציה בשתי שפות: אותו מפתח אחסון ואותו רישיון. רק קובץ השפה מתהפך
   if (file === 'js/lang.js') code = code.replace("export const LANG = 'he';", "export const LANG = 'en';").replace("{ code: 'en', label: 'English' }", "{ code: 'he', label: 'עברית' }");
-  // עד שיוקלטו הקולות באנגלית: בלי דיבור בגרסה האנגלית (אחרת כתוביות באנגלית עם קול בעברית). ההגדרה עצמה לא משתנה
-  if (file === 'js/coach/voice.js') code = code.replace(/get\(\)\.settings\.voice/g, 'false');
+  // קולות באנגלית: תיקייה משלהם (assets/voice-en), באותם שמות קבצים
+  if (file === 'js/coach/voice.js') code = code.replace(/assets\/voice\//g, 'assets/voice-en/');
   if (file === 'sw.js') code = code.replace(/'studio-/g, "'studio-en-").replace(/x-studio-media/g, 'x-studio-en-media').replace(/lang: 'he', dir: 'rtl'/g, "lang: 'en', dir: 'ltr'");
   return code;
 };
@@ -116,6 +116,8 @@ function build(write) {
     mkdirSync(join(OUT, 'css'), { recursive: true });
     for (const f of readdirSync(join(ROOT, 'css'))) writeFileSync(join(OUT, 'css', f), readFileSync(join(ROOT, 'css', f), 'utf8').replace(/url\((['"]?)\.\.\/assets\//g, 'url($1../../assets/'));
     copyFileSync(join(ROOT, 'version.json'), join(OUT, 'version.json'));
+    // משך כל קליפ באנגלית (נכתב ע״י tools/trim_voice.py עם VOICE_LANG=en)
+    if (existsSync(join(ROOT, 'i18n', 'voice-timing-en.js'))) copyFileSync(join(ROOT, 'i18n', 'voice-timing-en.js'), join(OUT, 'js', 'data', 'voice-timing.js'));
   }
   rows.sort((a, b) => b[0] - a[0]);
   console.log(rows.map((r) => r[1]).join('\n'));

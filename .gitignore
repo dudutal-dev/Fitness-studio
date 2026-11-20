@@ -10,3 +10,4 @@ assets/_src/music/
 # הגרסה האנגלית: קובצי עבודה של התרגום (tools/i18n.mjs). en/ עצמה נבנית בכל שחרור ונשמרת בריפו, כי משם היא מוגשת
 i18n/todo/
 i18n/work/
+assets/_src/voice_orig_en/

@@ -5,8 +5,11 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
-VOICE = os.path.join(ROOT, "assets", "voice")
-ORIG = os.path.join(ROOT, "assets", "_src", "voice_orig")
+# קולות באנגלית: VOICE_LANG=en → assets/voice-en, והתזמונים נכתבים ל-i18n/voice-timing-en.js (הבנייה האנגלית משתמשת בו)
+EN = os.environ.get("VOICE_LANG") == "en"
+VOICE = os.path.join(ROOT, "assets", "voice-en" if EN else "voice")
+ORIG = os.path.join(ROOT, "assets", "_src", "voice_orig_en" if EN else "voice_orig")
+TIMING = os.path.join(ROOT, "i18n", "voice-timing-en.js") if EN else os.path.join(ROOT, "js", "data", "voice-timing.js")
 SR = 22050
 TARGET_RMS_DB = -18
 # שימוש: python3 tools/trim_voice.py                         — חיתוך + השוואת עוצמה לכל הקליפים (אחרי יצירה מחדש של הכול)
@@ -60,7 +63,7 @@ if __name__ == "__main__":
     keep = {}
     if COACH or FILES:
         import re
-        old = json.loads(re.search(r"VOICE_TIMING = (\{.*\});", open(os.path.join(ROOT, "js", "data", "voice-timing.js")).read(), re.S).group(1))
+        old = json.loads(re.search(r"VOICE_TIMING = (\{.*\});", open(TIMING).read(), re.S).group(1))
         mine = (lambda r: r.startswith(COACH + os.sep)) if COACH else (lambda r: r in TRIM)
         on_disk = {r[:-4] for r in rels}
         rels = [r for r in rels if mine(r)]
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(process, sorted(rels)))
     timing = dict(sorted({**keep, **{r[:-4]: d for r, d, _, _ in res}}.items()))
-    open(os.path.join(ROOT, "js", "data", "voice-timing.js"), "w").write(
+    open(TIMING, "w").write(
         "// נוצר ע״י tools/trim_voice.py — משך כל קליפ קול (שניות) אחרי חיתוך שקט\nexport const VOICE_TIMING = " + json.dumps(timing, ensure_ascii=False) + ";\n")
     lead = [r[2] for r in res]; trail = [r[3] for r in res]
     print(f"{len(res)} clips · removed lead avg {np.mean(lead):.2f}s (max {max(lead):.2f}) · trail avg {np.mean(trail):.2f}s")
