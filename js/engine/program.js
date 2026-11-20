@@ -220,7 +220,52 @@ function withMob(profile, week, mobN, opt) {
   return { ...week, sessions: out };
 }
 
+// ───── שיעורים נוספים (profile.extras) ─────
+// "חושבים כמו סטודיו": מתאמן יכול להמשיך במסלול הראשי ולהוסיף לשבוע שיעורי יוגה, פילאטיס או HIIT.
+// profile.extras = { yoga: 1, pil: 2 } — מספר השיעורים בשבוע מכל סוג. profile.days הוא סך כל האימונים בשבוע;
+// המסלול הראשי מקבל את מה שנשאר (לפחות אימון אחד). מוביליטי ממשיך לעבוד דרך profile.mobN.
+export const EXTRA_TRACKS = ['yoga', 'pil', 'hiit'];
+const EXTRA_INFO = { yoga: { name: 'יוגה', coach: 'yael' }, pil: { name: 'פילאטיס', coach: 'lia' }, hiit: { name: 'HIIT', coach: 'lia' } };
+export function extrasOf(profile) {
+  const all = Math.min(6, Math.max(2, profile?.days || 4));
+  let room = all - 1;
+  const out = [];
+  for (const t of EXTRA_TRACKS) {
+    const n = Math.min(room, Math.max(0, Math.floor(profile?.extras?.[t] || 0)));
+    if (!n || t === profile.track) continue;
+    out.push({ track: t, n }); room -= n;
+  }
+  return out;
+}
+const extraProfile = (profile, t) => ({ ...profile, track: t, extras: null, mobN: 0, coach: EXTRA_INFO[t].coach,
+  level: t === 'yoga' ? profile.yogaLevel || 1 : t === 'pil' ? profile.pilLevel || 1 : profile.hiitLevel || Math.min(3, profile.level || 2) });
+function withExtras(profile, week, extras, opt) {
+  const out = [...week.sessions];
+  // שיעורי HIIT קודם (רחוק מימי רגליים כבדים אי אפשר להבטיח, אבל מפזרים), שיעורי מזרן לקראת סוף השבוע
+  const add = [];
+  for (const { track, n } of extras) {
+    const q = extraProfile(profile, track);
+    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : buildHiitSessions(q, n, opt);
+    for (const w of list.slice(0, n)) add.push({ ...w, track, extra: true, coach: EXTRA_INFO[track].coach, name: `${EXTRA_INFO[track].name} · ${w.name}` });
+  }
+  // מפזרים את השיעורים הנוספים באופן שווה לאורך השבוע, בין אימוני המסלול הראשי
+  const total = out.length + add.length, slots = new Set(add.map((_, i) => Math.min(total - 1, Math.round(((i + 1) * total) / (add.length + 1)))));
+  while (slots.size < add.length) for (let i = total - 1; i >= 0 && slots.size < add.length; i--) slots.add(i);
+  const core = [...out]; out.length = 0;
+  for (let i = 0; i < total; i++) out.push(slots.has(i) && add.length ? add.shift() : core.length ? core.shift() : add.shift());
+  out.forEach((w, i) => { w.day = i + 1; });
+  return { ...week, sessions: out };
+}
+
 export function buildWeek(profile, opt = {}) {
+  const extras = extrasOf(profile), exN = extras.reduce((a, x) => a + x.n, 0);
+  if (!exN) return buildCoreWeek(profile, opt);
+  const all = Math.min(6, Math.max(2, profile.days || 4)), coreDays = Math.max(1, all - exN);
+  const core = buildCoreWeek({ ...profile, days: coreDays, extras: null }, { ...opt, min: 1 });
+  return withExtras(profile, { ...core, sessions: core.sessions.slice(0, coreDays) }, extras, opt);
+}
+
+function buildCoreWeek(profile, opt = {}) {
   if (isMob(profile)) return buildMobWeek(profile, opt);
   const mobN = mobCount(profile);
   if (!mobN) return buildMainWeek(profile, opt);

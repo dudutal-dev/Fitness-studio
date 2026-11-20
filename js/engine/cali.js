@@ -10,7 +10,7 @@ export const hasCali = (profile) => (profile?.track === 'cali' || profile?.track
 export const hasGym = (profile) => !['cali', 'mob', 'run', 'hiit', 'pil', 'yoga'].includes(profile?.track);
 // מי מאמן: במסלול משולב כל אימון עם המאמן של המסלול שלו — מאיה בקליסתניקס, אורי/נועה בחדר הכושר
 // אימון מוביליטי תמיד עם תמר, גם כשהוא משולב בשבוע של מסלול אחר
-export const sessionCoach = (profile, workout) => (workout?.track === 'mob' ? 'tamar' : profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
+export const sessionCoach = (profile, workout) => (workout?.track === 'mob' ? 'tamar' : workout?.extra && workout.coach ? workout.coach : profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');
 // מי מדגים תרגיל מחוץ לאימון (ספרייה, סולמות)
 // למאמני הריצה אין הדגמות של תרגילים, ולכן מתיחות המוביליטי במסלול ריצה מודגמות אצל תמר
 export const exCoach = (profile, exId) => (EX[exId]?.mob || (profile?.track === 'run' && EX[exId]?.tracks.includes('mob')) ? 'tamar' : profile?.track === 'mix' ? (EX[exId]?.cali ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');

@@ -17,12 +17,22 @@ export const ACTIVITY = {
 };
 
 // רמת פעילות: מה שהמשתמש בחר, ואם לא בחר — נגזרת ממספר האימונים בשבוע (ולא "גבוה" לכולם, שמנפח את היעד ב-~10%).
+// עומס שבועי: לא כל אימון שווה. שיעור יוגה, פילאטיס או מוביליטי עולה הרבה פחות אנרגיה מאימון כוח, ריצה או HIIT
+// (Compendium of Physical Activities: יוגה ~2.5 MET, פילאטיס ~3, מתיחות ~2.3, מול 3.5–8 באימון כוח ו-HIIT).
+// המשקלים עצמם הם בחירה תכנונית. כך שבוע של "חדר כושר + יוגה" מקבל יעד אחר משבוע של חמישה אימוני כוח.
+const LOAD_W = { yoga: 0.5, pil: 0.6, mob: 0.35 };
+export function weeklyLoad(profile) {
+  const days = Math.min(6, Math.max(1, profile.days || 4));
+  const extras = Object.entries(profile.extras || {}).filter(([t, n]) => n > 0 && t !== profile.track);
+  const exN = Math.min(days - 1, extras.reduce((a, [, n]) => a + n, 0));
+  const mobN = profile.track === 'mob' || !profile.mob ? 0 : Math.min(profile.mobN || 0, Math.max(0, days - exN - 1));
+  const main = Math.max(0, days - exN - mobN);
+  return main * (LOAD_W[profile.track] ?? 1) + extras.reduce((a, [t, n]) => a + n * (LOAD_W[t] ?? 1), 0) * (exN ? exN / extras.reduce((a, [, n]) => a + n, 0) : 1) + mobN * LOAD_W.mob;
+}
 export function activityKey(profile) {
   if (ACTIVITY[profile.activityLevel]) return profile.activityLevel;
-  const d = profile.days || 4;
-  // מוביליטי בלבד: האימונים קלים, ולכן ההוצאה נספרת כפעילות קלה גם ב-3–5 אימונים בשבוע
-  if (profile.track === 'mob') return d >= 6 ? 'base' : 'light';
-  return d <= 2 ? 'light' : d <= 5 ? 'base' : 'training';
+  const L = weeklyLoad(profile);
+  return L < 2.5 ? 'light' : L <= 5.2 ? 'base' : 'training';
 }
 
 // ירידה במשקל: קצב של ~0.5% ממשקל הגוף בשבוע (Helms et al., 2014), לפי ~7,700 קק״ל לק״ג רקמה (קירוב מקובל).
@@ -71,9 +81,11 @@ export function targets(profile) {
   // אחרת היעד מתנפח לפי רקמת שומן שלא צריכה חלבון.
   const refW = Math.min(w, 30 * hM * hM);
   // מוביליטי בלבד (בלי אימוני כוח): 1.4 ג׳/ק״ג — הקצה התחתון של טווח ה-ISSN לאנשים פעילים; בגירעון 1.8
-  const mobOnly = profile.track === 'mob' || profile.track === 'yoga'; // גם יוגה: בלי אימוני כוח
+  // עם שיעורים נוספים (profile.extras) קובע התחום התובעני ביותר בשבוע: כוח > ריצה / HIIT / פילאטיס > יוגה / מוביליטי
+  const tracks = [profile.track, ...Object.keys(profile.extras || {}).filter((k) => profile.extras[k] > 0)];
+  const mobOnly = tracks.every((x) => x === 'mob' || x === 'yoga'); // גם יוגה: בלי אימוני כוח
   // ריצה בלבד: 1.6 ג׳/ק״ג (ISSN לספורט סבולת: 1.4–1.8), ובגירעון 2.0
-  const runOnly = profile.track === 'run' || profile.track === 'pil' || profile.track === 'hiit'; // גם HIIT ופילאטיס: בלי משקולות
+  const runOnly = !mobOnly && tracks.every((x) => ['run', 'pil', 'hiit', 'mob', 'yoga'].includes(x)); // גם HIIT ופילאטיס: בלי משקולות
   const perKg0 = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : runOnly ? (profile.goal === 'cut' ? 2.0 : 1.6) : profile.goal === 'cut' ? 2.2 : 2.0;
   // מצב רפואי: חלבון מתון (עומס חלבון גבוה אינו מתאים למחלת כליות); מתחת לגיל 18: עד 1.6 ג׳/ק״ג
   const perKg = guard.reasons.includes('med') ? Math.min(perKg0, 1.2) : guard.reasons.includes('minor') ? Math.min(perKg0, 1.6) : perKg0;
