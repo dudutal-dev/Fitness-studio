@@ -1177,3 +1177,27 @@ button.mi .tag { margin-inline-end: 4px; }
 /* אישור אחרי הפעלת קישור */
 .lic-ok { display: inline-grid; place-items: center; width: 54px; height: 54px; margin-top: 14px; border-radius: 50%; background: rgba(var(--pri-rgb), 0.16); color: var(--pri-ink); font-size: 28px; font-weight: 900; }
 .lic-box img { display: block; margin: 0 auto; }
+
+/* ───── אימון חי: מספר אחד גדול בכל רגע ─────
+   לפני הסט ואחריו — המשקל והחזרות בגדול, עם כפתורי − / + רחבים מתחת; בזמן הסט — מספר החזרה, ומתחתיו המשקל ומספר הסט. */
+@media not all and (orientation: landscape) and (min-aspect-ratio: 4/3) {
+  .live .target .sub { font-size: 13px !important; font-weight: 700; text-align: center; }
+  .live .target .stepper { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 8px 8px; border-radius: 20px; }
+  .live .target .stepper .val { grid-column: 1 / -1; order: -1; font-size: clamp(40px, 13vw, 54px); line-height: 1; padding: 2px 0 8px; overflow: visible; letter-spacing: -0.02em; }
+  .live .target .stepper .val small { display: inline; font-size: 14px; margin-inline-start: 5px; letter-spacing: 0; }
+  .live .target .stepper button { width: auto; height: 46px; font-size: 26px; border-radius: 14px; }
+  .live .target > div:only-child .stepper .val { font-size: clamp(52px, 17vw, 68px); }
+  .counter.cnt-set .big { font-size: 84px; letter-spacing: -0.03em; }
+  .counter.cnt-set .lbl { font-size: 13px; }
+}
+.set-ctx { margin-top: 6px; font-size: 15px; color: var(--mute); font-weight: 700; }
+.set-ctx b { color: var(--text); font-size: 18px; }
+@media (max-height: 760px) and (orientation: portrait) {
+  .live .target .stepper { padding: 6px 8px; } .live .target .stepper .val { font-size: 36px; padding-bottom: 4px; } .live .target > div:only-child .stepper .val { font-size: 44px; }
+  .live .target .stepper button { height: 40px; }
+  .counter.cnt-set .big { font-size: 58px; }
+  .set-ctx { margin-top: 2px; font-size: 13px; } .set-ctx b { font-size: 15px; }
+}
+
+/* תמונת סיכום האימון לשיתוף */
+.share-img { display: block; width: 100%; max-height: 54vh; object-fit: contain; border-radius: 18px; margin-top: 10px; background: #0b0d13; }

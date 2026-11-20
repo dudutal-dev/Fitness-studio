@@ -3,6 +3,7 @@
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, emi } from '../ui/dom.js';
 import { get, set, addXP, XP, pushEvent } from '../store.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
+import { shareCard } from '../share-card.js';
 import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget, isRun } from '../engine/running.js';
 import { coachSays } from '../data/voice-lines.js';
 import { maybeAdvanceWeek } from './workout.js';
@@ -186,7 +187,13 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       ${hrSummaryHtml(hr)}
       <label class="field" style="margin-top:12px"><span>מרחק (ק״מ) ${measured >= 200 ? '— נמדד ב-GPS, אפשר לתקן' : '— לא חובה'}</span><input class="input num" id="dist" type="number" step="0.01" inputmode="decimal" value="${distGuess}" placeholder="למשל 5.2"></label>
       <div class="sub" style="margin-bottom:6px">כמה קשה היה?</div>
-      <div class="rpe">${[[icon('effort1'), 'קל', 6], [icon('effort2'), 'טוב', 7.5], [icon('effort3'), 'קשה', 9], [icon('effort4'), 'מקסימום', 10]].map(([e, t, v]) => `<button data-rpe="${v}"><span>${e}</span>${t}</button>`).join('')}</div>`;
+      <div class="rpe">${[[icon('effort1'), 'קל', 6], [icon('effort2'), 'טוב', 7.5], [icon('effort3'), 'קשה', 9], [icon('effort4'), 'מקסימום', 10]].map(([e, t, v]) => `<button data-rpe="${v}"><span>${e}</span>${t}</button>`).join('')}</div>
+      <button class="btn sm block" style="margin-top:12px" data-act="share-run">שיתוף הריצה</button>`;
+    // תמונת הסיכום לשיתוף: זמן, מרחק וקצב (לפי המרחק שבשדה)
+    on($('.panel'), 'click', '[data-act="share-run"]', () => {
+      const km = Number($('#dist').value) || 0, pace = km ? dur / km : 0, mmss = (x) => `${Math.floor(x / 60)}:${String(Math.round(x % 60)).padStart(2, '0')}`;
+      shareCard({ title: run.name, eyebrow: 'ריצה הושלמה', coachImg: COACHES[coach]?.img, kpis: [[fmtTime(dur), 'זמן'], ...(km ? [[km, 'ק״מ'], [mmss(pace), 'דקות לק״מ']] : [])], lines: testSec ? [`מבדק 3 ק״מ: ${fmtTime(testSec)}`] : [] });
+    });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
       saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), day, hr, gps: measured >= 200, ...(extra ? { planDay: true } : {}) });

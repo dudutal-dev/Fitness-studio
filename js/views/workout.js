@@ -5,6 +5,7 @@ import { ring, setRing } from '../ui/charts.js';
 import { get, set, addXP, XP, pushEvent, regenerateWeek, today } from '../store.js';
 import { EX, EXERCISES, MUSCLES } from '../data/exercises.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
+import { shareCard } from '../share-card.js';
 import { suggest, isPR, roundLoad, bestSet, evaluateLevel } from '../engine/progression.js';
 import { applyReadiness, blockedSet, LEVEL_NAMES, warmupFor, cooldownFor } from '../engine/program.js';
 import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking, useCoach } from '../coach/voice.js';
@@ -109,7 +110,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     return workout.track === 'cali' ? 'groove' : 'power';
   };
   const deferFirst = ['warmup', 'mob', 'cooldown'].includes(items[0]?.role) && items[0]?.unit === 'sec';
-  let firstShown = false, firstWait = false;
+  let firstShown = false, firstWait = false, shareData = null;
   const root = el(`<div class="live" role="dialog" aria-label="אימון חי">
     <div class="stage"><img class="stage-bg" alt="" aria-hidden="true"><img class="poster" alt=""><video muted playsinline loop autoplay preload="auto"></video>
       <div class="hud-top"><button class="icon-btn" data-act="exit" aria-label="יציאה">${icon('close', 'width="20" height="20"')}</button>
@@ -226,8 +227,9 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
           ${!timed ? `<button class="btn sm ghost" data-act="manual">סיימתי בלי ספירה</button>` : ''}
         </div>`;
     } else if (mode === 'active') {
-      p.innerHTML = html`<div class="counter">${ring(0, { size: 190, stroke: 14, big: timed ? sl.reps : '0', lbl: timed ? 'שניות' : `מתוך ${sl.reps}` })}
-        <div class="phase-lbl" id="ph">היכון…</div></div>
+      p.innerHTML = html`<div class="counter cnt-set">${ring(0, { size: 190, stroke: 14, big: timed ? sl.reps : '0', lbl: timed ? 'שניות' : `מתוך ${sl.reps}` })}
+        <div class="phase-lbl" id="ph">היכון…</div>
+        ${!timed && it.role !== 'hiit' ? `<div class="set-ctx">${sl.w ? `<b class="num">${sl.w}</b> ק״ג · ` : ''}סט <b class="num">${cur().si + 1}</b> מתוך <b class="num">${log[cur().ii].sets.length}</b></div>` : ''}</div>
         <button class="btn block xl" data-act="finish-set">${timed ? 'עצור' : 'סיימתי את הסט'}</button>
         ${it.role === 'hiit' && lowAlt(it.exId) ? `<button class="btn sm ghost block" style="margin-top:8px" data-act="low">${icon('swap', 'width="16" height="16"')} קשה על המפרקים? גרסה בלי קפיצות</button>` : ''}`;
     } else if (mode === 'log') {
@@ -569,6 +571,12 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     confetti(prs.length ? 140 : 80);
     try { wakeLock?.release(); } catch { /* */ }
 
+    // תמונת הסיכום לשיתוף: שם האימון, שלושה מספרים, ושיאים / עליות שלב אם היו
+    const moveMin = Math.round(exercises.reduce((t, x) => t + (x.unit === 'sec' ? x.sets.reduce((a, y) => a + (y.reps || 0), 0) : 0), 0) / 60);
+    shareData = { title: w.name, coachImg: COACHES[coach].img,
+      kpis: [[fmtTime(dur), 'זמן'], exercises.every((x) => x.unit === 'sec') ? [exercises.length, 'תרגילים'] : [setsDone, 'סטים'],
+        volume > 0 ? [Math.round(volume).toLocaleString('he-IL'), 'ק״ג הורמו'] : repsTotal > 0 ? [repsTotal, 'חזרות'] : [moveMin, 'דקות תנועה']],
+      lines: [...prs.map((id) => `שיא אישי: ${EX[id].name} — ${bestSet(exercises.find((x) => x.exId === id).sets).w} ק״ג`), ...ladderChanges.filter((c) => c.type === 'up').map((c) => `עליית שלב: ${EX[c.to].name}`)] };
     video.pause();
     root.querySelector('.stage').style.flex = '0 0 34%';
     $('.title').innerHTML = html`<div class="eyebrow">משימה הושלמה</div><div class="name">${esc(w.name)} ✓</div>`;
@@ -587,6 +595,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       <div class="card tight" style="margin-top:12px"><div class="row">${ib('star', 'pri', 'lg')}<div><b>+${gained} XP</b>${rk.rankUp ? `<div class="sub">דרגה חדשה: ${rk.rankUp.name}!</div>` : ''}</div></div>
         ${weekMsg ? `<div class="sub" style="margin-top:8px;color:var(--pri-ink);font-weight:700">${esc(weekMsg)}</div>` : ''}</div>
       ${workout.run && !partial ? `<button class="btn teal block xl" style="margin-top:14px" data-act="run-now">${icon('run')} המשך לריצה: ${esc(workout.run.name)}</button>` : ''}
+      <button class="btn block" style="margin-top:10px" data-act="share">שיתוף האימון</button>
       <button class="btn primary block xl" style="margin-top:10px" data-act="close">סיום</button>`;
   }
 
@@ -651,6 +660,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         },
       });
     }
+    if (a === 'share' && shareData) shareCard(shareData);
     if (a === 'close') close();
     if (a === 'run-now') { close(); startRun(workout.run, { day: workout.day }); }
   });
