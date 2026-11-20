@@ -1,16 +1,17 @@
-// רישיונות (קישורי הפעלה אישיים) לשלוש האפליקציות: LOHEM, סטודיו כושר, קליסתניקס.
+// רישיונות (קישורי הפעלה אישיים) לאפליקציות: LOHEM, סטודיו כושר, קליסתניקס, ו"מאחורי הקלעים" (behind).
 // אותו מנגנון כמו באפליקציות אתונה וליסבון (athens/push-worker/lic.js), בלי "מקומות לקבוצה".
 // הכול נשמר ב-KV (binding בשם SUBS) תחת המפתחות lic:*.
 //   lic:key            מפתח ההנפקה הראשי (HMAC). נוצר בשרת ולא יוצא ממנו.
 //   lic:admin          סיסמת הניהול, כגיבוב עם מלח. נקבעת בכניסה הראשונה למסך הניהול.
 //   lic:cfg:<app>      { enforce }  האם האפליקציה דורשת רישיון. כבוי = פתוחה לכולם.
-//   lic:p:<id>         רישיון: { id, app, name, exp, created, revoked, devs:[{dev,t,seen}], rejects, lastReject }
+//   lic:p:<id>         רישיון: { id, app, name, exp, created, revoked, devs:[{dev,t,seen}], rejects, lastReject, perms }
+//                      perms: מתגים לכל קישור — { <מפתח>: false } = כבוי. מפתח שלא מופיע = פתוח. המשמעות של כל מפתח נקבעת באפליקציה.
 //   lic:hand:<hash>    העברת קישור מהדפדפן של האייפון לאפליקציה שבמסך הבית (רבע שעה)
 // קישור אישי:  P.<id>.<חתימה>   — מופעל על טלפון אחד.
 const te = new TextEncoder();
 const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const DAY = 86400e3, STALE = 60 * DAY, MAX_DEV = 1;
-export const APPS = ['lohem', 'studio', 'calisthenics'];
+export const APPS = ['lohem', 'studio', 'calisthenics', 'behind'];
 
 async function hmacKey(env) {
   let k = await env.SUBS.get('lic:key');
@@ -81,7 +82,9 @@ function touch(p, me, now) {
   p.opens = (p.opens || 0) + 1;
 }
 
-const view = (p) => ({ ok: true, id: p.id, name: p.name, exp: p.exp });   // מה שהאפליקציה מקבלת על הרישיון שלה
+// המתגים של קישור: נשמרים רק הכבויים, עד 60 מפתחות
+const cleanPerms = (o) => Object.fromEntries(Object.entries(o && typeof o === 'object' ? o : {}).filter(([k, v]) => /^[a-z0-9_-]{1,24}$/.test(k) && v === false).slice(0, 60));
+const view = (p) => ({ ok: true, id: p.id, name: p.name, exp: p.exp, perms: p.perms || {} });   // מה שהאפליקציה מקבלת על הרישיון שלה
 
 // json: (אובייקט, סטטוס) → Response. now: לבדיקות.
 export async function lic(req, env, url, json, now = Date.now()) {
@@ -178,6 +181,7 @@ export async function lic(req, env, url, json, now = Date.now()) {
     else if (b.op === 'extend') p.exp = Math.max(p.exp, now) + days(b.days, 14) * DAY;
     else if (b.op === 'reset') p.devs = [];                                   // למי שהחליף טלפון
     else if (b.op === 'rename') p.name = String(b.name || '').slice(0, 40);
+    else if (b.op === 'perms') p.perms = cleanPerms(b.perms);              // המתגים של הקישור: מה פתוח בו ומה סגור
     else if (b.op === 'delete') { await env.SUBS.delete('lic:p:' + p.id); return json({ ok: true }); }
     else return json({ ok: false, why: 'op' });
     await putPass(env, p); return json({ ok: true });
