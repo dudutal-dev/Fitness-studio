@@ -18,7 +18,7 @@ const DAY = 864e5;
 
 test('licences: admin password, issuing a link, one phone per link, expiry, revoke, reset', async () => {
   const env = makeEnv();
-  assert.deepEqual(APPS, ['lohem', 'studio', 'calisthenics']);
+  assert.deepEqual(APPS, ['lohem', 'studio', 'calisthenics', 'behind']);
   // ברירת מחדל: האפליקציה פתוחה לכולם
   const cfg = async (app) => (await worker.fetch(new Request(`https://w.dev/lic/cfg?app=${app}`, { headers: { Origin: ORIGIN } }), env));
   const r0 = await cfg('studio'); assert.equal(r0.headers.get('Access-Control-Allow-Origin'), ORIGIN); assert.deepEqual(await r0.json(), { enforce: false });
@@ -38,7 +38,7 @@ test('licences: admin password, issuing a link, one phone per link, expiry, revo
   assert.ok(made.ok && /^P\.[a-z0-9]{8}\.[A-Za-z0-9_-]{22}$/.test(made.token));
   let list = await admin('list');
   assert.equal(list.passes.length, 1); assert.equal(list.passes[0].name, 'יוסי'); assert.equal(list.passes[0].token, made.token);
-  assert.ok(Math.abs(list.passes[0].exp - list.now - 30 * DAY) < 5000); assert.deepEqual(list.cfg, { lohem: false, studio: false, calisthenics: false });
+  assert.ok(Math.abs(list.passes[0].exp - list.now - 30 * DAY) < 5000); assert.deepEqual(list.cfg, { lohem: false, studio: false, calisthenics: false, behind: false });
 
   // הפעלה: טלפון אחד בלבד, רק באפליקציה שלה הונפק, וחתימה מזויפת נדחית
   const A = 'phoneaaaa1', B = 'phonebbbb2';
@@ -119,4 +119,26 @@ test('licences: usage log — opens per day and hour, at most once in 25 minutes
   for (let i = 2; i < 100; i++) await call('check', { id: made.id, dev }, t0 + i * DAY);
   const q = (await call('admin', { pw: 'correct horse', op: 'list' }, t0 + 100 * DAY)).passes[0];
   assert.equal(Object.keys(q.use).length, 90); assert.ok(!q.use['2026-11-20']);
+});
+
+test('licences: per-link switches (perms) reach the app, and only "off" switches are stored', async () => {
+  const env = makeEnv();
+  const admin = (op, o = {}) => post(env, 'admin', { pw: 'correct horse', op, ...o });
+  await admin('claim');
+  const made = await admin('create', { app: 'behind', name: 'דנה', days: 30 });
+  assert.ok(made.ok);
+  const dev = 'abcd1234efgh';
+  const a1 = await post(env, 'activate', { token: made.token, dev, app: 'behind' });
+  assert.equal(a1.ok, true); assert.deepEqual(a1.perms, {});
+  // כיבוי שני מתגים; מפתח לא תקין וערך שאינו false לא נשמרים
+  assert.equal((await admin('perms', { id: made.id, perms: { feed: false, 'cat-space': false, sims: true, 'BAD KEY': false } })).ok, true);
+  const c1 = await post(env, 'check', { id: made.id, dev });
+  assert.deepEqual(c1.perms, { feed: false, 'cat-space': false });
+  assert.deepEqual((await admin('list')).passes[0].perms, { feed: false, 'cat-space': false });
+  // פתיחה מחדש של הכול
+  await admin('perms', { id: made.id, perms: {} });
+  assert.deepEqual((await post(env, 'check', { id: made.id, dev })).perms, {});
+  assert.equal((await admin('perms', { id: 'nosuchid', perms: {} })).why, 'none');
+  // קישור של אפליקציה אחת לא מופעל באחרת
+  assert.equal((await post(env, 'activate', { token: made.token, dev, app: 'studio' })).ok, false);
 });
