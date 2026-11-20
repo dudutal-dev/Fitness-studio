@@ -32,13 +32,10 @@ function shell() {
 function route() {
   const s = get();
   applyTheme();
-  // מדריך: בפתיחה הראשונה (וגם אחרי איפוס), או כשמבקשים #/guide
-  if (!s.guideSeen || location.hash === '#/guide') {
-    if (!document.querySelector('.guide')) {
-      const first = !s.guideSeen;
-      openGuide({ first, onDone: () => { if (location.hash === '#/guide') history.replaceState(null, '', '#/home'); route(); } });
-    }
-    if (!s.guideSeen) return;
+  // מדריך: נפתח רק כשמבקשים אותו (#/guide) — מהכפתור במסך השער או מההגדרות. לא עולה לבד בפתיחה הראשונה.
+  if (location.hash === '#/guide') {
+    if (!document.querySelector('.guide')) openGuide({ first: !s.profile?.name, onDone: () => { if (location.hash === '#/guide') history.replaceState(null, '', '#/home'); route(); } });
+    if (!s.profile?.name || !s.plan) return;   // עוד לפני ההיכרות: המדריך מעל מסך השער, שיצויר כשהמדריך ייסגר
   }
   document.body.classList.toggle('no-captions', s.settings?.captions === false);
   if (!s.profile?.name || !s.plan) {

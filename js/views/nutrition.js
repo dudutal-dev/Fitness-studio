@@ -3,7 +3,7 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
-import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition } from '../engine/nutrition.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
@@ -32,6 +32,17 @@ function recentFoodIds(s) {
   for (let i = 0; i < 14; i++) for (const it of s.daily[dayKey(new Date(Date.now() - i * 864e5))]?.foods || []) ids.add(it.id);
   return [...ids];
 }
+
+// הערות בטיחות: למי שאין לו יעד גירעון (ראו nutritionGuard במנוע) — מה השתנה, ולמי לפנות
+const GUARD_NOTES = {
+  preg: 'בהיריון לא יורדים במשקל, ולכן היעד כאן הוא תחזוקה. הצרכים עולים בהמשך ההיריון — כ-340 קק״ל ביום בשליש השני וכ-450 בשלישי. את התזונה כדאי לבנות עם הצוות המטפל או עם דיאטנית קלינית.',
+  nurse: 'בהנקה הגוף צריך יותר אנרגיה (כ-330 עד 400 קק״ל ביום), ולכן היעד כאן אינו גירעון. לליווי אישי — דיאטנית קלינית.',
+  med: 'במצב רפואי שמושפע מתזונה ההמלצות כאן כלליות בלבד: היעד הוא תחזוקה והחלבון מתון. את התזונה כדאי לבנות עם הרופא המטפל או עם דיאטנית קלינית.',
+  minor: 'מתחת לגיל 18 לא בונים תפריט ירידה במשקל, כי הגוף עדיין גדל. היעד הוא אכילה מסודרת ומספקת. בשאלות על משקל — רופא ילדים או דיאטנית.',
+  under: 'לפי הגובה והמשקל, המשקל נמוך מהטווח התקין (BMI מתחת ל-18.5), ולכן היעד אינו גירעון. כדאי להתייעץ עם רופא או עם דיאטנית.',
+};
+const guardCard = (t) => (t.guard?.noDeficit ? `<div class="card tight guard-note">${icon('shield', 'width="18" height="18"')}<div>${t.guard.reasons.map((k) => `<p>${GUARD_NOTES[k]}</p>`).join('')}</div></div>` : '');
+const algMark = (f, p) => { const h = allergyHits(f, p); return h.length ? `<small class="alg-warn">${icon('warn', 'width="13" height="13"')} ${h.join(', ')}</small>` : ''; };
 
 export function renderNutrition(root) {
   const s = get();
@@ -112,7 +123,7 @@ export function renderNutrition(root) {
         if (!items.length) return '';
         const k = items.reduce((a, x) => a + x.f.kcal * x.qty, 0);
         return html`<div class="log-slot"><div class="row between"><b>${label}</b><span class="sub num t-cap">${Math.round(k)} קק״ל</span></div>
-          ${items.map((x) => html`<button class="log-it" data-log="${x.i}"><span>${esc(x.f.name)}<small> · ${qtyLabel(x.qty)}${esc(x.f.portion)}</small></span>
+          ${items.map((x) => html`<button class="log-it" data-log="${x.i}"><span>${esc(x.f.name)}<small> · ${qtyLabel(x.qty)}${esc(x.f.portion)}</small>${algMark(x.f, p)}</span>
             <span class="num sub">${Math.round(x.f.kcal * x.qty)}</span></button>`)}</div>`;
       }).join('') : `<div class="empty" style="padding:12px 4px">עוד לא נרשם אוכל היום.<br>אפשר להוסיף אוכל, או לסמן ארוחה שלמה בלשונית "תפריט".</div>`}
     </div>`;
@@ -168,6 +179,7 @@ export function renderNutrition(root) {
 
   root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
     <div class="seg tabs" data-tabs>${TABS.map(([k, v]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${v}</button>`).join('')}</div>
+    ${tab === 'prefs' ? '' : guardCard(t)}
     ${tab === 'menu' ? menuTab() : tab === 'prefs' ? prefsTab() : todayTab()}`;
 
   const rerender = () => renderNutrition(root);
@@ -240,7 +252,7 @@ export function foodSearchSheet(onDone) {
     <div class="grid2" style="margin-top:12px"><button class="btn sm" data-scan>${icon('scan')} סריקת ברקוד</button><button class="btn sm" data-custom>＋ מזון חדש</button></div>`, {
     onMount(sh, close) {
       const row = (f, mark = '') => html`<button class="food-row" data-pick="${f.id}">
-          <span><b>${mark}${esc(f.name)}</b><small>${esc(f.portion)}${f.custom ? ' · שלי' : ''}</small></span>
+          <span><b>${mark}${esc(f.name)}</b><small>${esc(f.portion)}${f.custom ? ' · שלי' : ''}</small>${algMark(f, get().profile)}</span>
           <span class="num"><b>${Math.round(f.kcal)}</b><small>${Math.round(f.p)} ג׳ חלבון</small></span></button>`;
       const paint = () => {
         let out = '';
@@ -272,6 +284,7 @@ function qtySheet(f, slot, onDone) {
   let qty = 1;
   const line = () => `<b class="num">${Math.round(f.kcal * qty)}</b> קק״ל · <b class="num">${Math.round(f.p * qty)}</b>ג׳ חלבון · <b class="num">${Math.round(f.c * qty)}</b>ג׳ פחמ׳ · <b class="num">${Math.round(f.f * qty)}</b>ג׳ שומן`;
   sheet(html`<div class="h1" style="font-size:22px">${esc(f.name)}</div><div class="sub">מנה: ${esc(f.portion)}</div>
+    ${allergyHits(f, get().profile).length ? `<div class="card tight guard-note" style="margin-top:8px">${icon('warn', 'width="18" height="18"')}<div><p>לפי המאגר, המאכל הזה מכיל: <b>${allergyHits(f, get().profile).join(', ')}</b> — סימנת אלרגיה או רגישות. תמיד לבדוק את התווית.</p></div></div>` : ''}
     ${f.src ? `<div class="src-line">מקור: מאגר משרד הבריאות — ${f.src.map((x) => `${esc(x.name)} (${x.g} ג׳)`).join(' + ')}</div>` : f.custom ? '<div class="src-line">מזון אישי (ערכים שהזנת)</div>' : ''}
     <div class="sub" style="margin:14px 0 6px">כמות</div>
     <div class="seg" data-qty>${QTYS.map((v) => `<button data-qv="${v}" class="${v === qty ? 'on' : ''}">${v === 0.5 ? '½' : v === 1.5 ? '1½' : v}</button>`).join('')}</div>

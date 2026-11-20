@@ -38,15 +38,32 @@ export function goalDelta(goal, weightKg, tdee = 2800, track = 'gym') {
 
 const KCAL_ADJ_MAX = 500;
 
+// ───── שערי בטיחות ─────
+// למי שהיעד האוטומטי עלול להזיק לו אין גירעון קלורי: היריון, הנקה, מתחת לגיל 18, תת־משקל (BMI < 18.5), או מצב רפואי שמושפע מתזונה.
+// במצבים האלה היעד הוא תחזוקה, והמסך מפנה לאיש מקצוע (IOM — צרכים בהיריון ובהנקה; IOC 2018 — RED-S; ראו docs/NUTRITION_SOURCES.md).
+// profile.health: מה שסומן בשאלון התזונה. היריון שסומן בשאלון הבטיחות של השיעורים (יוגה / פילאטיס / מוביליטי) נספר גם כאן.
+export const HEALTH = { preg: 'היריון', nurse: 'הנקה', med: 'סוכרת, מחלת כליות או מחלה כרונית אחרת' };
+export function nutritionGuard(profile = {}) {
+  const hM = (profile.heightCm || 175) / 100, bmi = (profile.weightKg || 70) / (hM * hM);
+  const h = new Set(profile.health || []);
+  if ([...(profile.yogaFlags || []), ...(profile.pilFlags || []), ...(profile.mob?.flags || [])].includes('preg')) h.add('preg');
+  const reasons = ['preg', 'nurse', 'med'].filter((k) => h.has(k));
+  if ((profile.age || 20) < 18) reasons.push('minor');
+  if (bmi < 18.5) reasons.push('under');
+  return { noDeficit: reasons.length > 0, reasons };
+}
+
 export function targets(profile) {
   const w = profile.weightKg || 70;
   const hM = (profile.heightCm || 175) / 100;
   const act = ACTIVITY[activityKey(profile)];
   const rest = bmr({ weightKg: w, heightCm: profile.heightCm || 175, age: profile.age || 20, sex: profile.sex });
   const tdee = rest * act.factor;
-  const delta = goalDelta(profile.goal, w, tdee, profile.track);
+  const guard = nutritionGuard(profile);
+  const rawDelta = goalDelta(profile.goal, w, tdee, profile.track);
+  const delta = guard.noDeficit ? Math.max(0, rawDelta) : rawDelta;
   // כיול אישי לפי מגמת המשקל בפועל (ראו trendAdvice) — המשוואות הן הערכה; המשקל הוא המדידה.
-  const adjust = Math.max(-KCAL_ADJ_MAX, Math.min(KCAL_ADJ_MAX, profile.kcalAdjust || 0));
+  const adjust = Math.max(guard.noDeficit ? 0 : -KCAL_ADJ_MAX, Math.min(KCAL_ADJ_MAX, profile.kcalAdjust || 0));
   // רצפה: לא יורדים מתחת לקצב חילוף החומרים במנוחה.
   const kcal = Math.round(Math.max(rest, tdee + delta + adjust) / 10) * 10;
   // חלבון: ISSN (Jäger 2017) — 1.4–2.0 ג׳/ק״ג למתאמנים; Morton 2018 — התועלת לשריר מתייצבת סביב 1.6 (גבול עליון 2.2).
@@ -57,7 +74,9 @@ export function targets(profile) {
   const mobOnly = profile.track === 'mob' || profile.track === 'yoga'; // גם יוגה: בלי אימוני כוח
   // ריצה בלבד: 1.6 ג׳/ק״ג (ISSN לספורט סבולת: 1.4–1.8), ובגירעון 2.0
   const runOnly = profile.track === 'run' || profile.track === 'pil' || profile.track === 'hiit'; // גם HIIT ופילאטיס: בלי משקולות
-  const perKg = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : runOnly ? (profile.goal === 'cut' ? 2.0 : 1.6) : profile.goal === 'cut' ? 2.2 : 2.0;
+  const perKg0 = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : runOnly ? (profile.goal === 'cut' ? 2.0 : 1.6) : profile.goal === 'cut' ? 2.2 : 2.0;
+  // מצב רפואי: חלבון מתון (עומס חלבון גבוה אינו מתאים למחלת כליות); מתחת לגיל 18: עד 1.6 ג׳/ק״ג
+  const perKg = guard.reasons.includes('med') ? Math.min(perKg0, 1.2) : guard.reasons.includes('minor') ? Math.min(perKg0, 1.6) : perKg0;
   const protein = Math.round(refW * perKg);
   // שומן: 25% מהאנרגיה — בתוך הטווח 20–35% (IOM, AMDR), ולא פחות מ-0.5 ג׳/ק״ג (Iraki 2019: 0.5–1.5 ג׳/ק״ג).
   const fat = Math.round(Math.max((kcal * 0.25) / 9, 0.5 * w));
@@ -68,7 +87,7 @@ export function targets(profile) {
   // + 0.5 ל׳ לכל שעת אימון (ACSM 2007: קצבי הזעה 0.5–2.0 ל׳/שעה — לוקחים את הקצה הנמוך; בחום ובשטח יותר).
   const base = profile.sex === 'f' ? 1.6 : 2.0;
   const waterL = Math.round((base + 0.5 * ((mobOnly ? profile.mob?.minutes || 20 : profile.sessionMin || 60) / 60)) * 10) / 10;
-  return { kcal, protein, fat, carbs, fiber, waterL, tdee: Math.round(tdee), bmr: Math.round(rest), delta, adjust, activity: act, perKg, refW: Math.round(refW) };
+  return { kcal, protein, fat, carbs, fiber, waterL, tdee: Math.round(tdee), bmr: Math.round(rest), delta, adjust, activity: act, perKg, refW: Math.round(refW), guard };
 }
 
 // ───── כיול לפי מגמת המשקל ─────
@@ -83,7 +102,7 @@ export function trendAdvice(weights = [], profile = {}, now = Date.now()) {
   const mt = pts.reduce((a, x) => a + x.t, 0) / pts.length, mk = pts.reduce((a, x) => a + x.kg, 0) / pts.length;
   const slope = pts.reduce((a, x) => a + (x.t - mt) * (x.kg - mk), 0) / pts.reduce((a, x) => a + (x.t - mt) ** 2, 0); // ק״ג ליום
   const pctWeek = (slope * 7 / mk) * 100;
-  const [lo, hi] = RATE[profile.goal] || [-0.25, 0.25];
+  const [lo, hi] = (nutritionGuard(profile).noDeficit && profile.goal === 'cut' ? null : RATE[profile.goal]) || [-0.25, 0.25];
   const cur = profile.kcalAdjust || 0;
   let step = 0;
   if (pctWeek < lo) step = 150; else if (pctWeek > hi) step = -150;
@@ -122,6 +141,11 @@ export function blockedBy(profile = {}) {
 }
 export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
   return allowed(food, profile.dislikes, profile.dislikedFoods) && !blk.ids.has(food.id) && !food.tags.some((t) => blk.tags.has(t));
+}
+// אלרגיות שהמאכל נוגע בהן (לפי התגיות והמזהים שבמאגר) — לסימון בחיפוש וביומן
+export function allergyHits(food, profile = {}) {
+  const tags = food?.tags || [];
+  return (profile.allergies || []).filter((a) => (ALLERGY_TAGS[a] || []).some((t) => tags.includes(t)) || (ALLERGY_IDS[a] || []).includes(food?.id)).map((a) => ALLERGIES[a]);
 }
 const isMeat = (f) => f.tags.some((t) => MEAT.includes(t));
 const isDairy = (f) => f.tags.some((t) => MILK.includes(t));
@@ -326,7 +350,7 @@ export function dayType(state, now = Date.now(), manual = null) {
 }
 export function dayTargets(profile, type = 'light') {
   const b = targets(profile);
-  const f = DAY_TYPES[type]?.f || 0;
+  const f0 = DAY_TYPES[type]?.f || 0, f = f0 < 0 && b.guard.noDeficit ? 0 : f0;   // בלי "יום מנוחה מינוס 5%" למי שאין לו גירעון
   const kcal = f ? Math.round(Math.max(b.bmr, b.kcal * (1 + f)) / 10) * 10 : b.kcal;
   const carbs = f ? Math.max(0, Math.round((kcal - b.protein * 4 - b.fat * 9) / 4)) : b.carbs;
   return { ...b, kcal, carbs, fiber: Math.round((kcal / 1000) * 14), dayType: type, baseKcal: b.kcal, baseCarbs: b.carbs, dayDelta: kcal - b.kcal };

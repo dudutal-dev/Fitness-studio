@@ -60,7 +60,7 @@ export function renderOnboarding(root, done) {
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1,
+    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1,
   };
   let step = 0;
   const STEPS = 11;
@@ -334,7 +334,8 @@ export function renderOnboarding(root, done) {
       <div class="content">${views[step]()}</div>
       ${isBuild ? '' : html`<div class="actions">
         ${step > 0 ? '<button class="btn" data-act="back">חזרה</button>' : ''}
-        <button class="btn primary block xl" data-act="next">${step === 0 ? 'מתחילים' : last ? 'בנה לי תוכנית' : step === REC - 1 ? 'להמלצה' : 'המשך'}</button></div>`}
+        <button class="btn primary block xl" data-act="next">${step === 0 ? 'מתחילים' : last ? 'בנה לי תוכנית' : step === REC - 1 ? 'להמלצה' : 'המשך'}</button></div>
+        ${step === 0 ? `<button class="gate-guide" data-act="guide">${icon('info', 'width="16" height="16"')} איך זה עובד? הסבר קצר</button>` : ''}`}
     </div>`;
     // הסעיף נשאר פתוח גם כשהמסך מצויר מחדש (למשל אחרי בחירת ניסיון)
     root.querySelector('details.lifts')?.addEventListener('toggle', (e) => { d.liftsOpen = e.target.open; });
@@ -345,6 +346,7 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-act]', (e, t) => {
     unlock();
     readInputs();
+    if (t.dataset.act === 'guide') { location.hash = '#/guide'; return; }
     if (t.dataset.act === 'back') { if (step === REC) { d.decided = false; d.goal = d.goalWanted || d.goal; } step--; paint(); return; }
     if (root.querySelector('[data-nut]') && d.nutrition == null) { toast('רוצים ליווי תזונה? בוחרים כן או לא'); return; }
     if (step === 3 && !d.name) { toast('איך קוראים לך?'); return; }
@@ -418,7 +420,7 @@ export function renderOnboarding(root, done) {
         track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}),
         coach: d.coach, name: d.name, age: d.age, sex: d.sex, heightCm: d.heightCm, weightKg: d.weightKg, targetWeight: d.targetWeight,
         goal: d.goal, level, days: d.days, sessionMin: d.sessionMin, run3k, runLevel: runLevelFrom3k(run3k), injuries: d.injuries,
-        nutrition: d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies } : {}),
+        nutrition: d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies, health: d.health } : {}),
         dislikes: d.nutrition ? d.dislikes : [], dislikedFoods: [], createdAt: new Date().toISOString(),
         lifts: liftsFrom((k, f) => d[`lift_${k}_${f}`]),
       };

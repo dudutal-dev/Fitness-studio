@@ -453,7 +453,7 @@ body:has(.live) .toast { bottom: auto; top: calc(62px + var(--safe-t)); }
 .gate-logo { font-family: var(--num); font-size: clamp(44px, 15vw, 64px); font-weight: 900; line-height: 0.95; letter-spacing: 0.06em; color: var(--pri-ink); direction: ltr; }
 .gate-tag { margin-top: 6px; font-size: 13.5px; font-weight: 600; color: var(--mute); letter-spacing: 0.02em; }
 /* גדלים מפורשים (בלי גובה באחוזים, בלי מסכה ובלי will-change) — התנועה היא גלילה רגילה של השורה (js), לא אנימציית transform: ב-Safari של iOS השכבה הנעה נעלמה */
-.gate { --card-h: clamp(64px, calc((100vh - 500px) / 3), 96px); --card-h: clamp(64px, calc((100dvh - 500px) / 3), 96px); justify-content: space-between; }
+.gate { --card-h: clamp(64px, calc((100vh - 546px) / 3), 96px); --card-h: clamp(64px, calc((100dvh - 546px) / 3), 96px); justify-content: space-between; }
 .gate-wall { position: relative; flex: 0 0 auto; display: flex; flex-direction: column; gap: 10px; margin-inline: -18px; overflow: hidden; direction: ltr; }
 .gate-wall::before, .gate-wall::after { content: ''; position: absolute; top: 0; bottom: 0; width: 34px; z-index: 2; pointer-events: none; }
 .gate-wall::before { left: 0; background: linear-gradient(to right, var(--bg), rgba(var(--bg-rgb), 0)); }
@@ -479,13 +479,13 @@ body:has(.live) .toast { bottom: auto; top: calc(62px + var(--safe-t)); }
 /* מסך נמוך: שתי שורות במקום שלוש */
 .gate-row.short { display: none; }
 @media (max-height: 720px) {
-  .gate { gap: 10px; --card-h: clamp(60px, calc((100vh - 440px) / 2), 92px); --card-h: clamp(60px, calc((100dvh - 440px) / 2), 92px); }
+  .gate { gap: 10px; --card-h: clamp(60px, calc((100vh - 486px) / 2), 92px); --card-h: clamp(60px, calc((100dvh - 486px) / 2), 92px); }
   .gate-row.tall { display: none; }
   .gate-row.short { display: block; }
   .gate-feats span { flex-direction: row; justify-content: center; padding: 8px 4px; font-size: 11px; }
   .gate-feats svg { width: 16px; height: 16px; flex: 0 0 auto; }
 }
-@media (max-height: 600px) { .gate { --card-h: clamp(60px, calc((100dvh - 360px) / 2), 92px); } .gate-feats { display: none; } .gate-logo { font-size: 40px; } }
+@media (max-height: 600px) { .gate { --card-h: clamp(60px, calc((100dvh - 406px) / 2), 92px); } .gate-feats { display: none; } .gate-logo { font-size: 40px; } }
 .coach-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .coach-card { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4/5; border: 2px solid transparent; transition: all 0.25s; background: var(--panel2); text-align: start; }
 .coach-card img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
@@ -1080,13 +1080,6 @@ html.locked body { overflow: hidden; }
 .nh-next .chev { flex: 0 0 auto; color: var(--mute); transform: scaleX(-1); align-self: center; }
 .home:has(.nut-home) .hero { min-height: 230px; }
 .home .nut-home { margin: 0; }
-/* כשכרטיס התזונה מוצג, אריחי המעקב נעשים שורה נמוכה (סמל ליד המספר) — כדי שהבית יישאר מסך אחד */
-.home:has(.nut-home) .today .tracker { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding: 8px 10px; text-align: start; }
-.home:has(.nut-home) .today .tracker .tr-top { grid-row: 1 / span 2; margin: 0; }
-.home:has(.nut-home) .today .tracker .v { font-size: 16px; }
-.home:has(.nut-home) .today .tracker .v small { display: inline; font-size: 10.5px; }
-.home:has(.nut-home) .today .tracker .sub { margin: 0; }
-.home:has(.nut-home) .today .tracker .bar { display: none; }
 .home:has(.nut-home) .hero-in > .sub { display: none; }
 .home:has(.nut-home) .hero .stats { margin: 6px 0 9px; }
 .home:has(.nut-home) .hero .week-cap { margin-top: 9px; }
@@ -1097,3 +1090,42 @@ html.locked body { overflow: hidden; }
   .home:has(.nut-home) .hero .stats { display: none; }
   .home:has(.nut-home) .hero { min-height: 200px; }
 }
+
+/* מסך השער: קישור למדריך (המדריך כבר לא נפתח לבד) */
+.gate-guide { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 40px; margin-top: 6px; color: var(--mute); font-size: 14px; font-weight: 700; background: none; border: 0; }
+.gate-guide svg { color: var(--pri-ink); }
+.ob .actions:has(.gate-guide) { flex-wrap: wrap; }
+
+/* ───── הבית, ארגון חדש: ברכה קטנה, שורת "המסלול שלי", ארבעה אריחי מעקב אחידים ───── */
+.home .hello .sub { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-chip { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; height: 36px; margin-top: 3px; padding: 0 10px 0 4px; border-radius: 18px; background: var(--panel2); border: 1px solid var(--line); color: var(--text); font-size: 15px; font-weight: 800; text-decoration: none; }
+.track-chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; flex: 0 0 auto; }
+.track-chip span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-chip svg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--mute); transform: rotate(-90deg); }
+.home .today { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* כרטיס התזונה במסך צר: כל שורה נשארת שלמה */
+.nh-left { white-space: normal; line-height: 1.25; }
+.nh-left small { white-space: nowrap; }
+.nh-m span { display: flex; justify-content: space-between; gap: 4px; }
+.nh-m span i { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nh-m span em { font-style: normal; flex: 0 0 auto; }
+@media (max-width: 350px) { .nh-m span { display: block; } .nh-m span i, .nh-m span em { display: block; } .nh-top .ring { transform: scale(0.88); margin-inline: -4px; } }
+/* חלונית "המסלול שלי" */
+.ts-list { display: grid; gap: 6px; }
+.ts-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: start; padding: 8px 10px; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); color: inherit; }
+.ts-row.on { border-color: var(--pri-ink); background: rgba(var(--pri-rgb), 0.07); }
+.ts-faces { display: flex; flex: 0 0 auto; min-width: 46px; }
+.ts-faces img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid var(--bg); }
+.ts-faces img + img { margin-inline-start: -14px; }
+.ts-txt { flex: 1 1 0; min-width: 0; }
+.ts-txt b { display: block; font-size: 15.5px; }
+.ts-txt small { display: block; font-size: 12px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-chip small { font-size: inherit; font-weight: 600; color: var(--mute); }
+@media (max-width: 350px) { .track-chip small { display: none; } }
+
+/* ───── תזונה: הערות בטיחות וסימון אלרגיות ───── */
+.guard-note { display: flex; gap: 10px; align-items: flex-start; border: 1px solid rgba(var(--pri-rgb), 0.4); background: rgba(var(--pri-rgb), 0.07); }
+.guard-note svg { flex: 0 0 auto; color: var(--pri-ink); margin-top: 2px; }
+.guard-note p { margin: 0; font-size: 13.5px; line-height: 1.45; }
+.guard-note p + p { margin-top: 8px; }
+.alg-warn { display: flex !important; align-items: center; gap: 4px; color: var(--orange) !important; font-weight: 700; }
