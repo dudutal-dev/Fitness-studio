@@ -135,7 +135,7 @@ const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + 'as
 const HERE = BASE[mem0('fitlicapp')] ? mem0('fitlicapp') : 'studio';
 const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const mem = { get: k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
-let pw = mem.get('fitlicpw'), sess = '', show = 'all', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
+let pw = mem.get('fitlicpw'), sess = '', sessAt = 0, show = 'all', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 const canFace = !!(window.PublicKeyCredential && navigator.credentials), faceOn = () => mem.get('fitlicwa') === '1';
 const say = t => { const m = $('#msg'); m.textContent = t; m.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => m.hidden = true, 3200); };
@@ -172,17 +172,29 @@ $('#faceOn').onclick = async () => {
     mem.set('fitlicwa', '1'); mem.set('fitlicpw', ''); say('זיהוי הפנים הופעל'); faceUI();
   } catch { say('ההפעלה בוטלה'); } };
 $('#faceOff').onclick = async () => { if (!confirm('לכבות את הכניסה בזיהוי פנים? הכניסה תחזור להיות עם סיסמה.')) return; await call('wa-clear').catch(() => {}); mem.set('fitlicwa', ''); say('זיהוי הפנים כובה'); faceUI(); };
-async function faceLogin() {
-  try { const st = await call('wa-start'); if (!st.ok || !st.ids.length) { mem.set('fitlicwa', ''); return say('זיהוי הפנים לא מוגדר. להיכנס עם סיסמה'); }
+// אימות בזיהוי פנים. מחזיר true כשהשרת אישר (ואז sess תקף לחצי שעה מהפעולה האחרונה)
+async function faceAuth() {
+  try { const st = await call('wa-start'); if (!st.ok || !st.ids.length) { mem.set('fitlicwa', ''); say('זיהוי הפנים לא מוגדר. להיכנס עם סיסמה'); return false; }
     const a = await navigator.credentials.get({ publicKey: { challenge: unb64u(st.challenge), rpId: location.hostname, allowCredentials: st.ids.map(id => ({ type: 'public-key', id: unb64u(id) })), userVerification: 'required', timeout: 60000 } });
     const r = await call('wa-finish', { id: a.id, authData: b64u(a.response.authenticatorData), clientData: b64u(a.response.clientDataJSON), sig: b64u(a.response.signature) });
-    if (!r.ok) return say('הזיהוי נכשל'); sess = r.sess; open();
-  } catch { say('הזיהוי בוטל'); } }
+    if (!r.ok) { say('הזיהוי נכשל'); return false; } sess = r.sess; sessAt = Date.now(); return true;
+  } catch { say('הזיהוי בוטל'); return false; } }
+async function faceLogin() { if (await faceAuth()) open(); }
+// פעולת ניהול. הכניסה בזיהוי פנים תקפה לחצי שעה מהפעולה האחרונה: כשהיא עומדת לפוג או כבר פגה — מאמתים שוב וחוזרים על הפעולה,
+// במקום להיכשל בשקט (זה מה שגרם ל"הטעינה נכשלה" אחרי שהמסך נשאר פתוח).
+async function act(op, o = {}) {
+  if (faceOn() && sess && Date.now() - sessAt > 25 * 60e3) await faceAuth();
+  let r = await call(op, o).catch(() => ({ net: true }));
+  if (r.why === 'auth' && canFace && faceOn() && await faceAuth()) r = await call(op, o).catch(() => ({ net: true }));
+  if (r.why === 'auth') { $('#panel').hidden = true; $('#auth').hidden = false; say('הכניסה פגה. לאמת שוב, ואז לחזור על הפעולה'); if (canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; } }
+  else if (r.ok && sess) sessAt = Date.now();
+  return r;
+}
 $('#faceGo').onclick = faceLogin;
 $('#usePw').onclick = () => { $('#authForm').hidden = false; $('#usePw').hidden = true; $('#pw').focus(); };
 $('#logout').onclick = () => { mem.set('fitlicpw', ''); pw = ''; sess = ''; location.reload(); };
 
-async function load() { const r = await call('list').catch(() => ({})); if (!r.ok) return say('הטעינה נכשלה'); last = r; draw(); }
+async function load() { const r = await act('list'); if (!r.ok) { if (r.why !== 'auth') say(r.net ? 'אין חיבור לשרת. לנסות שוב' : 'הטעינה נכשלה'); return; } last = r; draw(); }
 function draw() {
   const r = last, P = r.passes, live = P.filter(p => !p.revoked && p.exp > r.now);
   $('#stats').innerHTML = `<div class="stat"><b>${live.filter(p => p.devs.length).length}</b><span>קישורים פעילים</span></div>
@@ -208,7 +220,7 @@ function draw() {
 }
 $('#newForm').onsubmit = async e => { e.preventDefault();
   const app = $('#nApp').value, name = $('#nName').value.trim(), days = +$('#nDays').value;
-  const r = await call('create', { app, name, days }).catch(() => ({}));
+  const r = await act('create', { app, name, days }); if (r.why === 'auth') return;
   if (!r.ok) return say('ההנפקה נכשלה'); $('#nName').value = ''; mem.set('fitlicapp', app); await load();
   shareLink(BASE[app] + '?k=' + r.token, name, app, Date.now() + days * 86400e3); };
 // הודעת השיתוף: למי, לאיזו אפליקציה, עד מתי, ושזה לטלפון אחד
@@ -223,14 +235,14 @@ document.addEventListener('click', async e => {
   if (cp) return navigator.clipboard.writeText(cp.dataset.copy).then(() => say('הקישור הועתק'), () => say('ההעתקה נכשלה'));
   if (sh) return shareLink(sh.dataset.share, sh.dataset.name, sh.dataset.app, +sh.dataset.exp);
   if (c) { if (c.dataset.on && !confirm(`להפעיל דרישת קישור הפעלה ב־${HE[c.dataset.cfg]}? מי שאין לו קישור בתוקף לא יוכל להיכנס — גם הטלפון הזה.`)) return;
-    const r = await call('cfg', { app: c.dataset.cfg, enforce: !!c.dataset.on }); say(r.ok ? 'עודכן' : 'העדכון נכשל'); return load(); }
+    const r = await act('cfg', { app: c.dataset.cfg, enforce: !!c.dataset.on }); if (r.why === 'auth') return; say(r.ok ? 'עודכן' : r.net ? 'אין חיבור לשרת' : 'העדכון נכשל'); return load(); }
   if (o) { const op = o.dataset.op, body = { id: o.dataset.id };
     if (op === 'delete' && !confirm('למחוק את הקישור לגמרי? הוא יפסיק לעבוד.')) return;
     if (op === 'reset' && !confirm('לאפס את הטלפון? הקישור יוכל לעבוד על טלפון חדש, והישן ייחסם.')) return;
     if (op === 'revoke') body.on = !!o.dataset.on;
     if (op === 'extend') { const n = prompt('בכמה ימים להאריך?', '30'); if (n === null || !(+n > 0)) return; body.days = +n; }
     if (op === 'rename') { const n = prompt('שם חדש', o.dataset.name); if (n === null) return; body.name = n.trim(); }
-    const r = await call(op, body).catch(() => ({})); say(r.ok ? 'עודכן' : 'הפעולה נכשלה'); load(); }
+    const r = await act(op, body); if (r.why === 'auth') return; say(r.ok ? (op === 'delete' ? 'הקישור נמחק' : 'עודכן') : r.net ? 'אין חיבור לשרת' : r.why === 'none' ? 'הקישור כבר לא קיים' : 'הפעולה נכשלה'); if (r.ok || r.why === 'none') await load(); }
 });
 $('#nApp').innerHTML = Object.keys(BASE).map(k => `<option value="${k}" ${k === HERE ? 'selected' : ''}>${HE[k]}</option>`).join('');
 start();

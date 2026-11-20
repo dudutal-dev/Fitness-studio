@@ -37,7 +37,8 @@ async function pwHash(pw, salt) {
   return b64u(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: te.encode(salt), iterations: 60000, hash: 'SHA-256' }, km, 256));
 }
 async function admin(env, pw, sess) {   // סיסמה, או כניסה שאושרה בזיהוי פנים (מפתח גישה) בחצי השעה האחרונה
-  if (typeof sess === 'string' && /^[A-Za-z0-9_-]{30,60}$/.test(sess) && await env.SUBS.get('lic:sess:' + sess)) return true;
+  // הכניסה תקפה לחצי שעה מהפעולה האחרונה (כל פעולת ניהול מאריכה אותה), ולא לחצי שעה מרגע הזיהוי
+  if (typeof sess === 'string' && /^[A-Za-z0-9_-]{30,60}$/.test(sess) && await env.SUBS.get('lic:sess:' + sess)) { await env.SUBS.put('lic:sess:' + sess, '1', { expirationTtl: 1800 }); return true; }
   const a = await env.SUBS.get('lic:admin', 'json');
   return !!a && typeof pw === 'string' && pw.length >= 6 && (await pwHash(pw, a.salt)) === a.hash;
 }
