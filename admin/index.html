@@ -377,7 +377,8 @@ function card(p, s, u, now) {
       ${u.hrs ? `<div><h4>באילו שעות${u.top >= 0 ? ` · בעיקר סביב ${String(u.top).padStart(2, '0')}:00` : ''}</h4><div class="hrs">${u.hrs.map(n => `<i class="${n ? '' : 'z'}" style="height:${Math.max(4, Math.round(n / mx * 100))}%"></i>`).join('')}</div><div class="hrs-x"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div></div>` : '<p class="muted small">יומן השימוש נאסף מ-20.11.2026. הנתונים יופיעו אחרי הכניסה הבאה של המשתמש.</p>'}
       <div class="facts"><div class="fact"><small>הופעל</small><b>${date(d.t)}</b></div><div class="fact"><small>כניסות סה״כ</small><b>${u.has ? u.total : '—'}</b></div><div class="fact"><small>בתוקף עד</small><b>${day(p.exp)}</b></div></div>`
     : `<p class="muted small">הקישור עוד לא הופעל על אף טלפון. אחרי ההפעלה יופיעו כאן ימי השימוש והשעות.</p>`}
-    <div><h4>הקישור</h4><div class="link">${esc(link)}</div></div>
+    <div><h4>הקישור</h4><div class="link">${esc(link)}</div>
+      ${p.app === 'studio' ? `<button class="chip" style="margin-top:8px" data-copy="${esc(BASE.studio + 'en/?k=' + p.token)}" type="button">${I.copy}קישור לגרסה האנגלית (English)</button><p class="muted small" style="margin-top:6px">אותו קישור פותח את MOVA באנגלית. כל קישור מופעל על התקנה אחת, אז למי שרוצה גם עברית וגם אנגלית מנפיקים שני קישורים.</p>` : ''}</div>
   </div></details>
   <div class="pass-a"><button class="pri" data-share="${esc(link)}" data-name="${esc(p.name)}" data-app="${p.app}" data-exp="${p.exp}" type="button">${I.share}שליחה</button><button data-copy="${esc(link)}" type="button">${I.copy}העתקה</button><button data-more="${p.id}" type="button" aria-label="עוד פעולות">${I.more}עוד</button></div></article>`;
 }
@@ -499,7 +500,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261120.194634';
+const ADMIN_V = '20261120.200748';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
