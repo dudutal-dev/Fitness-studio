@@ -5,7 +5,7 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, mainCtx } from '../engine/nutrition.js';
 import { FOOD } from '../data/foods.js';
 import { openNutritionTab } from './nutrition.js';
 import { buildFieldWorkout } from '../engine/program.js';
@@ -75,8 +75,8 @@ export function renderHome(root) {
   // כרטיס התזונה של היום: כמה נשאר, שלושת אבות המזון, והארוחה הבאה מהתפריט (אותו תפריט שבמסך התזונה)
   const nutCard = () => {
     const left = t.kcal - eaten.kcal, nf = (n) => Math.round(n).toLocaleString('he-IL');
-    const ms = dd.menu && dd.menu.seed === new Date().getDate() && dd.menu.ctx === 'home' ? dd.menu : {};
-    const plan = mealPlan(p, { ctx: 'home', seed: new Date().getDate(), t, swaps: ms.swaps, dishes: ms.dishes });
+    const ms = dd.menu && dd.menu.seed === new Date().getDate() && dd.menu.ctx === mainCtx(p) ? dd.menu : {};
+    const plan = mealPlan(p, { ctx: mainCtx(p), seed: new Date().getDate(), t, swaps: ms.swaps, dishes: ms.dishes });
     const h = new Date().getHours();
     const order = h < 10 ? ['breakfast', 'snack1', 'lunch'] : h < 12 ? ['snack1', 'lunch'] : h < 15 ? ['lunch', 'post', 'dinner'] : h < 18 ? ['post', 'dinner'] : ['dinner'];
     const meal = order.map((id) => plan.meals.find((m) => m.id === id)).find(Boolean) || plan.meals[plan.meals.length - 1];

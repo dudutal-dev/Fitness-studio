@@ -1,12 +1,14 @@
 // שאלון התזונה הקצר — אותו רכיב בהיכרות ובמסך התזונה (העדפות). מוצג רק למי שביקש ליווי תזונה.
-import { DIETS, ALLERGIES, HEALTH } from '../engine/nutrition.js';
+import { DIETS, ALLERGIES, HEALTH, canService, inService } from '../engine/nutrition.js';
 
 const seg = (attr, opts, cur) => `<div class="seg" ${attr}>${opts.map(([v, t]) => `<button data-v="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${t}</button>`).join('')}</div>`;
 
 export function nutPrefsHtml(o) {
   const alg = o.allergies || [], hl = o.health || [];
   const health = Object.entries(HEALTH).filter(([k]) => k === 'med' || o.sex === 'f');
-  return `<div class="h2 np-h">איך אוכלים?</div>${seg('data-np="diet"', Object.entries(DIETS), o.diet || 'all')}
+  const where = canService(o) ? `<div class="h2 np-h">איפה אוכלים רוב השבוע?</div>${seg('data-np="eatAt"', [['home', 'בבית ובעבודה'], ['service', 'בשירות']], inService(o) ? 'service' : 'home')}
+    ${inService(o) ? '<div class="sub t-foot" style="margin-top:8px">התפריט ייבנה ממה שמגישים בחדר האוכל, ובימי שטח ממנות יבשות ושימורים. בסופי שבוע עוברים ללשונית "בבית". הפרדת בשר וחלב הופעלה, ואפשר לשנות.</div>' : ''}` : '';
+  return `${where}<div class="h2 np-h">איך אוכלים?</div>${seg('data-np="diet"', Object.entries(DIETS), o.diet || 'all')}
     <div class="h2 np-h">כשרות</div>${seg('data-np="kosher"', [['0', 'בלי הפרדה'], ['1', 'בשר וחלב בנפרד']], o.kosher ? 1 : 0)}
     <div class="h2 np-h">כמה ארוחות ביום?</div>${seg('data-np="mealsN"', [['3', '3'], ['4', '4'], ['5', '5']], o.mealsN || 5)}
     <div class="h2 np-h">אלרגיה או רגישות?</div>
@@ -21,7 +23,7 @@ export function nutPrefsHtml(o) {
 export function bindNutPrefs(root, on, change) {
   on(root, 'click', '[data-np] button', (e, b) => {
     const k = b.parentElement.dataset.np, v = b.dataset.v;
-    change((o) => { o[k] = k === 'diet' ? v : k === 'kosher' ? v === '1' : Number(v); });
+    change((o) => { if (k === 'eatAt') { o.eatAt = v; if (v === 'service') o.kosher = true; return; } o[k] = k === 'diet' ? v : k === 'kosher' ? v === '1' : Number(v); });
   });
   on(root, 'click', '[data-np-health]', (e, b) => {
     const k = b.dataset.npHealth;

@@ -62,3 +62,17 @@ test('favourites and recently logged foods are picked more often', () => {
   assert.ok(count(P({ favFoods: ['salmon'] }), {}) > base * 1.3, 'favourite');
   assert.ok(count(P(), { recent: ['salmon'] }) > base * 1.1, 'recent');
 });
+
+test('nutrition "in service": dining-hall menu by default, base foods only, kosher on', async () => {
+  const N = await import('../js/engine/nutrition.js'); const { FOOD } = await import('../js/data/foods.js');
+  const base = { name: 'א', sex: 'm', age: 20, heightCm: 178, weightKg: 75, track: 'gym', coach: 'ori', goal: 'muscle', days: 4, level: 2, injuries: [], dislikes: [], nutrition: true, diet: 'all', mealsN: 5 };
+  assert.equal(N.inService(base), false); assert.equal(N.mainCtx(base), 'home'); assert.deepEqual(N.ctxList(base).map((x) => x[0]), ['home', 'base', 'field']);
+  const p = { ...base, eatAt: 'service', kosher: true };
+  assert.equal(N.inService(p), true); assert.equal(N.mainCtx(p), 'base'); assert.deepEqual(N.ctxList(p).map((x) => x[1]), ['חדר אוכל', 'בשטח', 'בבית']);
+  for (const ctx of ['base', 'field']) for (const seed of [1, 2, 3, 4, 5]) {
+    const plan = N.mealPlan(p, { ctx, seed });
+    assert.ok(plan.meals.length >= 3);
+    for (const m of plan.meals) for (const it of m.items) assert.ok(FOOD[it.id].ctx.includes(ctx) || FOOD[it.id].tags, `${ctx}: ${FOOD[it.id].name}`);
+    assert.ok(plan.meals.flatMap((m) => m.items).every((it) => FOOD[it.id].ctx.includes(ctx)), `${ctx} seed ${seed}: only what is available there`);
+  }
+});

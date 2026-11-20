@@ -3,16 +3,23 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
-import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions } from '../engine/nutrition.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
+// טיפים למי שאוכל בחדר אוכל ובשטח (העדפות ← "בשירות"): במקום הטיפ על ימים עמוסים — שלושה טיפים של שירות
+const SERVICE_TIPS = [
+  { icon: '🍽️', title: 'בחדר האוכל', text: 'קודם ממלאים חצי צלחת בחלבון ובירקות — עוף, בשר, ביצים, קטניות וסלט — ורק אז מוסיפים אורז, פתיתים או לחם. מנה שנייה של חלבון עדיפה על מנה שנייה של פחמימה.' },
+  { icon: '🎒', title: 'בשטח', text: 'בימי שטח ההוצאה האנרגטית גבוהה מאוד — לבחור "גבוה מאוד" ברמת הפעילות כדי שהיעד יעלה. טונה, בשר משומר, חלבה, תמרים ואגוזים נותנים הרבה אנרגיה בנפח קטן.' },
+  { icon: '🛒', title: 'מהשק״ם', text: 'כשהארוחה דלה בחלבון: יוגורט חלבון, גבינה, טונה או חטיף חלבון משלימים אותה. שוקו אחרי אימון הוא התאוששות טובה וזמינה.' },
+  ...ARMY_TIPS.filter((t) => t.title !== 'ימים עמוסים'),
+];
 import { dayKey } from '../engine/stats.js';
 import { lookupBarcode, startScanner } from '../barcode.js';
 
 let tab = 'today';
 export const openNutritionTab = (t) => { tab = t; };   // מהבית: הכרטיס "התזונה של היום" פותח ישר את התפריט
-let ctx = 'home';
+let ctx = null;   // נקבע בכניסה לפי ההעדפה: בבית, או חדר האוכל למי שבשירות
 let seed = new Date().getDate();
 let editDislikes = false;
 let dislikeQuery = '';
@@ -61,12 +68,13 @@ export function renderNutrition(root) {
   // היעדים והתפריט של היום — לפי האימון של היום (ראו dayType / dayTargets במנוע התזונה)
   const dt = dayType(s, Date.now(), dd.dayType);
   // החלפות שנעשו בתפריט של היום נשמרות ברשומה היומית, כל עוד לא ביקשו "תפריט אחר" ולא שינו מקום
+  ctx ||= mainCtx(p);
   const ms = dd.menu && dd.menu.seed === seed && dd.menu.ctx === ctx ? dd.menu : { seed, ctx, swaps: {}, dishes: {} };
   const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s), swaps: ms.swaps, dishes: ms.dishes });
   const t = plan.targets;
   const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
-  const ctxs = [['home', 'בבית'], ['base', 'בעבודה'], ['field', 'בדרכים']]; // base = יש חדר אוכל/מסעדה · field = בלי מטבח
+  const ctxs = ctxList(p);
   const log = (dd.foods || []).map((it, i) => ({ ...it, i, f: foodLookup(it.id, custom) })).filter((x) => x.f);
   const left = t.kcal - eaten.kcal;
   const actKey = activityKey(p);
@@ -162,7 +170,7 @@ export function renderNutrition(root) {
 
     <div class="h2">מידע</div>
     ${plan.noVeg ? html`<details class="card acc"><summary>בלי ירקות — ככה משלימים</summary><div class="acc-body">${NO_VEG_TIPS.map(tip)}</div></details>` : ''}
-    <details class="card acc"><summary>טיפים</summary><div class="acc-body">${ARMY_TIPS.map(tip)}</div></details>
+    <details class="card acc"><summary>${inService(p) ? 'טיפים לשירות' : 'טיפים'}</summary><div class="acc-body">${(inService(p) ? SERVICE_TIPS : ARMY_TIPS).map(tip)}</div></details>
     <details class="card acc method"><summary>איך זה מחושב</summary><div class="acc-body">
       ${p.track === 'cali' ? `<div class="m-row"><b>קליסתניקס</b><span>${p.goal === 'muscle' ? 'העודף הקלורי נשאר קטן בכוונה: כל קילו נוסף הוא קילו שצריך להרים במתח ובמקבילים.' : p.goal === 'cut' ? 'ירידה איטית שומרת על הכוח. כל קילו שומן שיורד מקל ישירות על מתח, לברים ועמידת ידיים.' : 'איזון קלורי עם חלבון גבוה: בונים כוח בלי לעלות במשקל, כי הכוח כאן נמדד ביחס למשקל הגוף.'}</span></div>` : ''}
       <div class="m-row"><b>לפי היום</b><span>הפחמימה עוקבת אחרי עומס האימון של אותו יום (Burke 2011; ACSM / AND / DC 2016): ‎+15% קלוריות ביום ריצה ארוכה, ‎+5% ביום אימון קשה, בלי שינוי ביום קל, ו-‎−5% ביום מנוחה. החלבון קבוע. גודל ההזזה הוא בחירה של האפליקציה, לא ממצא מחקרי.</span></div>
@@ -233,7 +241,7 @@ export function renderNutrition(root) {
       },
     });
   });
-  bindNutPrefs(root, on, (mutate) => { set((s2) => { mutate(s2.profile); return s2; }); rerender(); });
+  bindNutPrefs(root, on, (mutate) => { const was = inService(get().profile); set((s2) => { mutate(s2.profile); return s2; }); if (inService(get().profile) !== was) ctx = null; rerender(); });
   on(root, 'click', '[data-act="nut-off"]', () => { set((s2) => { s2.profile.nutrition = false; return s2; }); tab = 'today'; toast('ליווי התזונה כובה. אפשר להפעיל שוב מכאן.'); rerender(); });
   on(root, 'click', '[data-act="shuffle"]', () => { seed++; rerender(); });
   on(root, 'click', '[data-act="edit"]', () => { editDislikes = !editDislikes; rerender(); });

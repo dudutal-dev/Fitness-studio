@@ -324,6 +324,9 @@ export const SPOKEN = {
   hold__f: 'הַחְזִיקִי!',
   ex_mountain_climber: 'מְטַפְּסֵי הָרִים. פלאנק גבוה, כתפיים מעל כפות הידיים.',
   pr__f: '[excited] שִׂיא אִישִׁי חָדָשׁ! אַתְּ מְכוֹנָה!',
+  // תיקוני הגייה שעלו בביקורת המילים (tools/voice_audit.py, 20.11.2026)
+  tip_h_bicycle: 'לאט. הסיבוב מֵהַגֵּו.',
+  ex_y_savasana: 'שָׁוָואסָנָה — הרפיה. שוכבים על הגב, הרגליים מעט פתוחות.',
 };
 export const MOTIVATION_KEYS = Array.from({ length: 10 }, (_, i) => `m${i + 1}`);
 

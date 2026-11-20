@@ -130,6 +130,12 @@ export function allowed(food, dislikes = [], dislikedFoods = []) {
 
 // ליווי התזונה הוא בחירה של המתאמן (profile.nutrition === false — כבוי). פרופילים ישנים, בלי השדה: פעיל.
 export const wantsNutrition = (profile) => profile?.nutrition !== false;
+// "בשירות" (profile.eatAt === 'service'): מי שאוכל רוב השבוע בחדר אוכל ובשטח. התפריט נבנה ממה שיש שם (ctx: base / field),
+// הלשוניות נקראות "חדר אוכל · בשטח · בבית", וברירת המחדל היא חדר האוכל. ב-MOVA מוצע במסלול חדר הכושר (וגם כשהוא תחום נוסף).
+export const canService = (o) => ['gym', 'mix'].includes(o?.track) || !!o?.extras?.gym;
+export const inService = (o) => o?.eatAt === 'service' && canService(o);
+export const mainCtx = (o) => (inService(o) ? 'base' : 'home');
+export const ctxList = (o) => (inService(o) ? [['base', 'חדר אוכל'], ['field', 'בשטח'], ['home', 'בבית']] : [['home', 'בבית'], ['base', 'בעבודה'], ['field', 'בדרכים']]);
 // השאלון הקצר: סוג תזונה, כשרות, מספר ארוחות, אלרגיות. הסינון לפי התגיות שבמאגר (ועוד כמה מאכלים בשמם).
 export const DIETS = { all: 'הכול', veg: 'צמחוני', vegan: 'טבעוני' };
 export const ALLERGIES = { gluten: 'גלוטן', lactose: 'חלב / לקטוז', eggs: 'ביצים', peanut: 'בוטנים', nuts: 'אגוזים', sesame: 'שומשום', fish: 'דגים', soy: 'סויה' };
