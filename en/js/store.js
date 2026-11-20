@@ -2,7 +2,7 @@
 import { buildWeek } from './engine/program.js';
 import { rankFor, XP, dayKey } from './engine/stats.js';
 
-const KEY = 'fitness_studio_en_v1';
+const KEY = 'fitness_studio_v1';
 // אפליקציית LOHEM המקורית רצה באותו דומיין (GitHub Pages) ושומרת במפתח משלה — אפשר להמשיך ממנה (ראו importFromLohem)
 const LOHEM_KEY = 'golani_fit_v1';
 
@@ -16,7 +16,7 @@ const DEFAULT = {
   daily: {},              // 'YYYY-MM-DD' -> { water, protein, checkin }
   xp: 0,
   events: [],             // התראות/הודעות מאמן אחרונות
-  settings: { voice: false, volume: 0.9, tempoCount: true, captions: true, theme: 'dark', themeV: 4, units: 'kg' },
+  settings: { voice: true, volume: 0.9, tempoCount: true, captions: true, theme: 'dark', themeV: 4, units: 'kg' },
 };
 
 let state = load();

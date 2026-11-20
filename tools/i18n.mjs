@@ -86,8 +86,10 @@ const adapt = (file, code) => {
   if (file === 'js/engine/program.js') code = code.replace('/^(ריצה|קליסתניקס)/', '/^(Run|Calisthenics)/');
   if (file === 'js/engine/progression.js') code = code.replace('/מוט/', '/barbell/i').replace('/משקולת/', '/dumbbell/i');
   if (file === 'js/brand.js' || file === 'js/reminders.js') code = code.replace(/github\.io\/Fitness-studio\//g, 'github.io/Fitness-studio/en/');
-  if (file === 'js/store.js') code = code.replace(/fitness_studio_v1/g, 'fitness_studio_en_v1')
-    .replace('settings: { voice: true,', 'settings: { voice: false,');   // עד שיוקלטו הקולות באנגלית: בלי דיבור (אחרת כתוביות באנגלית עם קול בעברית)
+  // אותה אפליקציה בשתי שפות: אותו מפתח אחסון ואותו רישיון. רק קובץ השפה מתהפך
+  if (file === 'js/lang.js') code = code.replace("export const LANG = 'he';", "export const LANG = 'en';").replace("{ code: 'en', label: 'English' }", "{ code: 'he', label: 'עברית' }");
+  // עד שיוקלטו הקולות באנגלית: בלי דיבור בגרסה האנגלית (אחרת כתוביות באנגלית עם קול בעברית). ההגדרה עצמה לא משתנה
+  if (file === 'js/coach/voice.js') code = code.replace(/get\(\)\.settings\.voice/g, 'false');
   if (file === 'sw.js') code = code.replace(/'studio-/g, "'studio-en-").replace(/x-studio-media/g, 'x-studio-en-media').replace(/lang: 'he', dir: 'rtl'/g, "lang: 'en', dir: 'ltr'");
   return code;
 };
@@ -104,6 +106,8 @@ function build(write) {
     // עמוד הבית, המניפסט והעיצוב
     const hd = loadDict('index.html'); let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
     for (const [he, en] of Object.entries(hd)) html = html.split(he).join(en);
+    // בגרסה האנגלית: מי שבחר עברית חוזר אליה; מי שהגיע ישר לכתובת האנגלית — זו הבחירה שלו
+    html = html.replace(/<script>\/\*lang\*\/.*?<\/script>/, "<script>/*lang*/try{var l=localStorage.getItem('mova.lang');if(l==='he')location.replace('../'+location.search+location.hash);else if(!l)localStorage.setItem('mova.lang','en')}catch(e){}</script>");
     html = html.replace('lang="he"', 'lang="en"').replace('dir="rtl"', 'dir="ltr"').replace(/(href|src)="assets\//g, '$1="../assets/');
     writeFileSync(join(OUT, 'index.html'), html);
     const md = loadDict('manifest.webmanifest'); let man = readFileSync(join(ROOT, 'manifest.webmanifest'), 'utf8');

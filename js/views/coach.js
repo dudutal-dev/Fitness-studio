@@ -1,4 +1,5 @@
 // מסך המאמן והפרופיל: החלפת מאמן, הגדרות קול, עריכת פרופיל ויעדים, גיבוי ושחזור.
+import { LANG, setLang } from '../lang.js';
 import { html, esc, on, sheet, toast, icon } from '../ui/dom.js';
 import { get, set, regenerateWeek, exportData, importData, resetAll } from '../store.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
@@ -69,6 +70,8 @@ export function renderCoach(root) {
       ${toggleRow('captions', 'כתוביות באימון', 'מה שהמאמן אומר — שורה קצרה שנעלמת', st.captions !== false)}
       ${toggleRow('music', 'מוזיקת רקע', 'בכל האימונים — מוזיקה שמתאימה לסוג האימון, בשקט מתחת להנחיות', st.music === true)}
       ${toggleRow('introSound', 'צליל פתיחה', 'מנגינה קצרה כשהאפליקציה עולה', st.introSound !== false)}
+      <div class="set-row" style="cursor:default"><div class="grow"><b>שפה</b><div class="sub">הנתונים, התוכנית והרישיון נשארים — רק שפת הממשק מתחלפת</div></div>
+        <div class="seg" data-lang style="flex:0 0 auto"><button data-v="he" class="${LANG === 'he' ? 'on' : ''}" lang="he">עברית</button><button data-v="en" class="${LANG === 'en' ? 'on' : ''}" lang="en">English</button></div></div>
       <div style="margin-top:12px"><div class="row between"><b>עוצמה</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} בדיקת קול</button>
@@ -182,6 +185,7 @@ export function renderCoach(root) {
     syncReminders().catch(() => {});
     renderCoach(root);
   });
+  on(root, 'click', '[data-lang] button', (e, b) => setLang(b.dataset.v));
   on(root, 'click', '[data-toggle]', (e, b) => { const k = b.dataset.toggle; set((s2) => { s2.settings[k] = !(s2.settings[k] ?? k !== 'music'); return s2; }); document.body.classList.toggle('no-captions', get().settings.captions === false); if (k === 'voice') stop(); renderCoach(root); });
   root.querySelector('[data-vol]').addEventListener('change', (e) => set((s2) => { s2.settings.volume = Number(e.target.value); return s2; }));
   on(root, 'click', '[data-test]', () => { unlock(); say(['mob', 'run', 'hiit', 'pil', 'yoga', 'tai'].includes(get().profile.track) ? 'workout_start' : 'm1', { priority: true }); });

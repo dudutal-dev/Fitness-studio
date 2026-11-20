@@ -1,6 +1,7 @@
 // נקודת כניסה: ניתוב (hash), ניווט תחתון, אונבורדינג, רישום Service Worker.
 import { playIntro } from './intro.js';
-import { get } from './store.js';
+import { get, set, regenerateWeek } from './store.js';
+import { LANG } from './lang.js';
 import { icon } from './ui/dom.js';
 import { renderOnboarding } from './views/onboarding.js';
 import { renderHome, nextSession, begin } from './views/home.js';
@@ -68,6 +69,8 @@ function route() {
   window.scrollTo(0, 0);
 }
 
+// השפה הוחלפה מאז הפעם הקודמת: התוכנית השבועית נבנית מחדש, כדי ששמות האימונים יהיו בשפה הנוכחית
+if (get().profile?.name && get().plan && (get().lang || 'he') !== LANG) set((s) => { s.lang = LANG; return regenerateWeek(s); });
 addEventListener('hashchange', route);
 addEventListener('pointerdown', unlock, { passive: true }); // כל נגיעה מוודאת שהאודיו פתוח (אייפון משהה אותו ברקע)
 route();

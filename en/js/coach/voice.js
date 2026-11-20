@@ -201,7 +201,7 @@ function toEntry(item) {
 export function say(item, { priority = false, keep = false } = {}) {
   const e = toEntry(item);
   if (keep) e.keep = true;
-  if (!get().settings.voice) { emit(false, e.text); return; }
+  if (!false) { emit(false, e.text); return; }
   if (priority) stop();
   queue.push(e);
   if (!current) next();
@@ -210,7 +210,7 @@ export function say(item, { priority = false, keep = false } = {}) {
 // השמעה קריטית (ספירה/טמפו): קוטעת את מה שמתנגן ומשמיעה מיד את הרצף. מחזיר את משך הרצף בשניות.
 export function sayNow(items) {
   const entries = items.filter(Boolean).map((i) => ({ ...toEntry(i), critical: true }));
-  if (!get().settings.voice || !entries.length) return 0;
+  if (!false || !entries.length) return 0;
   stopCurrent();
   queue = [...entries, ...queue.filter((q) => !q.critical)];
   next();

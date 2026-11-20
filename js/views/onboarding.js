@@ -1,4 +1,5 @@
 // אונבורדינג: 9 שלבים — מסלול, מאמן (וציוד בקליסתניקס), פרטים, מטרה, מבדק רמה, לו״ז, פציעות, תזונה, בניית תוכנית.
+import { OTHER, setLang } from '../lang.js';
 import { html, esc, on, $, toast, icon } from '../ui/dom.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
 import { GOALS, INJURIES, estimateLevel, LEVEL_NAMES, goalsFor, goalForTrack } from '../engine/program.js';
@@ -348,7 +349,7 @@ export function renderOnboarding(root, done) {
       ${isBuild ? '' : html`<div class="actions">
         ${step > 0 ? '<button class="btn" data-act="back">חזרה</button>' : ''}
         <button class="btn primary block xl" data-act="next">${step === 0 ? 'מתחילים' : last ? 'בנה לי תוכנית' : step === REC - 1 ? 'להמלצה' : 'המשך'}</button></div>
-        ${step === 0 ? `<button class="gate-guide" data-act="guide">${icon('info', 'width="16" height="16"')} איך זה עובד? הסבר קצר</button>` : ''}`}
+        ${step === 0 ? `<button class="gate-guide" data-act="guide">${icon('info', 'width="16" height="16"')} איך זה עובד? הסבר קצר</button><button class="gate-guide gate-lang" data-act="lang" lang="${OTHER.code}">${OTHER.label}</button>` : ''}`}
     </div>`;
     // הסעיף נשאר פתוח גם כשהמסך מצויר מחדש (למשל אחרי בחירת ניסיון)
     root.querySelector('details.lifts')?.addEventListener('toggle', (e) => { d.liftsOpen = e.target.open; });
@@ -360,6 +361,7 @@ export function renderOnboarding(root, done) {
     unlock();
     readInputs();
     if (t.dataset.act === 'guide') { location.hash = '#/guide'; return; }
+    if (t.dataset.act === 'lang') { setLang(OTHER.code); return; }
     if (t.dataset.act === 'back') { if (step === REC) { d.decided = false; d.goal = d.goalWanted || d.goal; } step--; paint(); return; }
     if (root.querySelector('[data-nut]') && d.nutrition == null) { toast('רוצים ליווי תזונה? בוחרים כן או לא'); return; }
     if (step === 3 && !d.name) { toast('איך קוראים לך?'); return; }

@@ -122,7 +122,7 @@ function slides() {
         tip('📊', '<b>Your fitness</b> — a score from 0 to 100 made up of strength, endurance, consistency and body. At first (and after a reset) it\'s empty and marked "Not measured yet" — that\'s normal. Each part fills in when it has data: <b>Strength</b> after a strength workout, <b>Endurance</b> after a 3 km test, <b>Body</b> after a second weigh-in.') +
         tip('💪', 'Want a strength estimate right now? Enter your lifts in <b>Settings → Profile and goals</b>.') +
         tip('🎒', '<b>No gym?</b> The "No-equipment workout" button.') +
-        tip('⚙️', `<b>The Settings button at the top</b> — switch coach, light/dark look, clock, backup and this guide.`),
+        tip('⚙️', `<b>The Settings button at the top</b> — switch coach, light/dark look, language (עברית / English), watch, backup and this guide.`),
     },
     {
       id: 'workout', title: 'How to train with your coach', eyebrow: 'Most important',
