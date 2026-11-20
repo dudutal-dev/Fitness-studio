@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#0f161d">
+<meta name="theme-color" content="#0b1017">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ניהול כושר">
@@ -13,137 +13,266 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>ניהול קישורי הפעלה</title>
 <style>
-  :root { --bg: #eef2f8; --card: #fff; --ink: #14213d; --muted: #5d6a84; --line: #dfe5f0; --pri: #c2551b; --pri2: #ff8a4c; --gold: #e8a830; --bad: #d03a3a; --ok: #1f9d55; --warn: #c9811a; --soft: #f3f6fb;
-    --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); }
-  @media (prefers-color-scheme: dark) { :root { --bg: #0a1120; --card: #141d33; --ink: #edf1f8; --muted: #9fabc4; --line: #26324f; --pri: #ff8a4c; --pri2: #ff8a4c; --bad: #ff8585; --ok: #5fd08a; --warn: #f2b450; --soft: #1b2640; } }
+  :root { --bg: #f1f4f9; --card: #fff; --ink: #121a2b; --muted: #5f6b82; --faint: #8b95a8; --line: #e1e6ef; --soft: #f4f6fa; --pri: #c2551b; --pri2: #ff8a4c; --on-pri: #1b0f06;
+    --ok: #17834a; --warn: #b26a08; --bad: #c93030; --info: #1f6fd0; --shadow: 0 1px 2px rgba(16, 30, 60, .05), 0 8px 24px rgba(16, 30, 60, .06);
+    --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b1017; --card: #131b27; --ink: #edf1f7; --muted: #9aa6ba; --faint: #6f7b90; --line: #232e40; --soft: #18212f; --pri: #ff8a4c; --pri2: #ffa66e;
+    --ok: #55d08c; --warn: #f3b552; --bad: #ff8080; --info: #6fb0ff; --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 28px rgba(0, 0, 0, .28); color-scheme: dark; } }
   * { box-sizing: border-box; margin: 0; }
   html { -webkit-text-size-adjust: 100%; }
-  body { background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; padding-bottom: calc(40px + var(--sab)); }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; padding-bottom: calc(96px + var(--sab)); -webkit-tap-highlight-color: transparent; }
   button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
   [hidden] { display: none !important; }
-  .top { background: linear-gradient(160deg, #1b2733, #0f161d); color: #fff; padding: calc(var(--sat) + 18px) 18px 54px; border-radius: 0 0 30px 30px; }
-  .top-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
-  .top img { width: 54px; height: 54px; border-radius: 15px; box-shadow: 0 6px 18px rgba(0,0,0,.35); flex: none; }
-  .top h1 { font-size: 23px; line-height: 1.15; } .top p { opacity: .8; font-size: 13.5px; }
-  .top .out { margin-inline-start: auto; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); color: #fff; padding: 7px 13px; font-size: 13.5px; font-weight: 600; border-radius: 999px; cursor: pointer; }
-  main { max-width: 760px; margin: -34px auto 0; padding: 0 14px; display: grid; gap: 14px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px; box-shadow: 0 10px 30px rgba(15, 35, 80, .07); }
-  h2 { font-size: 17px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  h2 i { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--pri) 13%, var(--card)); color: var(--pri); font-style: normal; flex: none; }
-  h2 i svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  :focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+
+  /* ראש העמוד */
+  .top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: calc(var(--sat) + 10px) 16px 10px; }
+  .top-in { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .top img { width: 40px; height: 40px; border-radius: 12px; flex: none; box-shadow: 0 3px 10px rgba(0, 0, 0, .25); }
+  .top h1 { font-size: 18px; line-height: 1.2; letter-spacing: -.01em; }
+  .top p { font-size: 12.5px; color: var(--muted); }
+  .top .sp { flex: 1; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); display: grid; place-items: center; color: var(--muted); }
+  .icon-btn.spin svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(-360deg); } }
+
+  main { max-width: 820px; margin: 0 auto; padding: 14px 14px 0; display: grid; gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); }
+  h2 { font-size: 16px; letter-spacing: -.01em; }
+  .sec-h { display: flex; align-items: center; gap: 8px; margin: 6px 2px -4px; color: var(--muted); font-size: 12.5px; font-weight: 700; letter-spacing: .04em; }
+  .sec-h .sp { flex: 1; }
   .muted { color: var(--muted); } .small { font-size: 13.5px; }
-  label { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); }
-  input, select { padding: 11px 12px; border-radius: 13px; border: 1.5px solid var(--line); background: var(--soft); min-width: 0; width: 100%; font-size: 16px; }
-  input:focus, select:focus { outline: 2px solid color-mix(in srgb, var(--pri) 45%, transparent); border-color: var(--pri); }
-  .btn { border: 0; cursor: pointer; font-weight: 700; padding: 12px 18px; border-radius: 999px; color: #1b0f06; background: linear-gradient(145deg, var(--pri2), var(--pri)); box-shadow: 0 6px 16px color-mix(in srgb, var(--pri) 30%, transparent); }
-  .chip { border: 1.5px solid var(--line); background: var(--card); cursor: pointer; font-weight: 600; font-size: 13.5px; padding: 7px 12px; border-radius: 999px; color: var(--pri); display: inline-flex; align-items: center; gap: 6px; }
+  label.f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  input, select { padding: 12px 13px; border-radius: 13px; border: 1.5px solid var(--line); background: var(--soft); min-width: 0; width: 100%; font-size: 16px; }
+  input:focus, select:focus { outline: 0; border-color: var(--pri); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pri) 22%, transparent); }
+  .btn { border: 0; font-weight: 700; padding: 13px 18px; border-radius: 14px; color: var(--on-pri); background: linear-gradient(145deg, var(--pri2), var(--pri)); box-shadow: 0 6px 16px color-mix(in srgb, var(--pri) 28%, transparent); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn.block { width: 100%; }
+  .btn.ghost { background: var(--soft); color: var(--ink); box-shadow: none; border: 1px solid var(--line); }
+  .btn.danger { background: color-mix(in srgb, var(--bad) 14%, var(--card)); color: var(--bad); box-shadow: none; border: 1px solid color-mix(in srgb, var(--bad) 30%, transparent); }
+  .btn:disabled { opacity: .55; }
+  .chip { border: 1px solid var(--line); background: var(--card); font-weight: 600; font-size: 13.5px; padding: 8px 12px; border-radius: 999px; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .chip svg.i { width: 15px; height: 15px; }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .chip .n { font-size: 11.500px; font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; }
   .chip.bad { color: var(--bad); }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
-  .grid .wide { grid-column: 1 / -1; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 8px; text-align: center; box-shadow: 0 10px 30px rgba(15, 35, 80, .07); }
-  .stat b { display: block; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; } .stat span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
-  .stat.w b { color: var(--warn); }
-  .sw { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
-  .sw:first-of-type { border-top: 0; padding-top: 2px; }
-  .sw .ico { width: 44px; height: 44px; border-radius: 13px; flex: none; object-fit: cover; box-shadow: 0 3px 8px rgba(0,0,0,.18); }
-  .sw div { flex: 1; min-width: 0; } .sw b { display: block; font-size: 17px; }
-  .tog { flex: none; width: 58px; height: 34px; border-radius: 999px; border: 0; background: var(--line); position: relative; cursor: pointer; transition: background .2s; }
-  .tog::after { content: ''; position: absolute; top: 4px; inset-inline-start: 4px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); transition: transform .2s; }
-  .tog.on { background: var(--ok); } .tog.on::after { transform: translateX(-24px); }
-  .tag { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; background: color-mix(in srgb, currentColor 12%, transparent); }
-  .on-c { color: var(--ok); } .off-c { color: var(--muted); } .warn-c { color: var(--warn); } .bad-c { color: var(--bad); } .pri-c { color: var(--pri); }
-  .pass { border-top: 1px solid var(--line); padding: 14px 0; display: grid; gap: 8px; }
-  .pass:first-child { border-top: 0; padding-top: 4px; }
-  .pass-h { display: flex; align-items: center; gap: 11px; }
-  .av { width: 44px; height: 44px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--c, var(--pri)); }
-  .pass h3 { font-size: 17px; line-height: 1.2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .seats { background: var(--soft); border-radius: 14px; padding: 10px 12px; }
-  .bar { height: 7px; border-radius: 7px; background: var(--line); overflow: hidden; margin: 6px 0 2px; } .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--pri2), var(--pri)); border-radius: 7px; }
-  .seat { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; font-size: 13.5px; }
-  .link { direction: ltr; text-align: left; font: 12.5px ui-monospace, Menlo, monospace; background: var(--soft); border: 1px dashed var(--line); border-radius: 12px; padding: 9px 11px; overflow-wrap: anywhere; color: var(--muted); }
-  .row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
-  details.more summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 13.5px; font-weight: 600; padding: 4px 0; } details.more summary::-webkit-details-marker { display: none; }
-  details.more[open] summary { margin-bottom: 8px; }
-  #auth { text-align: center; padding: 26px 18px; } #auth form { display: grid; gap: 12px; max-width: 320px; margin: 14px auto 0; text-align: start; }
-  .btn.face { display: inline-flex; align-items: center; gap: 9px; margin-top: 14px; padding: 14px 22px; font-size: 17px; }
-  #msg { position: fixed; inset: auto 16px calc(18px + var(--sab)) 16px; max-width: 420px; margin: 0 auto; background: var(--ink); color: var(--bg); padding: 11px 15px; border-radius: 14px; text-align: center; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.3); z-index: 9; }
-  .empty { text-align: center; color: var(--muted); padding: 18px 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-inline: -14px; padding-inline: 14px; } .scroll::-webkit-scrollbar { display: none; }
+
+  /* מספרים */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 12px 11px; box-shadow: var(--shadow); text-align: start; min-width: 0; }
+  .stat b { display: block; font-size: 27px; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .stat span { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .stat small { display: block; font-size: 11.500px; color: var(--faint); }
+  .stat.ok b { color: var(--ok); } .stat.w b { color: var(--warn); } .stat.b b { color: var(--bad); }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* אפליקציות */
+  .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .app { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px; box-shadow: var(--shadow); display: grid; gap: 9px; min-width: 0; }
+  .app-h { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .app-h img { width: 36px; height: 36px; border-radius: 11px; flex: none; }
+  .app-h b { font-size: 15.500px; line-height: 1.15; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-h small { font-size: 12px; color: var(--muted); display: block; }
+  .app-f { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  @media (max-width: 560px) { .apps { grid-template-columns: 1fr; } .app { grid-template-columns: 1fr auto; align-items: center; } }
+  .tog { flex: none; width: 50px; height: 30px; border-radius: 999px; border: 0; background: var(--line); position: relative; transition: background .2s; }
+  .tog::after { content: ''; position: absolute; top: 3px; inset-inline-start: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .3); transition: transform .2s; }
+  .tog.on { background: var(--ok); } .tog.on::after { transform: translateX(-20px); }
+  .pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, var(--muted)) 13%, transparent); }
+  .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.plain::before { display: none; }
+  .c-ok { --c: var(--ok); } .c-warn { --c: var(--warn); } .c-bad { --c: var(--bad); } .c-info { --c: var(--info); } .c-pri { --c: var(--pri); }
+
+  /* חיפוש וסינון */
+  .search { position: relative; }
+  .search svg { position: absolute; inset-inline-start: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+  .search input { padding-inline-start: 40px; background: var(--card); }
+  .tools { display: grid; gap: 10px; }
+
+  /* כרטיס קישור */
+  #list { display: grid; gap: 10px; }
+  .pass { background: var(--card); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+  .pass-b { padding: 14px 14px 12px; display: grid; gap: 11px; }
+  .pass-h { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .av { width: 46px; height: 46px; border-radius: 15px; flex: none; display: grid; place-items: center; font-weight: 800; font-size: 16px; color: #fff; background: var(--c, var(--pri)); position: relative; }
+  .av img { position: absolute; inset-block-end: -5px; inset-inline-end: -5px; width: 21px; height: 21px; border-radius: 7px; border: 2px solid var(--card); }
+  .pass-h .who { flex: 1; min-width: 0; }
+  .pass-h h3 { font-size: 17px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pass-h .sub { font-size: 12.5px; color: var(--muted); }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .fact { background: var(--soft); border-radius: 13px; padding: 8px 10px; min-width: 0; }
+  .fact small { display: block; font-size: 11.500px; color: var(--muted); font-weight: 600; }
+  .fact b { display: block; font-size: 14px; line-height: 1.25; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .life { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; } .life i { display: block; height: 100%; border-radius: 4px; background: var(--ok); }
+  .life.w i { background: var(--warn); } .life.b i { background: var(--bad); }
+  .heat { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; }
+  .heat i { aspect-ratio: 1; border-radius: 4px; background: var(--line); }
+  .heat i.l1 { background: color-mix(in srgb, var(--pri) 38%, var(--line)); } .heat i.l2 { background: color-mix(in srgb, var(--pri) 68%, var(--line)); } .heat i.l3 { background: var(--pri); }
+  .heat i.today { outline: 1.500px solid var(--ink); outline-offset: 1px; }
+  .cap { display: flex; justify-content: space-between; font-size: 11.500px; color: var(--faint); margin-top: 5px; }
+  .hrs { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; align-items: end; height: 46px; direction: ltr; }
+  .hrs i { background: color-mix(in srgb, var(--info) 75%, var(--line)); border-radius: 2px 2px 0 0; min-height: 2px; }
+  .hrs i.z { background: var(--line); }
+  .hrs-x { display: flex; justify-content: space-between; direction: ltr; font-size: 11px; color: var(--faint); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .pass-a { display: flex; border-top: 1px solid var(--line); }
+  .pass-a button { flex: 1; border: 0; background: transparent; padding: 11px 6px; font-weight: 600; font-size: 13.5px; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .pass-a button + button { border-inline-start: 1px solid var(--line); }
+  .pass-a button.pri { color: var(--pri); }
+  details.act { border-top: 1px solid var(--line); }
+  details.act summary { list-style: none; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  details.act summary::-webkit-details-marker { display: none; }
+  details.act summary .sp { flex: 1; }
+  details.act summary svg { transition: transform .2s; } details.act[open] summary svg.chev { transform: rotate(180deg); }
+  .act-b { padding: 2px 14px 14px; display: grid; gap: 12px; }
+  .act-b h4 { font-size: 12.5px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+  .link { direction: ltr; text-align: left; font: 12px ui-monospace, Menlo, monospace; background: var(--soft); border-radius: 11px; padding: 9px 11px; overflow-wrap: anywhere; color: var(--muted); }
+  .empty { text-align: center; color: var(--muted); padding: 34px 16px; border: 1.500px dashed var(--line); border-radius: 20px; }
+  .empty b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 2px; }
+  .skel { height: 132px; border-radius: 20px; background: linear-gradient(100deg, var(--card) 30%, var(--soft) 50%, var(--card) 70%); background-size: 300% 100%; animation: sk 1.2s linear infinite; border: 1px solid var(--line); }
+  @keyframes sk { to { background-position: -150% 0; } }
+
+  /* כפתור הנפקה צף */
+  .fab { position: fixed; inset-inline: 0; bottom: calc(16px + var(--sab)); z-index: 6; display: flex; justify-content: center; pointer-events: none; }
+  .fab .btn { pointer-events: auto; padding: 15px 26px; border-radius: 999px; font-size: 16.500px; box-shadow: 0 10px 28px color-mix(in srgb, var(--pri) 42%, transparent); }
+
+  /* חלונית */
+  .ov { position: fixed; inset: 0; z-index: 20; background: rgba(5, 9, 16, .55); display: flex; align-items: flex-end; justify-content: center; animation: fade .18s; }
+  .sheet { background: var(--card); width: 100%; max-width: 520px; border-radius: 24px 24px 0 0; padding: 10px 18px calc(18px + var(--sab)); max-height: 92dvh; overflow: auto; animation: up .22s cubic-bezier(.2, .8, .2, 1); display: grid; gap: 14px; }
+  .sheet::before { content: ''; width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 2px; }
+  .sheet h3 { font-size: 20px; letter-spacing: -.01em; }
+  @media (min-width: 620px) { .ov { align-items: center; } .sheet { border-radius: 24px; } .sheet::before { display: none; } .sheet { padding-top: 20px; } }
+  @keyframes fade { from { opacity: 0; } } @keyframes up { from { transform: translateY(30px); opacity: .4; } }
+  .pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pick button { border: 1.500px solid var(--line); background: var(--soft); border-radius: 15px; padding: 11px 6px; display: grid; justify-items: center; gap: 6px; font-weight: 700; font-size: 13.5px; }
+  .pick button img { width: 38px; height: 38px; border-radius: 11px; }
+  .pick button.on { border-color: var(--pri); background: color-mix(in srgb, var(--pri) 10%, var(--card)); }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opts button { border: 1.500px solid var(--line); background: var(--soft); border-radius: 12px; padding: 9px 13px; font-weight: 600; font-size: 14px; }
+  .opts button.on { border-color: var(--pri); background: color-mix(in srgb, var(--pri) 10%, var(--card)); color: var(--pri); }
+  .menu { display: grid; }
+  .menu button { border: 0; background: transparent; text-align: start; padding: 13px 4px; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); }
+  .menu button:first-child { border-top: 0; }
+  .menu button small { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+  .menu button.bad { color: var(--bad); }
+  .menu .mi { width: 36px; height: 36px; border-radius: 11px; background: var(--soft); display: grid; place-items: center; flex: none; }
+
+  /* כניסה */
+  #auth { max-width: 400px; margin: 8vh auto 0; text-align: center; padding: 28px 20px; }
+  #auth img { width: 72px; height: 72px; border-radius: 20px; box-shadow: 0 10px 26px rgba(0, 0, 0, .3); margin-bottom: 12px; }
+  #auth h2 { font-size: 22px; margin-bottom: 4px; }
+  #auth form { display: grid; gap: 12px; margin-top: 16px; text-align: start; }
+  #msg { position: fixed; inset: auto 16px calc(84px + var(--sab)) 16px; max-width: 420px; margin: 0 auto; background: var(--ink); color: var(--bg); padding: 11px 15px; border-radius: 14px; text-align: center; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); z-index: 30; animation: up .2s; }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
   <img src="icon-192.png" alt="">
-  <div><h1>קישורי הפעלה</h1><p>חוד · MOVA · קליסתניקס</p></div>
-  <button class="out" id="logout" type="button" hidden>יציאה</button>
+  <div><h1>קישורי הפעלה</h1><p id="stamp">חוד · MOVA · קליסתניקס</p></div>
+  <span class="sp"></span>
+  <button class="icon-btn" id="refresh" type="button" aria-label="רענון" hidden><svg class="i" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.300 6.300M20 5v6h-6"/></svg></button>
+  <button class="icon-btn" id="settings" type="button" aria-label="הגדרות" hidden><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.400 15a1.700 1.700 0 0 0 .300 1.800l.100.100a2 2 0 1 1-2.800 2.800l-.100-.100a1.700 1.700 0 0 0-2.800 1.200V21a2 2 0 1 1-4 0v-.100a1.700 1.700 0 0 0-2.900-1.200l-.100.100a2 2 0 1 1-2.800-2.800l.100-.100A1.700 1.700 0 0 0 3.200 14H3a2 2 0 1 1 0-4h.100a1.700 1.700 0 0 0 1.200-2.900l-.100-.100a2 2 0 1 1 2.800-2.800l.100.100A1.700 1.700 0 0 0 10 3.200V3a2 2 0 1 1 4 0v.100a1.700 1.700 0 0 0 2.900 1.200l.100-.100a2 2 0 1 1 2.800 2.800l-.100.100A1.700 1.700 0 0 0 20.800 10H21a2 2 0 1 1 0 4h-.100a1.700 1.700 0 0 0-1.500 1z"/></svg></button>
 </div></header>
+
 <main>
   <section class="card" id="auth">
-    <h2 id="authTitle" style="justify-content:center">כניסה</h2>
+    <img src="icon-192.png" alt="">
+    <h2 id="authTitle">כניסה</h2>
     <p class="muted small" id="authNote"></p>
-    <button class="btn face" id="faceGo" type="button" hidden><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 10v1M15 10v1M12 10v3h-1M9 15.500c1.800 1.300 4.200 1.300 6 0"/></svg>כניסה בזיהוי פנים</button>
+    <button class="btn block" id="faceGo" type="button" hidden style="margin-top:16px"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 10v1M15 10v1M12 10v3h-1M9 15.500c1.800 1.300 4.200 1.300 6 0"/></svg>כניסה בזיהוי פנים</button>
     <button class="chip" id="usePw" type="button" hidden style="margin-top:12px">כניסה עם סיסמה</button>
     <form id="authForm">
-      <label>סיסמה<input id="pw" type="password" autocomplete="current-password" minlength="8" required></label>
-      <button class="btn" id="authGo">כניסה</button>
+      <label class="f">סיסמה<input id="pw" type="password" autocomplete="current-password" minlength="8" required></label>
+      <button class="btn block" id="authGo">כניסה</button>
     </form>
   </section>
 
   <div id="panel" hidden style="display:grid;gap:14px">
     <div class="stats" id="stats"></div>
 
-    <section class="card">
-      <h2><i><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i>האם לדרוש קישור הפעלה?</h2>
-      <p class="muted small" style="margin-bottom:6px">כשכבוי, האפליקציה פתוחה לכל מי שמגיע לכתובת שלה. כשפועל, רק טלפון עם קישור הפעלה בתוקף נכנס — גם שלך, אז כדאי להנפיק קודם קישור לעצמך.</p>
-      <div id="switches"></div>
-    </section>
+    <div class="sec-h"><span>האפליקציות</span><span class="sp"></span><span style="font-weight:500;letter-spacing:0">המתג קובע אם נדרש קישור הפעלה</span></div>
+    <div class="apps" id="switches"></div>
 
-    <section class="card" id="faceCard" hidden>
-      <h2><i><svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 10v1M15 10v1M9 15.500c1.800 1.300 4.200 1.300 6 0"/></svg></i>כניסה בזיהוי פנים</h2>
-      <p class="muted small" id="faceNote" style="margin-bottom:10px"></p>
-      <div class="row"><button class="btn" id="faceOn" type="button">הפעלה בטלפון הזה</button><button class="chip bad" id="faceOff" type="button" hidden>כיבוי</button></div>
-    </section>
-
-    <section class="card">
-      <h2><i><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></i>הנפקת קישור חדש</h2>
-      <form id="newForm" class="grid">
-        <label>אפליקציה<select id="nApp"></select></label>
-        <label>שם<input id="nName" maxlength="40" required placeholder="למי הקישור"></label>
-        <label class="wide">תוקף<select id="nDays"><option value="7">שבוע</option><option value="14">שבועיים</option><option value="30" selected>חודש</option><option value="90">3 חודשים</option><option value="180">חצי שנה</option><option value="365">שנה</option><option value="730">שנתיים</option><option value="1095">3 שנים</option></select></label>
-        <button class="btn wide">הנפקה ושליחה</button>
-      </form>
-      <p class="muted small" style="margin-top:10px">כל קישור מופעל על טלפון אחד. אחרי ההנפקה נפתח חלון השיתוף, והקישור נשאר ברשימה למטה למעקב.</p>
-    </section>
-
-    <section class="card">
-      <div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0"><i><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></i>הקישורים שהונפקו</h2><button class="chip" id="refresh" type="button">רענון</button></div>
-      <div class="row" id="filter" style="margin-bottom:4px"></div>
-      <div id="list"></div>
-    </section>
+    <div class="sec-h"><span>הקישורים</span><span class="sp"></span><span id="count" class="num" style="font-weight:500;letter-spacing:0"></span></div>
+    <div class="tools">
+      <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg><input id="q" type="search" placeholder="חיפוש לפי שם" autocomplete="off" aria-label="חיפוש לפי שם"></div>
+      <div class="scroll" id="filter"></div>
+      <div class="scroll" id="status"></div>
+    </div>
+    <div id="list"><div class="skel"></div><div class="skel"></div></div>
   </div>
 </main>
-<div id="msg" hidden></div>
+
+<div class="fab" id="fab" hidden><button class="btn" id="newGo" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>קישור חדש</button></div>
+<div id="msg" hidden role="status"></div>
+
 <script>
 // אפליקציית ניהול נפרדת (מותקנת למסך הבית בפני עצמה) לקישורי ההפעלה של שלוש האפליקציות.
-// השרת הוא שרת התזכורות המשותף שלהן (worker/lic.js).
+// השרת הוא שרת התזכורות המשותף שלהן (worker/lic.js). כאן רואים גם את יומן השימוש של כל קישור: פתיחות לפי יום ולפי שעה.
 const API = (window.__LIC_API || 'https://lohem-reminders.dudu-tal.workers.dev') + '/lic/admin';
 const BASE = { lohem: 'https://dudutal-dev.github.io/Fitness-center/', studio: 'https://dudutal-dev.github.io/Fitness-studio/', calisthenics: 'https://dudutal-dev.github.io/Calisthenics/' };
-const mem0 = k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
 const HE = { lohem: 'חוד', studio: 'MOVA', calisthenics: 'קליסתניקס' };
 const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + 'assets/icons/icon-192.png'])), COL = ['#c2551b', '#0f9f94', '#e5587f', '#d98a1c', '#7b61f0', '#2b8a3e'];
-// האפליקציה שנבחרה בפעם הקודמת בטופס ההנפקה
-const HERE = BASE[mem0('fitlicapp')] ? mem0('fitlicapp') : 'studio';
+const DURS = [[7, 'שבוע'], [14, 'שבועיים'], [30, 'חודש'], [90, '3 חודשים'], [180, 'חצי שנה'], [365, 'שנה'], [730, 'שנתיים'], [1095, '3 שנים']];
 const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const mem = { get: k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
-let pw = mem.get('fitlicpw'), sess = '', sessAt = 0, show = 'all', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
+const HERE = BASE[mem.get('fitlicapp')] ? mem.get('fitlicapp') : 'studio';   // האפליקציה שנבחרה בפעם הקודמת בטופס ההנפקה
+let pw = mem.get('fitlicpw'), sess = '', sessAt = 0, show = 'all', stat = 'all', q = '', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 const canFace = !!(window.PublicKeyCredential && navigator.credentials), faceOn = () => mem.get('fitlicwa') === '1';
 const say = t => { const m = $('#msg'); m.textContent = t; m.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => m.hidden = true, 3200); };
 const call = async (op, o = {}) => { const r = await fetch(API, { method: 'POST', body: JSON.stringify({ pw, sess, op, ...o }) }); return r.json(); };
-const date = t => new Date(t).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
-const day = t => new Date(t).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
-const col = s => COL[[...String(s)].reduce((n, c) => n + c.charCodeAt(0), 0) % COL.length];
+const ic = d => `<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
+const I = { share: ic('<path d="M12 15V4M8 8l4-4 4 4M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>'), copy: ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>'), more: ic('<circle cx="5" cy="12" r="1.300"/><circle cx="12" cy="12" r="1.300"/><circle cx="19" cy="12" r="1.300"/>'),
+  chev: '<svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>', clock: ic('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'), edit: ic('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>'), phone: ic('<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>'),
+  ban: ic('<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>'), trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'), face: ic('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 10v1M15 10v1M9 15.500c1.800 1.300 4.200 1.300 6 0"/>'), out: ic('<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l-4 4 4 4M6 12h10"/>') };
 
+// ───── זמנים ─────
+const TZ = 'Asia/Jerusalem';
+const dkey = t => new Date(t).toLocaleDateString('en-CA', { timeZone: TZ });
+const day = t => new Date(t).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+const date = t => new Date(t).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+const dm = t => new Date(t).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: '2-digit' });
+const hm = t => new Date(t).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+function ago(t, now) {
+  const m = Math.max(0, Math.round((now - t) / 60e3));
+  if (m < 2) return 'עכשיו'; if (m < 60) return `לפני ${m} דק׳`;
+  const dd = Math.round((new Date(dkey(now)) - new Date(dkey(t))) / 86400e3);
+  if (dd === 0) return `היום ${hm(t)}`; if (dd === 1) return `אתמול ${hm(t)}`; if (dd < 7) return `לפני ${dd} ימים`;
+  return dm(t);
+}
+const col = s => COL[[...String(s)].reduce((n, c) => n + c.charCodeAt(0), 0) % COL.length];
+// שימוש: מערך של 28 הימים האחרונים (מהישן לחדש), פתיחות בשבוע האחרון, ימים פעילים, והשעה הנפוצה
+function usage(p, now) {
+  const u = p.use || {}, days = [];
+  for (let i = 27; i >= 0; i--) days.push(u[dkey(now - i * 86400e3)] || 0);
+  const hrs = Array.isArray(p.hrs) && p.hrs.length === 24 ? p.hrs : null, top = hrs ? hrs.indexOf(Math.max(...hrs)) : -1;
+  return { days, week: days.slice(-7).reduce((a, x) => a + x, 0), active: days.filter(Boolean).length, active7: days.slice(-7).filter(Boolean).length, today: days[27], hrs, top: hrs && hrs[top] ? top : -1, total: p.opens || 0, has: !!p.use };
+}
+// מצב הקישור
+function state(p, now) {
+  const left = Math.ceil((p.exp - now) / 86400e3);
+  if (p.revoked) return { k: 'off', t: 'בוטל', c: 'c-bad', left };
+  if (p.exp < now) return { k: 'off', t: 'פג תוקף', c: 'c-bad', left };
+  if (!p.devs.length) return { k: 'wait', t: 'ממתין להפעלה', c: 'c-info', left };
+  return { k: 'on', t: 'פעיל', c: 'c-ok', left };
+}
+
+// ───── חלוניות (במקום חלונות הדפדפן) ─────
+function sheet(html, onMount) {
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  const close = () => ov.remove();
+  ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-close]')) close(); });
+  document.body.append(ov); onMount?.(ov.firstChild, close); return close;
+}
+const ask = (title, text, yes, danger) => new Promise(res => { let done = false;
+  const close = sheet(`<h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="row"><button class="btn ${danger ? 'danger' : ''}" style="flex:1" data-yes type="button">${esc(yes)}</button><button class="btn ghost" style="flex:1" data-close type="button">ביטול</button></div>`,
+    (sh) => { sh.querySelector('[data-yes]').onclick = () => { done = true; close(); res(true); }; new MutationObserver(() => { if (!sh.isConnected && !done) res(false); }).observe(document.body, { childList: true }); }); });
+
+// ───── כניסה ─────
 async function start() {
   try { const s = await call('state'), first = !s.claimed;
     $('#authTitle').textContent = first ? 'קביעת סיסמת ניהול' : 'כניסה';
@@ -157,21 +286,19 @@ $('#authForm').onsubmit = async e => { e.preventDefault(); pw = $('#pw').value;
   const r = await call($('#authForm').dataset.first ? 'claim' : 'login').catch(() => ({}));
   if (!r.ok) return say(r.why === 'claimed' ? 'כבר נקבעה סיסמה. לרענן את העמוד ולהיכנס' : r.why === 'short' ? 'הסיסמה קצרה מדי' : 'הסיסמה לא נכונה');
   if (!faceOn()) mem.set('fitlicpw', pw); open(); };
-function open() { $('#auth').hidden = true; $('#panel').hidden = false; $('#logout').hidden = false; faceUI(); load(); }
+const lock = on => { $('#auth').hidden = !on; $('#panel').hidden = on; for (const id of ['#refresh', '#settings', '#fab']) $(id).hidden = on; };
+function open() { lock(false); load(); }
 // ───── זיהוי פנים (מפתח גישה): הטלפון מאמת את הפנים, והשרת מאמת את החתימה של הטלפון ─────
-function faceUI() { $('#faceCard').hidden = !canFace; const on = faceOn();
-  $('#faceNote').textContent = on ? 'פעיל בטלפון הזה. בכל פתיחה של המסך תתבקש לאמת את הפנים, והסיסמה לא נשמרת בטלפון.' : 'במקום להקליד סיסמה: הטלפון יאמת את הפנים שלך (או טביעת אצבע) בכל פתיחה. הסיסמה נשארת כגיבוי.';
-  $('#faceOn').hidden = on; $('#faceOff').hidden = !on; }
-$('#faceOn').onclick = async () => {
+async function faceEnable() {
   try { const st = await call('wa-reg-start'); if (!st.ok) return say('ההפעלה נכשלה');
     const cred = await navigator.credentials.create({ publicKey: { challenge: unb64u(st.challenge), rp: { name: 'ניהול קישורי הפעלה', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'admin', displayName: 'מנהל' },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' }, timeout: 60000 } });
     const spki = cred.response.getPublicKey && cred.response.getPublicKey(); if (!spki) return say('הדפדפן הזה לא תומך בזה');
     const r = await call('wa-reg-finish', { id: cred.id, spki: b64u(spki), clientData: b64u(cred.response.clientDataJSON), n: navigator.platform || '' });
     if (!r.ok) return say('ההפעלה נכשלה');
-    mem.set('fitlicwa', '1'); mem.set('fitlicpw', ''); say('זיהוי הפנים הופעל'); faceUI();
-  } catch { say('ההפעלה בוטלה'); } };
-$('#faceOff').onclick = async () => { if (!confirm('לכבות את הכניסה בזיהוי פנים? הכניסה תחזור להיות עם סיסמה.')) return; await call('wa-clear').catch(() => {}); mem.set('fitlicwa', ''); say('זיהוי הפנים כובה'); faceUI(); };
+    mem.set('fitlicwa', '1'); mem.set('fitlicpw', ''); say('זיהוי הפנים הופעל');
+  } catch { say('ההפעלה בוטלה'); } }
+async function faceDisable() { if (!await ask('לכבות זיהוי פנים?', 'הכניסה תחזור להיות עם סיסמה.', 'כיבוי', true)) return; await call('wa-clear').catch(() => {}); mem.set('fitlicwa', ''); say('זיהוי הפנים כובה'); }
 // אימות בזיהוי פנים. מחזיר true כשהשרת אישר (ואז sess תקף לחצי שעה מהפעולה האחרונה)
 async function faceAuth() {
   try { const st = await call('wa-start'); if (!st.ok || !st.ids.length) { mem.set('fitlicwa', ''); say('זיהוי הפנים לא מוגדר. להיכנס עם סיסמה'); return false; }
@@ -179,73 +306,167 @@ async function faceAuth() {
     const r = await call('wa-finish', { id: a.id, authData: b64u(a.response.authenticatorData), clientData: b64u(a.response.clientDataJSON), sig: b64u(a.response.signature) });
     if (!r.ok) { say('הזיהוי נכשל'); return false; } sess = r.sess; sessAt = Date.now(); return true;
   } catch { say('הזיהוי בוטל'); return false; } }
-async function faceLogin() { if (await faceAuth()) open(); }
 // פעולת ניהול. הכניסה בזיהוי פנים תקפה לחצי שעה מהפעולה האחרונה: כשהיא עומדת לפוג או כבר פגה — מאמתים שוב וחוזרים על הפעולה,
-// במקום להיכשל בשקט (זה מה שגרם ל"הטעינה נכשלה" אחרי שהמסך נשאר פתוח).
+// במקום להיכשל בשקט.
 async function act(op, o = {}) {
   if (faceOn() && sess && Date.now() - sessAt > 25 * 60e3) await faceAuth();
   let r = await call(op, o).catch(() => ({ net: true }));
   if (r.why === 'auth' && canFace && faceOn() && await faceAuth()) r = await call(op, o).catch(() => ({ net: true }));
-  if (r.why === 'auth') { $('#panel').hidden = true; $('#auth').hidden = false; say('הכניסה פגה. לאמת שוב, ואז לחזור על הפעולה'); if (canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; } }
+  if (r.why === 'auth') { lock(true); say('הכניסה פגה. לאמת שוב, ואז לחזור על הפעולה'); if (canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; } }
   else if (r.ok && sess) sessAt = Date.now();
   return r;
 }
-$('#faceGo').onclick = faceLogin;
+$('#faceGo').onclick = async () => { if (await faceAuth()) open(); };
 $('#usePw').onclick = () => { $('#authForm').hidden = false; $('#usePw').hidden = true; $('#pw').focus(); };
-$('#logout').onclick = () => { mem.set('fitlicpw', ''); pw = ''; sess = ''; location.reload(); };
+const logout = () => { mem.set('fitlicpw', ''); pw = ''; sess = ''; location.reload(); };
 
-async function load() { const r = await act('list'); if (!r.ok) { if (r.why !== 'auth') say(r.net ? 'אין חיבור לשרת. לנסות שוב' : 'הטעינה נכשלה'); return; } last = r; draw(); }
-function draw() {
-  const r = last, P = r.passes, live = P.filter(p => !p.revoked && p.exp > r.now);
-  $('#stats').innerHTML = `<div class="stat"><b>${live.filter(p => p.devs.length).length}</b><span>קישורים פעילים</span></div>
-    <div class="stat"><b>${live.filter(p => !p.devs.length).length}</b><span>עוד לא הופעלו</span></div>
-    <div class="stat ${P.some(p => p.rejects) ? 'w' : ''}"><b>${P.reduce((n, p) => n + (p.rejects || 0), 0)}</b><span>ניסיונות שנדחו</span></div>`;
-  $('#switches').innerHTML = Object.keys(BASE).map(a => `<div class="sw"><img class="ico" src="${ICON[a]}" alt=""><div><b>${HE[a]}</b><span class="tag ${r.cfg[a] ? 'on-c' : 'off-c'}">${r.cfg[a] ? 'דורשת קישור הפעלה' : 'פתוחה לכולם'}</span></div>
-    <button class="tog ${r.cfg[a] ? 'on' : ''}" data-cfg="${a}" data-on="${r.cfg[a] ? '' : '1'}" type="button" role="switch" aria-checked="${!!r.cfg[a]}" aria-label="${r.cfg[a] ? 'לכבות' : 'להפעיל'} דרישת קישור הפעלה ב־${HE[a]}"></button></div>`).join('');
-  $('#filter').innerHTML = [['all', 'הכול'], ...Object.keys(BASE).map(k => [k, HE[k]])].map(([k, t]) => `<button class="chip" data-show="${k}" type="button" style="${show === k ? 'background:var(--pri);color:#fff;border-color:var(--pri)' : ''}">${t}</button>`).join('');
-  const list = P.filter(p => show === 'all' || p.app === show);
-  $('#list').innerHTML = list.length ? list.map(p => { const link = BASE[p.app] + '?k=' + p.token, exp = p.exp < r.now, d = p.devs[0], left = Math.ceil((p.exp - r.now) / 86400e3);
-    return `<div class="pass"><div class="pass-h"><span class="av" style="--c:${col(p.id)}">${esc((p.name || '?').slice(0, 2))}</span>
-        <h3>${esc(p.name || 'בלי שם')} <span class="tag pri-c">${HE[p.app]}</span>
-        ${p.revoked ? '<span class="tag bad-c">בוטל</span>' : exp ? '<span class="tag bad-c">פג תוקף</span>' : d ? '<span class="tag on-c">מופעל</span>' : '<span class="tag off-c">עוד לא הופעל</span>'}
-        ${p.rejects ? `<span class="tag warn-c">${p.rejects} ניסיונות שנדחו</span>` : ''}</h3></div>
-      <div class="small muted">${exp ? 'פג ב־' + day(p.exp) : `בתוקף עד ${day(p.exp)} (עוד ${left} ימים)`}${d ? ` · הופעל ${date(d.t)} · נפתח לאחרונה ${date(d.seen)}` : ''}${p.lastReject ? ` · ניסיון אחרון שנדחה ${date(p.lastReject)}` : ''}</div>
-      <div class="link">${esc(link)}</div>
-      <div class="row"><button class="chip" data-share="${esc(link)}" data-name="${esc(p.name)}" data-app="${p.app}" data-exp="${p.exp}" type="button">שליחה</button><button class="chip" data-copy="${esc(link)}" type="button">העתקת הקישור</button></div>
-      <details class="more"><summary>עוד פעולות ▾</summary><div class="row">
-        <button class="chip" data-op="extend" data-id="${p.id}" type="button">הארכת תוקף</button><button class="chip" data-op="rename" data-id="${p.id}" data-name="${esc(p.name)}" type="button">שינוי שם</button>
-        <button class="chip" data-op="reset" data-id="${p.id}" type="button">איפוס טלפון</button>
-        <button class="chip bad" data-op="revoke" data-id="${p.id}" data-on="${p.revoked ? '' : '1'}" type="button">${p.revoked ? 'החזרה לתוקף' : 'ביטול'}</button>
-        <button class="chip bad" data-op="delete" data-id="${p.id}" type="button">מחיקה</button></div></details></div>`; }).join('') : '<p class="empty">עוד לא הונפקו קישורים כאן.</p>';
+// ───── נתונים ─────
+async function load() {
+  $('#refresh').classList.add('spin');
+  const r = await act('list'); $('#refresh').classList.remove('spin');
+  if (!r.ok) { if (r.why !== 'auth') say(r.net ? 'אין חיבור לשרת. לנסות שוב' : 'הטעינה נכשלה'); return; }
+  last = r; $('#stamp').textContent = `עודכן ${hm(Date.now())}`; draw();
 }
-$('#newForm').onsubmit = async e => { e.preventDefault();
-  const app = $('#nApp').value, name = $('#nName').value.trim(), days = +$('#nDays').value;
-  const r = await act('create', { app, name, days }); if (r.why === 'auth') return;
-  if (!r.ok) return say('ההנפקה נכשלה'); $('#nName').value = ''; mem.set('fitlicapp', app); await load();
-  shareLink(BASE[app] + '?k=' + r.token, name, app, Date.now() + days * 86400e3); };
+function draw() {
+  const r = last, now = r.now, P = r.passes.map(p => ({ p, s: state(p, now), u: usage(p, now) }));
+  const live = P.filter(x => x.s.k !== 'off'), on = live.filter(x => x.s.k === 'on'), soon = live.filter(x => x.s.left <= 14), rej = r.passes.reduce((n, p) => n + (p.rejects || 0), 0);
+  $('#stats').innerHTML = `<div class="stat ok"><b>${on.length}</b><span>משתמשים פעילים</span><small>מתוך ${live.length} קישורים בתוקף</small></div>
+    <div class="stat"><b>${on.filter(x => x.u.today).length}</b><span>נכנסו היום</span><small>${on.filter(x => x.u.active7).length} בשבוע האחרון</small></div>
+    <div class="stat ${live.length - on.length ? 'w' : ''}"><b>${live.length - on.length}</b><span>ממתינים להפעלה</span><small>נשלחו ועוד לא נפתחו</small></div>
+    <div class="stat ${soon.length || rej ? 'b' : ''}"><b>${soon.length}</b><span>פגים בשבועיים הקרובים</span><small>${rej ? `${rej} ניסיונות שנדחו` : 'אין ניסיונות שנדחו'}</small></div>`;
+  $('#switches').innerHTML = Object.keys(BASE).map(a => { const mine = live.filter(x => x.p.app === a);
+    return `<div class="app"><div class="app-h"><img src="${ICON[a]}" alt=""><div style="min-width:0"><b>${HE[a]}</b><small>${mine.filter(x => x.s.k === 'on').length} פעילים · ${mine.length} קישורים</small></div></div>
+      <div class="app-f"><span class="pill ${r.cfg[a] ? 'c-ok' : ''}">${r.cfg[a] ? 'נדרש קישור' : 'פתוחה לכולם'}</span>
+      <button class="tog ${r.cfg[a] ? 'on' : ''}" data-cfg="${a}" data-on="${r.cfg[a] ? '' : '1'}" type="button" role="switch" aria-checked="${!!r.cfg[a]}" aria-label="${r.cfg[a] ? 'לכבות' : 'להפעיל'} דרישת קישור הפעלה ב־${HE[a]}"></button></div></div>`; }).join('');
+  const byApp = P.filter(x => show === 'all' || x.p.app === show);
+  $('#filter').innerHTML = [['all', 'כל האפליקציות', P.length], ...Object.keys(BASE).map(k => [k, HE[k], P.filter(x => x.p.app === k).length])].map(([k, t, n]) => `<button class="chip ${show === k ? 'on' : ''}" data-show="${k}" type="button">${k !== 'all' ? `<img src="${ICON[k]}" alt="" width="18" height="18" style="border-radius:5px">` : ''}${t}<span class="n">${n}</span></button>`).join('');
+  const ST = [['all', 'הכול', () => true], ['on', 'פעילים', x => x.s.k === 'on'], ['wait', 'ממתינים', x => x.s.k === 'wait'], ['soon', 'פגים בקרוב', x => x.s.k !== 'off' && x.s.left <= 14], ['quiet', 'לא נכנסו שבוע', x => x.s.k === 'on' && now - (x.p.devs[0].seen || 0) > 7 * 86400e3], ['off', 'פגו או בוטלו', x => x.s.k === 'off']];
+  $('#status').innerHTML = ST.map(([k, t, f]) => `<button class="chip ${stat === k ? 'on' : ''}" data-stat="${k}" type="button">${t}<span class="n">${byApp.filter(f).length}</span></button>`).join('');
+  const f = ST.find(x => x[0] === stat)[2], list = byApp.filter(f).filter(x => !q || (x.p.name || '').toLowerCase().includes(q.toLowerCase()));
+  $('#count').textContent = list.length === P.length ? `${P.length}` : `${list.length} מתוך ${P.length}`;
+  $('#list').innerHTML = list.length ? list.map(({ p, s, u }) => card(p, s, u, now)).join('')
+    : `<div class="empty"><b>${P.length ? 'אין קישורים שמתאימים לסינון' : 'עוד לא הונפקו קישורים'}</b>${P.length ? 'אפשר לנקות את החיפוש או לבחור מצב אחר.' : 'לוחצים על "קישור חדש" למטה, בוחרים אפליקציה ושם, ושולחים.'}</div>`;
+}
+function card(p, s, u, now) {
+  const link = BASE[p.app] + '?k=' + p.token, d = p.devs[0], span = Math.max(1, p.exp - p.created), pct = s.k === 'off' ? 0 : Math.max(3, Math.min(100, Math.round((p.exp - now) / span * 100)));
+  const lv = n => (n >= 3 ? 'l3' : n === 2 ? 'l2' : n === 1 ? 'l1' : ''), mx = u.hrs ? Math.max(1, ...u.hrs) : 1;
+  return `<article class="pass" data-pass="${p.id}"><div class="pass-b">
+    <div class="pass-h"><span class="av" style="--c:${col(p.id)}">${esc((p.name || '?').trim().slice(0, 2))}<img src="${ICON[p.app]}" alt=""></span>
+      <div class="who"><h3>${esc(p.name || 'בלי שם')}</h3><div class="sub">${HE[p.app]} · הונפק ${day(p.created)}</div></div>
+      <span class="pill ${s.k === 'on' && now - (d.seen || d.t) > 7 * 86400e3 ? 'c-warn' : s.c}">${s.k === 'on' && now - (d.seen || d.t) > 7 * 86400e3 ? 'לא נכנס שבוע' : s.t}</span></div>
+    <div class="facts">
+      <div class="fact"><small>תוקף</small><b>${s.k === 'off' && !p.revoked ? 'פג ' + dm(p.exp) : s.left > 0 ? `עוד ${s.left} ימים` : dm(p.exp)}</b><div class="life ${s.left <= 3 ? 'b' : s.left <= 14 ? 'w' : ''}"><i style="width:${pct}%"></i></div></div>
+      <div class="fact"><small>כניסה אחרונה</small><b>${d ? ago(d.seen || d.t, now) : '—'}</b></div>
+      <div class="fact"><small>בשבוע האחרון</small><b>${d && u.has ? `${u.active7} מתוך 7 ימים` : '—'}</b></div>
+    </div>
+    ${p.rejects ? `<div><span class="pill c-warn">${p.rejects} ניסיונות להפעיל בטלפון אחר${p.lastReject ? ' · אחרון ' + ago(p.lastReject, now) : ''}</span></div>` : ''}
+  </div>
+  <details class="act"><summary>${I.clock}זמני שימוש ופרטים<span class="sp"></span>${I.chev}</summary><div class="act-b">
+    ${d ? `<div><h4>28 הימים האחרונים · ${u.active} ימים פעילים</h4><div class="heat">${u.days.map((n, i) => `<i class="${lv(n)} ${i === 27 ? 'today' : ''}" title="${n} כניסות"></i>`).join('')}</div><div class="cap"><span>לפני 4 שבועות</span><span>היום</span></div></div>
+      ${u.hrs ? `<div><h4>באילו שעות${u.top >= 0 ? ` · בעיקר סביב ${String(u.top).padStart(2, '0')}:00` : ''}</h4><div class="hrs">${u.hrs.map(n => `<i class="${n ? '' : 'z'}" style="height:${Math.max(4, Math.round(n / mx * 100))}%"></i>`).join('')}</div><div class="hrs-x"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div></div>` : '<p class="muted small">יומן השימוש נאסף מ-20.11.2026. הנתונים יופיעו אחרי הכניסה הבאה של המשתמש.</p>'}
+      <div class="facts"><div class="fact"><small>הופעל</small><b>${date(d.t)}</b></div><div class="fact"><small>כניסות סה״כ</small><b>${u.has ? u.total : '—'}</b></div><div class="fact"><small>בתוקף עד</small><b>${day(p.exp)}</b></div></div>`
+    : `<p class="muted small">הקישור עוד לא הופעל על אף טלפון. אחרי ההפעלה יופיעו כאן ימי השימוש והשעות.</p>`}
+    <div><h4>הקישור</h4><div class="link">${esc(link)}</div></div>
+  </div></details>
+  <div class="pass-a"><button class="pri" data-share="${esc(link)}" data-name="${esc(p.name)}" data-app="${p.app}" data-exp="${p.exp}" type="button">${I.share}שליחה</button><button data-copy="${esc(link)}" type="button">${I.copy}העתקה</button><button data-more="${p.id}" type="button" aria-label="עוד פעולות">${I.more}עוד</button></div></article>`;
+}
+
+// ───── הנפקה ─────
+function newSheet() {
+  let app = HERE, days = 30;
+  sheet(`<h3>קישור חדש</h3>
+    <div><label class="f" style="margin-bottom:6px">אפליקציה</label><div class="pick" data-app>${Object.keys(BASE).map(k => `<button type="button" data-v="${k}" class="${k === app ? 'on' : ''}"><img src="${ICON[k]}" alt="">${HE[k]}</button>`).join('')}</div></div>
+    <label class="f">למי הקישור<input id="nName" maxlength="40" placeholder="שם" autocomplete="off"></label>
+    <div><label class="f" style="margin-bottom:6px">תוקף</label><div class="opts" data-days>${DURS.map(([v, t]) => `<button type="button" data-v="${v}" class="${v === days ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+    <p class="muted small">כל קישור מופעל על טלפון אחד. אחרי ההנפקה נפתח חלון השיתוף, והקישור נשאר ברשימה למעקב.</p>
+    <div class="row"><button class="btn" style="flex:2" id="nGo" type="button">הנפקה ושליחה</button><button class="btn ghost" style="flex:1" data-close type="button">ביטול</button></div>`, (sh, close) => {
+    const pick = (sel, set) => sh.querySelector(sel).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; set(b.dataset.v); sh.querySelectorAll(sel + ' button').forEach(x => x.classList.toggle('on', x === b)); });
+    pick('[data-app]', v => { app = v; }); pick('[data-days]', v => { days = +v; });
+    setTimeout(() => sh.querySelector('#nName').focus(), 250);
+    sh.querySelector('#nGo').onclick = async (e) => {
+      const name = sh.querySelector('#nName').value.trim(); if (!name) { sh.querySelector('#nName').focus(); return say('צריך שם, כדי לדעת של מי הקישור'); }
+      e.target.disabled = true; const r = await act('create', { app, name, days }); if (r.why === 'auth') return close();
+      if (!r.ok) { e.target.disabled = false; return say(r.net ? 'אין חיבור לשרת' : 'ההנפקה נכשלה'); }
+      mem.set('fitlicapp', app); close(); await load(); shareLink(BASE[app] + '?k=' + r.token, name, app, Date.now() + days * 86400e3);
+    };
+  });
+}
 // הודעת השיתוף: למי, לאיזו אפליקציה, עד מתי, ושזה לטלפון אחד
 function shareLink(link, name, app, exp) {
   const text = `${name ? name + ', ' : ''}זה קישור אישי לאפליקציית ${HE[app]}. הוא מופעל על טלפון אחד בלבד, ובתוקף עד ${day(exp)}.\nאחרי שפותחים את הקישור, מוסיפים את האפליקציה למסך הבית ונכנסים מהאייקון:\n• אייפון, ספארי: כפתור השיתוף למטה ← "הוסף למסך הבית"\n• אייפון, Chrome: כפתור השיתוף למעלה, בקצה שורת הכתובת ← "הוסף למסך הבית"\n• אנדרואיד: תפריט ⋮ למעלה ← "התקנת האפליקציה"\n${link}`;
-  return navigator.share ? navigator.share({ text }).catch(() => {}) : navigator.clipboard.writeText(text).then(() => say('הקישור הונפק והועתק'), () => say('הקישור הונפק'));
+  return navigator.share ? navigator.share({ text }).catch(() => {}) : navigator.clipboard.writeText(text).then(() => say('ההודעה עם הקישור הועתקה'), () => say('הקישור הונפק'));
 }
-$('#refresh').onclick = load;
+
+// ───── פעולות על קישור ─────
+async function run(op, body, okMsg) {
+  const r = await act(op, body); if (r.why === 'auth') return;
+  say(r.ok ? okMsg : r.net ? 'אין חיבור לשרת' : r.why === 'none' ? 'הקישור כבר לא קיים' : 'הפעולה נכשלה'); if (r.ok || r.why === 'none') await load();
+}
+function moreSheet(id) {
+  const p = last.passes.find(x => x.id === id); if (!p) return;
+  const item = (k, icon, t, d, bad) => `<button type="button" data-do="${k}" class="${bad ? 'bad' : ''}"><span class="mi">${icon}</span><span>${t}<small>${d}</small></span></button>`;
+  sheet(`<h3>${esc(p.name || 'בלי שם')}</h3><div class="menu">
+    ${item('extend', I.clock, 'הארכת תוקף', `בתוקף עד ${day(p.exp)}`)}${item('rename', I.edit, 'שינוי שם', 'איך הקישור מופיע ברשימה ואצל המשתמש')}
+    ${item('reset', I.phone, 'איפוס טלפון', 'למי שהחליף טלפון: הקישור יעבוד על טלפון חדש')}
+    ${item('revoke', I.ban, p.revoked ? 'החזרה לתוקף' : 'ביטול הקישור', p.revoked ? 'הקישור יחזור לעבוד' : 'הקישור מפסיק לעבוד, ונשאר ברשימה', !p.revoked)}
+    ${item('delete', I.trash, 'מחיקה', 'הקישור נמחק לגמרי, כולל יומן השימוש', true)}</div>
+    <button class="btn ghost block" data-close type="button">סגירה</button>`, (sh, close) => {
+    sh.querySelector('.menu').addEventListener('click', async e => { const b = e.target.closest('[data-do]'); if (!b) return; const k = b.dataset.do; close();
+      if (k === 'extend') return extendSheet(p);
+      if (k === 'rename') return renameSheet(p);
+      if (k === 'reset') { if (await ask('לאפס את הטלפון?', 'הקישור יוכל לעבוד על טלפון חדש, והטלפון הישן ייחסם.', 'איפוס')) run('reset', { id }, 'הטלפון אופס'); return; }
+      if (k === 'revoke') { if (p.revoked || await ask('לבטל את הקישור?', `${p.name || 'המשתמש'} לא יוכל להיכנס לאפליקציה עד שהקישור יוחזר לתוקף.`, 'ביטול הקישור', true)) run('revoke', { id, on: !p.revoked }, p.revoked ? 'הקישור חזר לתוקף' : 'הקישור בוטל'); return; }
+      if (k === 'delete' && await ask('למחוק את הקישור?', 'הוא יפסיק לעבוד ויימחק מהרשימה. אי אפשר לשחזר.', 'מחיקה', true)) run('delete', { id }, 'הקישור נמחק');
+    });
+  });
+}
+function extendSheet(p) {
+  let days = 30;
+  sheet(`<h3>הארכת תוקף</h3><p class="muted">${esc(p.name || '')} · בתוקף עד ${day(p.exp)}</p><div class="opts" data-days>${DURS.map(([v, t]) => `<button type="button" data-v="${v}" class="${v === days ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <p class="small" id="exTo"></p><div class="row"><button class="btn" style="flex:2" id="exGo" type="button">הארכה</button><button class="btn ghost" style="flex:1" data-close type="button">ביטול</button></div>`, (sh, close) => {
+    const to = () => { sh.querySelector('#exTo').textContent = `התוקף החדש: עד ${day(Math.max(p.exp, Date.now()) + days * 86400e3)}`; }; to();
+    sh.querySelector('[data-days]').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; days = +b.dataset.v; sh.querySelectorAll('[data-days] button').forEach(x => x.classList.toggle('on', x === b)); to(); });
+    sh.querySelector('#exGo').onclick = () => { close(); run('extend', { id: p.id, days }, 'התוקף הוארך'); };
+  });
+}
+function renameSheet(p) {
+  sheet(`<h3>שינוי שם</h3><label class="f">שם<input id="rnName" maxlength="40" value="${esc(p.name)}" autocomplete="off"></label>
+    <div class="row"><button class="btn" style="flex:2" id="rnGo" type="button">שמירה</button><button class="btn ghost" style="flex:1" data-close type="button">ביטול</button></div>`, (sh, close) => {
+    const inp = sh.querySelector('#rnName'); setTimeout(() => { inp.focus(); inp.select(); }, 250);
+    sh.querySelector('#rnGo').onclick = () => { const name = inp.value.trim(); close(); run('rename', { id: p.id, name }, 'השם עודכן'); };
+  });
+}
+// ───── הגדרות ─────
+function settingsSheet() {
+  const on = faceOn();
+  sheet(`<h3>הגדרות</h3><div class="menu">
+    ${canFace ? `<button type="button" data-do="face"><span class="mi">${I.face}</span><span>${on ? 'כיבוי זיהוי פנים' : 'כניסה בזיהוי פנים'}<small>${on ? 'פעיל בטלפון הזה. הסיסמה לא נשמרת בטלפון.' : 'הטלפון יאמת פנים או טביעת אצבע בכל פתיחה. הסיסמה נשארת כגיבוי.'}</small></span></button>` : ''}
+    <button type="button" data-do="out" class="bad"><span class="mi">${I.out}</span><span>יציאה<small>הסיסמה תימחק מהטלפון הזה</small></span></button></div>
+    <p class="muted small">יומן השימוש רושם רק מתי האפליקציה נפתחה (יום ושעה). האימונים, המשקל והתזונה של המשתמשים נשארים בטלפון שלהם.</p>
+    <button class="btn ghost block" data-close type="button">סגירה</button>`, (sh, close) => {
+    sh.querySelector('.menu').addEventListener('click', async e => { const b = e.target.closest('[data-do]'); if (!b) return; close();
+      if (b.dataset.do === 'out') return logout();
+      on ? await faceDisable() : await faceEnable(); });
+  });
+}
+
+$('#refresh').onclick = load; $('#newGo').onclick = newSheet; $('#settings').onclick = settingsSheet;
+$('#q').addEventListener('input', e => { q = e.target.value.trim(); if (last) draw(); });
 document.addEventListener('click', async e => {
-  const c = e.target.closest('[data-cfg]'), o = e.target.closest('[data-op]'), cp = e.target.closest('[data-copy]'), sh = e.target.closest('[data-share]'), f = e.target.closest('[data-show]');
+  const c = e.target.closest('[data-cfg]'), cp = e.target.closest('[data-copy]'), sh = e.target.closest('[data-share]'), f = e.target.closest('[data-show]'), st = e.target.closest('[data-stat]'), m = e.target.closest('[data-more]');
   if (f) { show = f.dataset.show; return draw(); }
+  if (st) { stat = st.dataset.stat; return draw(); }
+  if (m) return moreSheet(m.dataset.more);
   if (cp) return navigator.clipboard.writeText(cp.dataset.copy).then(() => say('הקישור הועתק'), () => say('ההעתקה נכשלה'));
   if (sh) return shareLink(sh.dataset.share, sh.dataset.name, sh.dataset.app, +sh.dataset.exp);
-  if (c) { if (c.dataset.on && !confirm(`להפעיל דרישת קישור הפעלה ב־${HE[c.dataset.cfg]}? מי שאין לו קישור בתוקף לא יוכל להיכנס — גם הטלפון הזה.`)) return;
-    const r = await act('cfg', { app: c.dataset.cfg, enforce: !!c.dataset.on }); if (r.why === 'auth') return; say(r.ok ? 'עודכן' : r.net ? 'אין חיבור לשרת' : 'העדכון נכשל'); return load(); }
-  if (o) { const op = o.dataset.op, body = { id: o.dataset.id };
-    if (op === 'delete' && !confirm('למחוק את הקישור לגמרי? הוא יפסיק לעבוד.')) return;
-    if (op === 'reset' && !confirm('לאפס את הטלפון? הקישור יוכל לעבוד על טלפון חדש, והישן ייחסם.')) return;
-    if (op === 'revoke') body.on = !!o.dataset.on;
-    if (op === 'extend') { const n = prompt('בכמה ימים להאריך?', '30'); if (n === null || !(+n > 0)) return; body.days = +n; }
-    if (op === 'rename') { const n = prompt('שם חדש', o.dataset.name); if (n === null) return; body.name = n.trim(); }
-    const r = await act(op, body); if (r.why === 'auth') return; say(r.ok ? (op === 'delete' ? 'הקישור נמחק' : 'עודכן') : r.net ? 'אין חיבור לשרת' : r.why === 'none' ? 'הקישור כבר לא קיים' : 'הפעולה נכשלה'); if (r.ok || r.why === 'none') await load(); }
+  if (c) { const a = c.dataset.cfg;
+    if (c.dataset.on && !await ask(`לדרוש קישור הפעלה ב־${HE[a]}?`, 'מי שאין לו קישור בתוקף לא יוכל להיכנס — גם הטלפון הזה. כדאי להנפיק קודם קישור לעצמך.', 'להפעיל')) return;
+    if (!c.dataset.on && !await ask(`לפתוח את ${HE[a]} לכולם?`, 'כל מי שמגיע לכתובת של האפליקציה יוכל להשתמש בה, גם בלי קישור.', 'לפתוח לכולם', true)) return;
+    const r = await act('cfg', { app: a, enforce: !!c.dataset.on }); if (r.why === 'auth') return; say(r.ok ? 'עודכן' : r.net ? 'אין חיבור לשרת' : 'העדכון נכשל'); return load(); }
 });
-$('#nApp').innerHTML = Object.keys(BASE).map(k => `<option value="${k}" ${k === HERE ? 'selected' : ''}>${HE[k]}</option>`).join('');
-start();
+// חוזרים למסך אחרי זמן: מרעננים לבד
+document.addEventListener('visibilitychange', () => { if (!document.hidden && last && !$('#panel').hidden && Date.now() - last.now > 60e3 && !document.querySelector('.ov')) load(); });
+lock(true); start();
 </script>
 </body>
 </html>

@@ -7,7 +7,7 @@ import { WORKER, isIOS, isStandalone } from './reminders.js';
 import { installSteps } from './install.js';
 
 const K = `${APP_ID}.lic`, KC = `${APP_ID}.licCfg`, KD = `${APP_ID}.dev`, KH = `${APP_ID}.hand`;
-const GRACE = 21 * 864e5, RECHECK = 6 * 3600e3;
+const GRACE = 21 * 864e5, RECHECK = 30 * 60e3;   // בדיקה מול השרת בפתיחת האפליקציה, לא יותר מפעם בחצי שעה (כך גם נרשמת הפתיחה ביומן השימוש שבניהול)
 const get = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
 const put = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch { /* מצב פרטי */ } };
 const TOKEN = /P\.[a-z0-9]{6,12}\.[A-Za-z0-9_-]{22}/;

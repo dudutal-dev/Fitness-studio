@@ -98,3 +98,25 @@ test('licences: handing a link from iPhone Safari to the home-screen app', async
   assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp }, '9.9.9.9')).k, token, 'same phone on another network (cellular / private relay) gets it');
   assert.equal((await post(env, 'hand-get', { app: 'calisthenics', fp })).k, undefined, 'collected once');
 });
+
+test('licences: usage log — opens per day and hour, at most once in 25 minutes', async () => {
+  const { lic } = await import('../worker/lic.js');
+  const env = makeEnv(), json = (o) => o;
+  const call = (path, body, now) => lic(new Request(`https://w.dev/lic/${path}`, { method: 'POST', body: JSON.stringify(body) }), env, new URL(`https://w.dev/lic/${path}`), json, now);
+  const t0 = Date.UTC(2026, 10, 20, 17, 30);   // 19:30 בישראל
+  await call('admin', { pw: 'correct horse', op: 'claim' }, t0);
+  const made = await call('admin', { pw: 'correct horse', op: 'create', app: 'studio', name: 'דנה', days: 365 }, t0);
+  const dev = 'abcdefgh12345';
+  assert.equal((await call('activate', { token: made.token, dev, app: 'studio' }, t0)).ok, true);
+  await call('check', { id: made.id, dev }, t0 + 10 * 60e3);            // אותה פתיחה: לא נספרת שוב
+  await call('check', { id: made.id, dev }, t0 + 40 * 60e3);            // פתיחה חדשה באותו יום (20:10)
+  await call('check', { id: made.id, dev }, t0 + 12 * 3600e3);           // למחרת, 07:30
+  const p = (await call('admin', { pw: 'correct horse', op: 'list' }, t0 + 2 * DAY)).passes[0];
+  assert.deepEqual(p.use, { '2026-11-20': 2, '2026-11-21': 1 }); assert.equal(p.opens, 3);
+  assert.equal(p.hrs[19], 1); assert.equal(p.hrs[20], 1); assert.equal(p.hrs[7], 1); assert.equal(p.hrs.reduce((a, x) => a + x, 0), 3);
+  assert.equal(p.devs[0].seen, t0 + 12 * 3600e3);
+  // נשמרים 90 ימים לכל היותר
+  for (let i = 2; i < 100; i++) await call('check', { id: made.id, dev }, t0 + i * DAY);
+  const q = (await call('admin', { pw: 'correct horse', op: 'list' }, t0 + 100 * DAY)).passes[0];
+  assert.equal(Object.keys(q.use).length, 90); assert.ok(!q.use['2026-11-20']);
+});

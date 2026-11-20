@@ -69,6 +69,18 @@ async function waVerify(env, b) {
   return crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, derToRaw(unb64u(b.sig)), signed);
 }
 
+// יומן שימוש לכל קישור (למסך הניהול): כמה פתיחות בכל יום (90 הימים האחרונים) ובאילו שעות — לפי שעון ישראל.
+// נרשמת רק עצם הפתיחה של האפליקציה; תוכן האימונים והתזונה נשאר בטלפון.
+const ilDay = (t) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+const ilHour = (t) => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jerusalem', hour: '2-digit', hourCycle: 'h23' }).format(new Date(t))) % 24;
+function touch(p, me, now) {
+  me.seen = now;
+  const d = ilDay(now); p.use = p.use || {}; p.use[d] = (p.use[d] || 0) + 1;
+  const keys = Object.keys(p.use).sort(); for (const k of keys.slice(0, Math.max(0, keys.length - 90))) delete p.use[k];
+  p.hrs = Array.isArray(p.hrs) && p.hrs.length === 24 ? p.hrs : Array(24).fill(0); p.hrs[ilHour(now)]++;
+  p.opens = (p.opens || 0) + 1;
+}
+
 const view = (p) => ({ ok: true, id: p.id, name: p.name, exp: p.exp });   // מה שהאפליקציה מקבלת על הרישיון שלה
 
 // json: (אובייקט, סטטוס) → Response. now: לבדיקות.
@@ -91,7 +103,7 @@ export async function lic(req, env, url, json, now = Date.now()) {
       if (list.length >= MAX_DEV) { p.rejects = (p.rejects || 0) + 1; p.lastReject = now; await putPass(env, p); return json({ ok: false, why: 'used' }); }
       me = { dev: b.dev, t: now }; list.push(me);
     }
-    me.seen = now;
+    touch(p, me, now);
     await putPass(env, p);
     return json(view(p));
   }
@@ -101,7 +113,7 @@ export async function lic(req, env, url, json, now = Date.now()) {
     if (p.exp < now) return json({ ok: false, why: 'expired' });
     const me = (p.devs || []).find((x) => x.dev === b.dev);
     if (!me) return json({ ok: false, why: 'gone' });
-    if (now - (me.seen || 0) > 6 * 3600e3) { me.seen = now; await putPass(env, p); }
+    if (now - (me.seen || 0) > 25 * 60e3) { touch(p, me, now); await putPass(env, p); }   // פתיחה חדשה: לא יותר מפעם ב-25 דקות
     return json(view(p));
   }
   // העברת הקישור מהדפדפן של האייפון לאפליקציה שבמסך הבית (שני אחסונים נפרדים באותו טלפון):
