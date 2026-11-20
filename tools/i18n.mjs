@@ -82,7 +82,12 @@ function translate(file) {
 // התאמות לגרסה האנגלית שאינן תרגום: מיקום הנכסים, אזור הזמן של תאריכים, מפתח האחסון ושמות המטמון
 const adapt = (file, code) => {
   code = code.replace(/(['"`(])assets\//g, '$1../assets/').replace(/'he-IL'/g, "'en-US'");
-  if (file === 'js/store.js') code = code.replace(/fitness_studio_v1/g, 'fitness_studio_en_v1');
+  // מקומות שבהם הקוד בודק מילה בעברית בתוך טקסט (לא רק מציג אותה): אותה בדיקה מול המילה האנגלית
+  if (file === 'js/engine/program.js') code = code.replace('/^(ריצה|קליסתניקס)/', '/^(Run|Calisthenics)/');
+  if (file === 'js/engine/progression.js') code = code.replace('/מוט/', '/barbell/i').replace('/משקולת/', '/dumbbell/i');
+  if (file === 'js/brand.js' || file === 'js/reminders.js') code = code.replace(/github\.io\/Fitness-studio\//g, 'github.io/Fitness-studio/en/');
+  if (file === 'js/store.js') code = code.replace(/fitness_studio_v1/g, 'fitness_studio_en_v1')
+    .replace('settings: { voice: true,', 'settings: { voice: false,');   // עד שיוקלטו הקולות באנגלית: בלי דיבור (אחרת כתוביות באנגלית עם קול בעברית)
   if (file === 'sw.js') code = code.replace(/'studio-/g, "'studio-en-").replace(/x-studio-media/g, 'x-studio-en-media').replace(/lang: 'he', dir: 'rtl'/g, "lang: 'en', dir: 'ltr'");
   return code;
 };

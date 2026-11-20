@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f161d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MOVA">
+  <meta name="description" content="MOVA — סטודיו כושר עם מאמן אישי וירטואלי: תוכנית אימונים אדפטיבית, ריצה, תזונה ומעקב התקדמות.">
+  <title>MOVA</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
+  <link rel="preload" href="../assets/fonts/heebo-hebrew.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    // ערכת נושא לפני הציור הראשון (בלי הבהוב)
+    try {
+      var st = JSON.parse(localStorage.getItem('fitness_studio_v1') || '{}').settings || {};
+      var t = st.themeV === 4 ? st.theme || 'dark' : 'dark';
+      if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.dataset.theme = t;
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'light' ? '#e8ecf0' : '#0f161d');
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>This app requires JavaScript.</noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

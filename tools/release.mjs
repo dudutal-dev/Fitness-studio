@@ -17,4 +17,6 @@ sw = sw.replace(/const VERSION = '[^']*';/, `const VERSION = 'studio-${v}';`).re
 writeFileSync(new URL('sw.js', root), sw);
 // אפליקציית הניהול (admin/): אותה גרסה, כדי שתתעדכן לבד אצל מי שהתקין אותה למסך הבית
 try { const au = new URL('admin/index.html', root); writeFileSync(au, readFileSync(au, 'utf8').replace(/const ADMIN_V = '[^']*';/, `const ADMIN_V = '${v}';`)); } catch { /* אין אפליקציית ניהול בריפו הזה */ }
+// הגרסה האנגלית (en/) נבנית מחדש מהמקור העברי בכל שחרור, כדי ששתי הגרסאות יהיו תמיד באותה גרסה
+try { const { execFileSync } = await import('node:child_process'); const out = execFileSync('node', [new URL('i18n.mjs', import.meta.url).pathname, 'build'], { encoding: 'utf8' }); console.log(out.trim().split('\n').pop()); } catch { /* אין גרסה אנגלית בריפו הזה */ }
 console.log('release', v, media ? '(media refreshed)' : '');

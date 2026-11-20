@@ -1,0 +1,6 @@
+{
+ "בקובץ ה-ZIP לא נמצא FIT/TCX/GPX": "No FIT/TCX/GPX was found in the ZIP file",
+ "פורמט לא נתמך — FIT, TCX, GPX או ZIP": "Unsupported format — FIT, TCX, GPX or ZIP",
+ "ZIP פגום": "Corrupted ZIP",
+ "שיטת דחיסה לא נתמכת": "Unsupported compression method"
+}

@@ -1,0 +1,15 @@
+{
+ "הקובץ אינו ZIP תקין": "The file is not a valid ZIP",
+ "קובץ הייצוא גדול מדי (ZIP64) — לא נתמך": "The export file is too large (ZIP64) — not supported",
+ "לא נמצא קובץ הנתונים בתוך ה-ZIP": "The data file was not found inside the ZIP",
+ "שיטת דחיסה לא נתמכת": "Unsupported compression method",
+ "לא נמצאו בקובץ שקילות או אימונים": "No weigh-ins or workouts were found in the file",
+ "ריצה": "Running",
+ "הליכה": "Walking",
+ "טיול / הליכה": "Hiking / walking",
+ "אופניים": "Cycling",
+ "שחייה": "Swimming",
+ "אימון כוח": "Strength training",
+ "אימון": "Workout",
+ "פעילות": "Activity"
+}
