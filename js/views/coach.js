@@ -42,7 +42,8 @@ export function renderCoach(root) {
   const noGym = cali || mob || run || hiit || pil || yoga || tai, mobN = mobCount(p);
   const recMix = mix ? (() => { const r = recommendTrack({ gymAccess: p.gymAccess || 'yes', goal: p.goal, days: p.days, injuries: p.injuries }); return r.track === 'mix' ? r.mixCali : null; })() : null;
   if (sessionStorage.getItem('scrollTo') === 'reminders') openSec.add('reminders');
-  root.innerHTML = html`<div class="page-head"><div class="h1">הגדרות</div></div>
+  root.innerHTML = html`<div class="page-head row between" style="align-items:center"><div class="h1">הגדרות</div>
+      <div class="seg lang-seg" data-lang role="group" aria-label="שפה / Language"><button data-v="he" class="${LANG === 'he' ? 'on' : ''}" lang="he">עברית</button><button data-v="en" class="${LANG === 'en' ? 'on' : ''}" lang="en">English</button></div></div>
     <div class="h2" style="margin-top:0">המאמן שלך</div>
     <div class="coach-pick ${cali || mob || hiit || pil || yoga || tai ? 'solo' : ''}">${coachesFor(track).map((c) => html`
       <button class="coach-card ${p.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span>
@@ -70,8 +71,6 @@ export function renderCoach(root) {
       ${toggleRow('captions', 'כתוביות באימון', 'מה שהמאמן אומר — שורה קצרה שנעלמת', st.captions !== false)}
       ${toggleRow('music', 'מוזיקת רקע', 'בכל האימונים — מוזיקה שמתאימה לסוג האימון, בשקט מתחת להנחיות', st.music === true)}
       ${toggleRow('introSound', 'צליל פתיחה', 'מנגינה קצרה כשהאפליקציה עולה', st.introSound !== false)}
-      <div class="set-row" style="cursor:default"><div class="grow"><b>שפה</b><div class="sub">הנתונים, התוכנית והרישיון נשארים — רק שפת הממשק מתחלפת</div></div>
-        <div class="seg" data-lang style="flex:0 0 auto"><button data-v="he" class="${LANG === 'he' ? 'on' : ''}" lang="he">עברית</button><button data-v="en" class="${LANG === 'en' ? 'on' : ''}" lang="en">English</button></div></div>
       <div style="margin-top:12px"><div class="row between"><b>עוצמה</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} בדיקת קול</button>
