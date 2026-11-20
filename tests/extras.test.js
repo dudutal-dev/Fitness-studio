@@ -48,3 +48,31 @@ test('nutrition follows the mix: protein by the most demanding discipline, energ
   assert.equal(activityKey(P({ track: 'gym', days: 6 })), 'training');
   assert.equal(activityKey(P({ track: 'gym', days: 6, extras: { yoga: 2, pil: 1 } })), 'base');
 });
+
+test('full programmes can be added too: running, calisthenics and gym next to another main track', async () => {
+  const { newCali } = await import('../js/engine/cali.js');
+  const cali = newCali({ pushups: 15, squats: 20, pullups: 0, dips: 0, plankSec: 45, bmi: 22 }, []);
+  const p = P({ track: 'yoga', coach: 'yael', days: 6, cali, extras: { gym: 1, run: 1, cali: 1 } });
+  const w = buildWeek(p);
+  assert.equal(w.sessions.length, 6);
+  const by = Object.fromEntries(w.sessions.filter((s) => s.extra).map((s) => [s.xtrack, s]));
+  assert.deepEqual(Object.keys(by).sort(), ['cali', 'gym', 'run']);
+  assert.equal(sessionCoach(p, by.gym), 'ori'); assert.equal(sessionCoach(p, by.run), 'guy'); assert.equal(sessionCoach(p, by.cali), 'maya');
+  assert.ok(by.run.runOnly && by.run.run, 'the run is a real run session');
+  assert.ok(by.gym.items.length && !by.gym.track && !by.gym.run, 'the gym session is a strength session without an attached run');
+  assert.equal(by.cali.track, 'cali');
+  assert.equal(w.sessions.filter((s) => !s.extra).length, 3);
+});
+
+test('calisthenics needs its ladder state, and the combined track does not take gym or calisthenics on top', async () => {
+  const { newCali } = await import('../js/engine/cali.js');
+  assert.deepEqual(extrasOf(P({ track: 'yoga', extras: { cali: 2 } })), [], 'no ladder state yet: not built');
+  const cali = newCali({ pushups: 15, squats: 20, pullups: 0, dips: 0, plankSec: 45, bmi: 22 }, []);
+  assert.deepEqual(extrasOf(P({ track: 'mix', coach: 'ori', days: 5, mixCali: 2, cali, extras: { gym: 2, cali: 1, run: 1 } })), [{ track: 'run', n: 1 }]);
+});
+
+test('adding strength work to a class track raises protein to the strength level', () => {
+  const pil = targets(P({ track: 'pil', days: 3 })), pilGym = targets(P({ track: 'pil', days: 4, extras: { gym: 1 } }));
+  assert.ok(pilGym.perKg > pil.perKg);
+  assert.ok(weeklyLoad(P({ track: 'pil', days: 4, extras: { gym: 1 } })) > weeklyLoad(P({ track: 'pil', days: 4 })));
+});

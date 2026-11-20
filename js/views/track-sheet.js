@@ -9,13 +9,16 @@ import { COACHES, coachesFor } from '../data/coaches.js';
 import { TRACKS } from './onboarding.js';
 import { switchTrack } from './cali-ui.js';
 import { mobCount, newMob } from '../engine/mob.js';
+import { newCali } from '../engine/cali.js';
 import { EXTRA_TRACKS, extrasOf } from '../engine/program.js';
 import { targets, wantsNutrition } from '../engine/nutrition.js';
 
 const ORDER = ['gym', 'cali', 'run', 'hiit', 'pil', 'yoga', 'mob', 'mix'];
 const faces = (id) => (id === 'mix' ? ['ori', 'noa', 'maya'].map((c) => COACHES[c]) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('');
 const nameOf = (id) => (TRACKS[id] || TRACKS.gym).name;
-const isClass = (id) => EXTRA_TRACKS.includes(id);
+const isClass = (id) => ['yoga', 'pil', 'hiit'].includes(id);
+// אילו תחומים אפשר להוסיף לצד המסלול הראשי: הכול חוץ ממנו עצמו; ובמסלול המשולב חדר הכושר והקליסתניקס כבר בפנים
+const canAdd = (cur, t) => EXTRA_TRACKS.includes(t) && t !== cur && !(cur === 'mix' && (t === 'gym' || t === 'cali'));
 
 export const trackLabel = (p) => [nameOf(p.track), ...extrasOf(p).map((x) => nameOf(x.track)), ...(p.track !== 'mob' && mobCount(p) ? ['מוביליטי'] : [])].join(' + ');
 
@@ -24,7 +27,7 @@ const snapshot = () => { const s = get(), t = targets(s.profile); return { kcal:
 // סיכום אחרי שינוי: מה יש עכשיו בשבוע, ומה קרה ליעדי התזונה
 function summarySheet(before) {
   const s = get(), p = s.profile, t = targets(p), nf = (n) => n.toLocaleString('he-IL');
-  const count = {}; for (const w of s.plan.week.sessions) { const k = w.track === 'mob' ? 'mob' : w.extra ? w.track : p.track; count[k] = (count[k] || 0) + 1; }
+  const count = {}; for (const w of s.plan.week.sessions) { const k = w.track === 'mob' ? 'mob' : w.extra ? w.xtrack || w.track : p.track; count[k] = (count[k] || 0) + 1; }
   const parts = Object.entries(count).map(([k, n]) => `<b class="num">${n}</b> ${esc(nameOf(k))}`).join(' · ');
   const same = before.kcal === t.kcal && before.protein === t.protein;
   sheet(html`<div class="h1" style="font-size:22px">התוכנית עודכנה</div>
@@ -42,6 +45,8 @@ function summarySheet(before) {
 function setExtra(track, n) {
   set((s) => {
     const q = s.profile, was = q.extras?.[track] || 0;
+    // קליסתניקס כתחום נוסף בלי מבדק רמה: מתחילים משלבי הבסיס ובלי ציוד; הסולמות מתקדמים לבד מאימון לאימון
+    if (track === 'cali' && n && !q.cali) { const hM = (q.heightCm || 175) / 100; q.cali = newCali({ pushups: 15, squats: 20, pullups: 0, dips: 0, plankSec: 45, bmi: (q.weightKg || 70) / (hM * hM) }, []); }
     q.extras = { ...(q.extras || {}), [track]: n };
     if (!n) delete q.extras[track];
     q.days = Math.min(6, Math.max(2, (q.days || 3) + (n - was)));
@@ -53,17 +58,19 @@ function setExtra(track, n) {
 // בחירה במסלול אחר: שואלים אם התחום הקודם נשאר בתוקף
 function askSheet(target, rerender) {
   const p = get().profile, cur = p.track, curN = Math.max(1, Math.min(3, (p.days || 3) - extrasOf(p).reduce((a, x) => a + x.n, 0) - mobCount(p)));
-  const canKeep = isClass(target) || isClass(cur);     // אפשר להחזיק שני תחומים כשאחד מהם הוא שיעור (יוגה / פילאטיס / HIIT)
+  // שני התחומים יכולים לחיות באותו שבוע, חוץ מהמסלול המשולב מול חדר כושר / קליסתניקס (שכבר כלולים בו)
+  const swap = isClass(cur) && !isClass(target) && target !== 'mix' && canAdd(target, cur);   // שיעור + תוכנית: התוכנית נעשית המסלול הראשי
+  const canKeep = swap || canAdd(cur, target);
   const mixHint = (cur === 'gym' && target === 'cali') || (cur === 'cali' && target === 'gym');
   let n = 1;
   const body = () => html`<div class="h1" style="font-size:22px">${esc(nameOf(target))} — ומה עם ${esc(nameOf(cur))}?</div>
     ${canKeep ? html`<p class="sub" style="margin:4px 0 12px">אפשר להמשיך בשני התחומים באותו שבוע, או לעבור רק ל${esc(nameOf(target))}.</p>
       <div class="card tight"><b>ממשיכים גם ${esc(nameOf(cur))}</b>
-        <div class="sub t-foot" style="margin:4px 0 8px">${isClass(target) ? `כמה שיעורי ${esc(nameOf(target))} להוסיף לשבוע?` : `${esc(nameOf(target))} יהיה המסלול הראשי. כמה שיעורי ${esc(nameOf(cur))} להשאיר בשבוע?`}</div>
+        <div class="sub t-foot" style="margin:4px 0 8px">${swap ? `${esc(nameOf(target))} יהיה המסלול הראשי. כמה שיעורי ${esc(nameOf(cur))} להשאיר בשבוע?` : `כמה אימוני ${esc(nameOf(target))} להוסיף לשבוע?`}</div>
         <div class="seg" data-ask-n>${[1, 2, 3].map((i) => `<button data-v="${i}" class="${n === i ? 'on' : ''}">${i}</button>`).join('')}</div>
         <button class="btn primary block" style="margin-top:10px" data-ask="both">להוסיף ולהמשיך בשניהם</button></div>`
-    : html`<p class="sub" style="margin:4px 0 12px">${mixHint ? 'כדי להתאמן גם בחדר הכושר וגם בקליסתניקס באותו שבוע יש את המסלול "משולב".' : `את ${esc(nameOf(cur))} ואת ${esc(nameOf(target))} אי אפשר לשלב באותה תוכנית שבועית. אפשר לעבור ל${esc(nameOf(target))}, ולהוסיף אליו שיעורי יוגה, פילאטיס, HIIT או מוביליטי.`}</p>
-      ${mixHint ? '<button class="btn primary block" data-ask="mix">לעבור למסלול המשולב</button>' : ''}`}
+    : html`<p class="sub" style="margin:4px 0 12px">המסלול המשולב כבר כולל גם חדר כושר וגם קליסתניקס באותו שבוע, ולכן כאן בוחרים אחד מהם.</p>`}
+    ${canKeep && mixHint ? '<button class="btn block" style="margin-top:10px" data-ask="mix">לעבור למסלול המשולב (חלוקה מאוזנת בין השניים)</button>' : ''}
     <button class="btn block" style="margin-top:10px" data-ask="only">רק ${esc(nameOf(target))} מעכשיו</button>
     <button class="btn ghost block" style="margin-top:8px" data-close>ביטול</button>`;
   sheet(`<div data-ask-body>${body()}</div>`, {
@@ -72,7 +79,7 @@ function askSheet(target, rerender) {
       on(sh, 'click', '[data-ask]', (e, b) => {
         const before = snapshot(), how = b.dataset.ask;
         close();
-        if (how === 'both' && isClass(target)) { setExtra(target, n); toast(`${nameOf(target)} נוסף לשבוע`); rerender(); }
+        if (how === 'both' && !swap) { setExtra(target, n); toast(`${nameOf(target)} נוסף לשבוע`); rerender(); }
         else if (how === 'both') {
           // התחום החדש הוא תוכנית (חדר כושר, ריצה…): הוא נעשה המסלול הראשי, והשיעורים הקודמים נשארים כתוספת
           switchTrack(target, () => {});
@@ -100,12 +107,12 @@ export function trackSheet(rerender) {
       <div class="ts-list">${ORDER.map((id) => html`<button class="ts-row ${id === cur ? 'on' : ''}" data-ts="${id}">
         <span class="ts-faces">${faces(id)}</span><span class="ts-txt"><b>${TRACKS[id].name}</b><small>${esc(TRACKS[id].sub)}</small></span>
         ${id === cur ? '<span class="tag lime">ראשי</span>' : ex[id] ? `<span class="tag teal">+${ex[id]} בשבוע</span>` : id === 'mob' && n ? `<span class="tag teal">+${n} בשבוע</span>` : ''}</button>`)}</div>
-      <div class="h2" style="margin-top:14px">שיעורים נוספים בשבוע</div>
-      <div class="card tight">${EXTRA_TRACKS.filter((t) => t !== cur).map((t) => html`<div class="ts-extra"><b>${TRACKS[t].name}</b>
+      <div class="h2" style="margin-top:14px">תחומים נוספים בשבוע</div>
+      <div class="card tight">${EXTRA_TRACKS.filter((t) => canAdd(cur, t)).map((t) => html`<div class="ts-extra"><b>${TRACKS[t].name}</b>
           <div class="seg" data-ts-extra="${t}">${[0, 1, 2, 3].map((i) => `<button data-v="${i}" class="${(ex[t] || 0) === i ? 'on' : ''}">${i === 0 ? 'בלי' : i}</button>`).join('')}</div></div>`)}
         ${cur !== 'mob' && maxMob >= 1 ? html`<div class="ts-extra"><b>מוביליטי</b>
           <div class="seg" data-ts-mob>${Array.from({ length: maxMob + 1 }, (_, i) => `<button data-v="${i}" class="${n === i ? 'on' : ''}">${i === 0 ? 'בלי' : i}</button>`).join('')}</div></div>` : ''}
-        <div class="sub t-foot" style="margin-top:8px">שיעור שמוסיפים מתווסף לימי האימון בשבוע (עד 6). לוח האימונים ויעדי התזונה מתעדכנים מיד.</div></div>
+        <div class="sub t-foot" style="margin-top:8px">כל אימון שמוסיפים מתווסף לימי האימון בשבוע (עד 6). לוח האימונים ויעדי התזונה מתעדכנים מיד.</div></div>
       <button class="btn block" style="margin-top:14px" data-close>סגור</button>`;
   };
   sheet(`<div data-ts-body>${body()}</div>`, {
@@ -121,7 +128,7 @@ export function trackSheet(rerender) {
       on(sh, 'click', '[data-ts-extra] button', (e, b) => {
         const t = b.parentElement.dataset.tsExtra, v = Number(b.dataset.v), before = snapshot();
         setExtra(t, v);
-        toast(v ? `${v === 1 ? 'שיעור אחד' : `${v} שיעורים`} של ${nameOf(t)} בשבוע` : `${nameOf(t)} הוסר מהשבוע`);
+        toast(v ? `${nameOf(t)}: ${v === 1 ? 'אימון אחד' : `${v} אימונים`} בשבוע` : `${nameOf(t)} הוסר מהשבוע`);
         repaint(); rerender();
         if (wantsNutrition(get().profile) && snapshot().kcal !== before.kcal) toast(`יעד הקלוריות עודכן: ${snapshot().kcal.toLocaleString('he-IL')} קק״ל`, 2600);
       });

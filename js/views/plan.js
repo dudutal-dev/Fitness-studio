@@ -84,7 +84,7 @@ export function renderPlan(root) {
   on(root, 'click', '[data-filter]', (e, t) => { libFilter = t.dataset.filter; libAll = false; renderPlan(root); });
   on(root, 'click', '[data-act="lib-all"]', () => { libAll = !libAll; renderPlan(root); });
   on(root, 'click', '[data-start]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.start)); begin(ses); });
-  on(root, 'click', '[data-run]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.run)); startRun(ses.run, { day: ses.day }); });
+  on(root, 'click', '[data-run]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.run)); startRun(ses.run, { day: ses.day, ...(ses.extra ? { coach: ses.coach, extra: true } : {}) }); });
   on(root, 'click', '[data-act="mob-test"]', () => mobTestSheet(() => renderPlan(root)));
   on(root, 'click', '[data-act="quick-mob"]', () => quickMobSheet((w) => startWorkout(w)));
   on(root, 'click', '[data-act="regen"]', () => { set((s2) => regenerateWeek(s2)); toast('השבוע נבנה מחדש'); renderPlan(root); });

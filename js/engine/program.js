@@ -1,6 +1,6 @@
 // מנוע התוכנית: בניית תוכנית שבועית לפי פרופיל, מחזוריות (בלוקים של 4 שבועות) ואוטו־רגולציה.
 import { EX, EXERCISES } from '../data/exercises.js';
-import { buildRunSession, isRun, buildRunWeek, buildRunSessions, RUN_PHASE } from './running.js';
+import { buildRunSession, isRun, buildRunWeek, buildRunSessions, RUN_PHASE, runLevelFrom3k } from './running.js';
 import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
 import { isPil, buildPilWeek, buildPilSessions, pilBlocked, PIL_PHASE } from './pil.js';
 import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } from './yoga.js';
@@ -220,33 +220,41 @@ function withMob(profile, week, mobN, opt) {
   return { ...week, sessions: out };
 }
 
-// ───── שיעורים נוספים (profile.extras) ─────
-// "חושבים כמו סטודיו": מתאמן יכול להמשיך במסלול הראשי ולהוסיף לשבוע שיעורי יוגה, פילאטיס או HIIT.
-// profile.extras = { yoga: 1, pil: 2 } — מספר השיעורים בשבוע מכל סוג. profile.days הוא סך כל האימונים בשבוע;
+// ───── תחומים נוספים (profile.extras) ─────
+// "חושבים כמו סטודיו": מתאמן יכול להמשיך במסלול הראשי ולהוסיף לשבוע אימונים מתחום אחר —
+// שיעורים (יוגה, פילאטיס, HIIT) או תוכנית (ריצה, קליסתניקס, חדר כושר).
+// profile.extras = { yoga: 1, run: 2 } — מספר האימונים בשבוע מכל תחום. profile.days הוא סך כל האימונים בשבוע;
 // המסלול הראשי מקבל את מה שנשאר (לפחות אימון אחד). מוביליטי ממשיך לעבוד דרך profile.mobN.
-export const EXTRA_TRACKS = ['yoga', 'pil', 'hiit'];
-const EXTRA_INFO = { yoga: { name: 'יוגה', coach: 'yael' }, pil: { name: 'פילאטיס', coach: 'lia' }, hiit: { name: 'HIIT', coach: 'lia' } };
+// במסלול המשולב חדר הכושר והקליסתניקס כבר בפנים, ולכן הם לא נוספים אליו.
+export const EXTRA_TRACKS = ['yoga', 'pil', 'hiit', 'run', 'cali', 'gym'];
+const EXTRA_NAME = { yoga: 'יוגה', pil: 'פילאטיס', hiit: 'HIIT', run: 'ריצה', cali: 'קליסתניקס', gym: 'חדר כושר' };
+export const extraCoach = (profile, t) => (t === 'yoga' ? 'yael' : t === 'pil' || t === 'hiit' ? 'lia' : t === 'run' ? profile.runCoach || 'guy' : t === 'cali' ? 'maya' : profile.gymCoach || 'ori');
+export const canExtra = (profile, t) => EXTRA_TRACKS.includes(t) && t !== profile.track && !(profile.track === 'mix' && (t === 'gym' || t === 'cali')) && (t !== 'cali' || !!profile.cali);
 export function extrasOf(profile) {
   const all = Math.min(6, Math.max(2, profile?.days || 4));
   let room = all - 1;
   const out = [];
   for (const t of EXTRA_TRACKS) {
     const n = Math.min(room, Math.max(0, Math.floor(profile?.extras?.[t] || 0)));
-    if (!n || t === profile.track) continue;
+    if (!n || !canExtra(profile, t)) continue;
     out.push({ track: t, n }); room -= n;
   }
   return out;
 }
-const extraProfile = (profile, t) => ({ ...profile, track: t, extras: null, mobN: 0, coach: EXTRA_INFO[t].coach,
-  level: t === 'yoga' ? profile.yogaLevel || 1 : t === 'pil' ? profile.pilLevel || 1 : profile.hiitLevel || Math.min(3, profile.level || 2) });
+const extraProfile = (profile, t) => ({ ...profile, track: t, extras: null, mobN: 0, coach: extraCoach(profile, t),
+  ...(t === 'run' ? { runBase: profile.runBase ?? (profile.run3k ? 30 : 15) } : {}),
+  level: t === 'yoga' ? profile.yogaLevel || 1 : t === 'pil' ? profile.pilLevel || 1 : t === 'hiit' ? profile.hiitLevel || Math.min(3, profile.level || 2)
+    : t === 'run' ? profile.runLevel || runLevelFrom3k(profile.run3k) : t === 'gym' ? profile.gymLevel || 2 : profile.level || 2 });
 function withExtras(profile, week, extras, opt) {
   const out = [...week.sessions];
   // שיעורי HIIT קודם (רחוק מימי רגליים כבדים אי אפשר להבטיח, אבל מפזרים), שיעורי מזרן לקראת סוף השבוע
   const add = [];
   for (const { track, n } of extras) {
     const q = extraProfile(profile, track);
-    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : buildHiitSessions(q, n, opt);
-    for (const w of list.slice(0, n)) add.push({ ...w, track, extra: true, coach: EXTRA_INFO[track].coach, name: `${EXTRA_INFO[track].name} · ${w.name}` });
+    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : track === 'hiit' ? buildHiitSessions(q, n, opt)
+      : track === 'run' ? buildRunSessions(q, n, opt) : track === 'cali' ? buildCaliSessions(q, n, opt) : buildMainWeek({ ...q, days: n }, { ...opt, min: 1 }).sessions;
+    // חדר כושר כתחום נוסף: רק אימון הכוח (בלי הריצה שמצורפת אליו במסלול חדר הכושר)
+    for (const w of list.slice(0, n)) { const { run: _r, ...rest } = track === 'gym' ? w : { ...w, run: undefined }; add.push({ ...(track === 'gym' ? rest : w), ...(track === 'gym' ? {} : { track }), extra: true, xtrack: track, coach: extraCoach(profile, track), name: /^(ריצה|קליסתניקס)/.test(w.name) ? w.name : `${EXTRA_NAME[track]} · ${w.name}` }); }
   }
   // מפזרים את השיעורים הנוספים באופן שווה לאורך השבוע, בין אימוני המסלול הראשי
   const total = out.length + add.length, slots = new Set(add.map((_, i) => Math.min(total - 1, Math.round(((i + 1) * total) / (add.length + 1)))));

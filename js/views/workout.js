@@ -702,7 +702,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   }
 
   // פתיחה
-  // מוזיקת רקע בשיעורים (יוגה, פילאטיס, מוביליטי) — רק למי שהפעיל; בפעם הראשונה מזכירים שיש כפתור
+  // מוזיקת רקע (יוגה, פילאטיס, מוביליטי, קליסתניקס) — רק למי שהפעיל; בפעם הראשונה מזכירים שיש כפתור
   if (hasMusic(workout.track)) {
     if (musicOn()) startMusic(workout.track);
     else if (!get().settings.musicHint) { set((s2) => { s2.settings.musicHint = true; return s2; }); setTimeout(() => root.isConnected && toast('רוצים מוזיקת רקע? כפתור התו למעלה', 3200), 5000); }

@@ -9,7 +9,7 @@ import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan } from '../eng
 import { FOOD } from '../data/foods.js';
 import { openNutritionTab } from './nutrition.js';
 import { buildFieldWorkout } from '../engine/program.js';
-import { say, onSpeaking, unlock } from '../coach/voice.js';
+import { say, onSpeaking, unlock, useCoach } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
 import { startWorkout } from './workout.js';
 import { startRun } from './run.js';
@@ -192,10 +192,11 @@ export function renderHome(root) {
 const meter = (label, v, pending = '') => `<div class="meter"><div class="row"><span>${label}</span><span>${v ?? `<small>${pending}</small>`}</span></div><div class="bar"><i style="width:${v ?? 0}%"></i></div></div>`;
 
 // התחלת אימון: לפני אימון כוח — צ׳ק־אין מוכנות; אימון מוביליטי מתחיל ישר (שם בוחרים רק כמה זמן יש)
-export const begin = (w) => (w.runOnly ? startRun(w.run, { day: w.day }) : w.track === 'mob' || w.track === 'pil' || w.track === 'yoga' ? startWorkout(w) : checkIn((r) => startWorkout(w, { readiness: r })));
+export const begin = (w) => (w.runOnly ? startRun(w.run, { day: w.day, ...(w.extra ? { coach: w.coach, extra: true } : {}) }) : w.track === 'mob' || w.track === 'pil' || w.track === 'yoga' ? startWorkout(w) : checkIn((r) => startWorkout(w, { readiness: r }), false, w.extra ? w.coach : null));
 
 // צ׳ק־אין מוכנות לפני אימון → אוטו־רגולציה
-export function checkIn(cb, onlyLog = false) {
+// coach: המאמן של האימון שעומד להתחיל, כשהוא לא המאמן של המסלול הראשי (תחום נוסף) — הוא זה שמגיב לצ'ק־אין
+export function checkIn(cb, onlyLog = false, coach = null) {
   const existing = daily().checkin;
   if (existing != null && !onlyLog) return cb(existing);
   const q = { sleep: 3, energy: 3, soreness: 3, stress: 3 };
@@ -216,6 +217,7 @@ export function checkIn(cb, onlyLog = false) {
         const first = daily().checkin == null;
         setDaily({ checkin: r });
         if (first) addXP(XP.checkin);
+        if (coach) useCoach(coach);
         say(isMob(get().profile) ? 'workout_start' : r < 0.45 ? 'checkin_low' : r > 0.8 ? 'checkin_high' : 'workout_start', { priority: true });
         close(); cb(r);
       });

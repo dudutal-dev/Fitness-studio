@@ -7,7 +7,7 @@ import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget, isRun } from '../engi
 import { coachSays } from '../data/voice-lines.js';
 import { maybeAdvanceWeek } from './workout.js';
 import { sessionCoach } from '../engine/cali.js';
-import { say, sayNow, stop, onSpeaking, unlock, preload } from '../coach/voice.js';
+import { say, sayNow, stop, onSpeaking, unlock, preload, useCoach } from '../coach/voice.js';
 import { gpsTracker } from '../devices/gps.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
 import { hrPill, hrSummaryHtml } from '../devices/ui.js';
@@ -17,12 +17,14 @@ const SEG_VOICE = { warm: 'run_warm', fast: 'run_fast', easy: 'run_easy', walk: 
 // אזור דופק יעד לכל סוג מקטע [מינ׳, מקס׳]
 const TARGET_Z = { fast: [4, 5], tempo: [4, 4], steady: [2, 3], easy: [2, 3], test: [4, 5] };
 
-export function startRun(run, { day = null } = {}) {
+export function startRun(run, { day = null, coach: forced = null, extra = false } = {}) {
   unlock();
   // טעינה מראש של כל מה שהמאמן אומר בריצה
   const s = get();
   const profile = s.profile;
-  const coach = sessionCoach(profile, null); // ריצה: המאמן של מסלול חדר הכושר, או מאמן הריצה במסלול הריצה
+  // ריצה: המאמן של מסלול חדר הכושר, או מאמן הריצה במסלול הריצה. ריצה שנוספה לשבוע של מסלול אחר (extra) — עם מאמן הריצה
+  const coach = forced || sessionCoach(profile, null);
+  if (forced) useCoach(forced);
   const runCoach = COACHES[coach].track === 'run', demo = runCoach ? 'outdoor_run' : 'treadmill_run';
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3'].filter((k) => coachSays(k, coach)));
   const segs = run.segs;
@@ -181,13 +183,14 @@ export function startRun(run, { day = null } = {}) {
       <div class="rpe">${[[icon('effort1'), 'קל', 6], [icon('effort2'), 'טוב', 7.5], [icon('effort3'), 'קשה', 9], [icon('effort4'), 'מקסימום', 10]].map(([e, t, v]) => `<button data-rpe="${v}"><span>${e}</span>${t}</button>`).join('')}</div>`;
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
-      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), day, hr, gps: measured >= 200 });
+      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), day, hr, gps: measured >= 200, ...(extra ? { planDay: true } : {}) });
       close();
     });
   }
 
   function close() {
     clearInterval(timer); offSpeak(); stop(); gps.stop(); hrRec.stop(); pill._destroy?.();
+    if (forced) useCoach(null);
     try { wakeLock?.release(); } catch { /* */ }
     root.remove();
     document.body.style.overflow = '';
@@ -226,13 +229,13 @@ export function saveRun(r) {
   set((s2) => {
     s2.runs.push({ date: r.date || new Date().toISOString(), ...r });
     // מסלול ריצה: הריצה היא האימון של היום בתוכנית
-    if (isRun(s2.profile) && r.day != null && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
+    if ((isRun(s2.profile) || r.planDay) && r.day != null && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
     if (isRun(s2.profile) && r.timeSec) s2.profile.level = runLevelFrom3k(r.timeSec);
     if (r.timeSec) { s2.profile.run3k = r.timeSec; s2.profile.runLevel = runLevelFrom3k(r.timeSec); }
     return s2;
   });
   addXP(XP.run + (isPR ? XP.pr : 0), 'run');
-  if (isRun(get().profile) && r.day != null) { const msg = maybeAdvanceWeek(); if (msg) pushEvent({ type: 'coach', text: msg }); }
+  if ((isRun(get().profile) || r.planDay) && r.day != null) { const msg = maybeAdvanceWeek(); if (msg) pushEvent({ type: 'coach', text: msg }); }
   pingWorkout();
   if (r.timeSec) pushEvent({ type: isPR ? 'pr' : 'coach', text: `${isPR ? 'שיא חדש ב-3 ק״מ' : 'מבדק 3 ק״מ'}: ${fmtTime(r.timeSec)}. היעד הבא: ${fmtTime(next3kTarget(r.timeSec))}` });
   if (isPR) say('pr');
