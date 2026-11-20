@@ -113,8 +113,8 @@ function slides() {
     },
     {
       id: 'home', title: 'מסך הבית', eyebrow: 'כל יום',
-      visual: `<div class="g-mock"><div class="gm-row"><span class="gm-ring num">72</span><div><b>הכושר שלך</b><small>כוח · סבולת · עקביות · גוף</small></div></div>
-        <div class="gm-card"><small>האימון הבא</small><b>פלג עליון A</b><span class="gm-btn">התחל אימון</span></div></div>`,
+      visual: `<div class="g-mock"><div class="gm-card"><small>האימון הבא</small><b>פלג עליון A</b><span class="gm-btn">התחל אימון</span></div>
+        <div class="gm-row"><span class="gm-ring num">64%</span><div><b>התזונה של היום</b><small>נשארו 780 קק״ל · הארוחה הבאה</small></div></div></div>`,
       body: tip('🎯', '<b>האימון הבא</b> — תמיד בראש המסך. לא צמוד לימים בשבוע: פשוט עושים את הבא.') +
         tip('🍽️', '<b>התזונה של היום</b> — כמה קלוריות נשארו, חלבון, פחמימה ושומן, והארוחה הבאה. מופיע למי שבחר בליווי תזונה; הקשה פותחת את מסך התזונה.') +
         tip('💧', '<b>ארבעה אריחים</b> — מים, משקל, מוכנות וכושר. הקשה אחת על אריח.') +
@@ -127,7 +127,7 @@ function slides() {
     {
       id: 'workout', title: 'איך מתאמנים עם המאמן', eyebrow: 'הכי חשוב',
       visual: `<div class="g-mock"><div class="gm-tempo"><span class="num">4</span><small>מתוך 10</small></div><div class="gm-phase"><span class="ph-ico go-down">${icon('phDown')}</span>ירידה &nbsp;·&nbsp; <span class="ph-ico go-up">${icon('phUp')}</span>עלייה</div></div>`,
-      body: step(0, 'חימום מודרך', '5 תנועות קצרות — המאמן מדגים וסופר, עובר לבד לתנועה הבאה') + step(1, 'צ׳ק־אין קצר', '4 שאלות (שינה, אנרגיה, כאבים, עומס) — המאמן מתאים את העומס להיום') +
+      body: step(0, 'צ׳ק־אין קצר', '4 שאלות (שינה, אנרגיה, כאבים, עומס) — המאמן מתאים את העומס להיום') + step(1, 'חימום מודרך', '5 תנועות קצרות — המאמן מדגים וסופר, עובר לבד לתנועה הבאה') +
         step(2, 'מסתכלים על ההדגמה', 'מכוונים משקל וחזרות עם + / −. "הסבר" = דגשי ביצוע') +
         step(3, 'לוחצים "התחל סט"', 'המאמן סופר "3, 2, 1… יאללה!" — ומתחילים יחד איתו') +
         step(4, 'עובדים בקצב של המאמן', '"ירידה… עלייה!" + מספר כל חזרה. הווידאו זז בדיוק בקצב') +
