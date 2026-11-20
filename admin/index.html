@@ -466,6 +466,18 @@ document.addEventListener('click', async e => {
 });
 // חוזרים למסך אחרי זמן: מרעננים לבד
 document.addEventListener('visibilitychange', () => { if (!document.hidden && last && !$('#panel').hidden && Date.now() - last.now > 60e3 && !document.querySelector('.ov')) load(); });
+// ───── עדכון אוטומטי ─────
+// האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
+// וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
+const ADMIN_V = '20261120.111034';
+async function update() {
+  try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
+    if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
+    location.replace(location.pathname + '?v=' + encodeURIComponent(v));
+  } catch { /* אין רשת */ } }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
+addEventListener('pageshow', (e) => { if (e.persisted) update(); });
+update();
 lock(true); start();
 </script>
 </body>

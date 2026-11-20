@@ -15,4 +15,6 @@ writeFileSync(new URL('js/version.js', root), `// נוצר ע״י tools/release.
 let sw = readFileSync(new URL('sw.js', root), 'utf8');
 sw = sw.replace(/const VERSION = '[^']*';/, `const VERSION = 'studio-${v}';`).replace(/const MEDIA = '[^']*';/, `const MEDIA = 'studio-media-${mediaV}';`);
 writeFileSync(new URL('sw.js', root), sw);
+// אפליקציית הניהול (admin/): אותה גרסה, כדי שתתעדכן לבד אצל מי שהתקין אותה למסך הבית
+try { const au = new URL('admin/index.html', root); writeFileSync(au, readFileSync(au, 'utf8').replace(/const ADMIN_V = '[^']*';/, `const ADMIN_V = '${v}';`)); } catch { /* אין אפליקציית ניהול בריפו הזה */ }
 console.log('release', v, media ? '(media refreshed)' : '');
