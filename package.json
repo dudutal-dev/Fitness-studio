@@ -9,5 +9,9 @@
     "test": "node --test tests/*.test.js",
     "gen:voice": "node tools/gen_voice.mjs",
     "gen:demos": "python3 tools/gen_demos.py && python3 tools/build_assets.py"
+  },
+  "devDependencies": {
+    "acorn": "^8.19.0",
+    "acorn-walk": "^8.3.5"
   }
 }
