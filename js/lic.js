@@ -57,11 +57,26 @@ function gate() {   // מסך הנעילה: מופיע רק כשהאכיפה פ�
   if (typed) gateEl.querySelector('input').value = typed;
 }
 
+// אישור אחרי הפעלה מוצלחת: למי הקישור, עד מתי, ושהוא עובד בטלפון הזה בלבד. בדפדפן — גם איך מוסיפים את האפליקציה למסך הבית.
+function activated() {
+  const el = document.createElement('div');
+  el.className = 'lic-gate'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'האפליקציה הופעלה');
+  const until = new Date(L.exp).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  const steps = isStandalone() ? null : installSteps();
+  el.innerHTML = `<div class="lic-box"><img src="assets/icons/icon-192.png" alt="" width="76" height="76"><div><span class="lic-ok">✓</span></div>
+    <h2>האפליקציה הופעלה</h2>
+    <p class="lic-msg">${L.name ? `קישור ההפעלה של <b>${String(L.name).replace(/[<>&]/g, '')}</b> נקלט` : 'קישור ההפעלה נקלט'}, והוא בתוקף עד ${until}. הקישור עובד בטלפון הזה בלבד.</p>
+    ${steps ? `<p class="lic-note" style="margin:0 0 8px">כדי לפתוח אותה כמו כל אפליקציה, כדאי להוסיף אותה למסך הבית:</p><ol class="lic-steps">${steps.map(([t, d]) => `<li><b>${t}</b><span>${d}</span></li>`).join('')}</ol>` : ''}
+    <button class="btn primary block">המשך</button></div>`;
+  el.querySelector('button').addEventListener('click', () => el.remove());
+  document.body.append(el);
+}
+
 async function activate(tok) {
   why = '';
   try {
     const r = await api('activate', { token: tok, dev, app: APP_ID });
-    if (r.ok) { L = { id: r.id, name: r.name, exp: r.exp, token: tok, t: Date.now() }; put(K, L); }
+    if (r.ok) { L = { id: r.id, name: r.name, exp: r.exp, token: tok, t: Date.now() }; put(K, L); activated(); }
     else { why = r.why || 'bad'; if (L && L.token === tok) { L = null; put(K, null); } }
   } catch { why = 'net'; }
   gate(); changed();
