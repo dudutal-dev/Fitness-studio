@@ -26,6 +26,6 @@
 עצימות גבוהה לא מתאימה לכל אחד: לפני תחילת תוכנית מומלץ אישור רפואי, במיוחד עם מחלת לב, לחץ דם גבוה או אחרי תקופה ארוכה בלי פעילות.
 
 ## נכסים
-- ליה: קול שעוצב במיוחד (`1rNBx0CqYBvQubC1R0kV`); מזהה יצירת הדמות ב-`assets/_src/coaches.json`.
+- ליה: קול שעוצב במיוחד (`OehHK6Bc1muk8t8UAZmT` — רגוע יותר, הוחלף ב-20.11.2026; הקודם `1rNBx0CqYBvQubC1R0kV`); מזהה יצירת הדמות ב-`assets/_src/coaches.json`.
 - הדגמות: `tools/demos.json` (קטגוריה `hiit`) ו-`tools/demos_extra.json` — תרגילים קיימים שגם ליה מדגימה. `python3 tools/gen_demos.py @lia`.
 - `coachSays`: ליה אומרת את שמות התרגילים שלה והדגשים, חימום ומתיחות, ומשפטי המעגל (`hiit_go`, `hiit_10`, `hiit_round`, `hiit_last`, `hiit_low`).

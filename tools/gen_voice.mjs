@@ -1,5 +1,5 @@
 // מייצר את כל קבצי הקול של המאמנים ב-ElevenLabs (eleven_v3, עברית): משפטים רגילים, גרסאות נקבה, ומשפטים עם שמות מתאמנים.
-// הרצה: NODE_USE_ENV_PROXY=1 node tools/gen_voice.mjs [--force key1,key2]   (מדלג על קבצים קיימים)
+// הרצה: NODE_USE_ENV_PROXY=1 node tools/gen_voice.mjs [--force key1,key2] [--coach lia]   (מדלג על קבצים קיימים; --coach מקליט מחדש את כל המשפטים של מאמן אחד)
 // אחרי יצירה מומלץ: node tools/voice_manifest.mjs m.json && python3 tools/verify_voice.py m.json && python3 tools/fix_voice.py m.json 0.9
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { manifest, VOICES } from './voice_manifest.mjs';
@@ -7,6 +7,8 @@ import { manifest, VOICES } from './voice_manifest.mjs';
 const OUT = new URL('../assets/voice/', import.meta.url);
 const fi = process.argv.indexOf('--force');
 const FORCE = new Set(fi > 0 ? process.argv[fi + 1].split(',') : []);
+const ci = process.argv.indexOf('--coach');
+const REDO = ci > 0 ? process.argv[ci + 1] : null;
 
 async function exists(u) { try { await access(u); return true; } catch { return false; } }
 
@@ -27,7 +29,7 @@ async function worker() {
   while (i < jobs.length) {
     const j = jobs[i++];
     const file = new URL(`${j.path}.mp3`, OUT);
-    if (!FORCE.has(j.key) && await exists(file)) continue;
+    if (!FORCE.has(j.key) && j.coach !== REDO && await exists(file)) continue;
     await mkdir(new URL('.', file), { recursive: true });
     for (let attempt = 0; attempt < 3; attempt++) {
       try { await writeFile(file, await tts(j.text, VOICES[j.coach])); made++; break; }
