@@ -68,6 +68,11 @@ P[yoga_4]="$I Spacious ambient piece for slow yoga and breathing. Glassy bell-li
 P[pil_3]="$I Graceful light downtempo for a Pilates class. Soft piano and plucked harp-like synth over a gentle beat at 88 bpm, warm bass, airy vocal-free pads. Elegant, precise, quietly uplifting. Refined, clean production. Soft intro and fade out ending."
 P[pil_4]="$I Warm acoustic chillout for a Pilates mat class. Fingerpicked acoustic guitar, soft hand percussion at 86 bpm, upright bass, light piano touches. Calm, flowing, focused and friendly. Natural, polished mix. Gentle start and fade out ending."
 P[mob_3]="$I Dreamy slow music for a mobility and stretching session. Warm electric piano, slow soft pads, very gentle shaker pulse at 68 bpm, mellow bass, distant guitar swells. Unhurried, soothing, open. Smooth, polished production. Soft intro and long fade out."
+# טאי צ'י (מיי): מוזיקה איטית בהשראה מזרח־אסייתית, בלי תופים
+P[tai_1]="$I Slow, serene music for a tai chi class in a quiet garden at dawn. A gentle guzheng melody with long pauses, a soft bamboo flute that appears and fades, warm sustained pads, a low drone, no drums. Around 56 bpm, flowing like slow water. Calm, grounded, graceful. Lush, natural, high-end production. Soft start and a long fade out."
+P[tai_2]="$I Meditative ambient piece for slow tai chi movement. Soft erhu-like bowed strings over deep warm pads, sparse plucked pipa notes, distant wind chimes, no percussion. Very slow and unhurried, spacious, peaceful and steady. Wide, polished, cinematic mix. Begins softly and ends in a long fade out."
+P[tai_3]="$I Gentle flowing music for tai chi practice. Slow felt piano and guzheng trading simple phrases, soft cello underneath, airy pads, a very quiet low frame-drum pulse at 54 bpm. Tender, balanced, patient. Natural, refined production. Soft intro and a long fade out."
+P[tai_4]="$I Still, clear music for breathing and slow tai chi. A solo bamboo flute with long reverb, soft singing-bowl tones, slow evolving warm pads, occasional harp-like plucks, no drums. Like mist over a lake at sunrise: quiet, open, calming. Wide, detailed, polished mix. Soft start and a long fade out."
 LEN=${LEN:-210000}
 names=("$@"); [ ${#names[@]} -eq 0 ] && names=(yoga_1 yoga_2 pil_1 pil_2 mob_1 mob_2)
 one() {

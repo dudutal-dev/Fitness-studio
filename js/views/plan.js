@@ -20,6 +20,7 @@ import { isRun, rwWeeksLeft } from '../engine/running.js';
 import { isHiit, HIIT_FORMAT, lowImpact } from '../engine/hiit.js';
 import { isPil, PIL_LEVELS, pilLevel } from '../engine/pil.js';
 import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
+import { isTai, TAI_LEVELS, taiLevel } from '../engine/tai.js';
 
 let libFilter = 'all';
 let libAll = false;
@@ -31,20 +32,20 @@ export function renderPlan(root) {
   const doneDays = new Set(plan.completedDays);
   const blocks = [0, 1, 2].map((b) => phaseFor(p, Math.floor(plan.blockIndex / 3) * 3 + b));
   const curInCycle = plan.blockIndex % 3;
-  const cali = isCali(p), mob = isMob(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), single = cali || mob || run || hiit || pil || yoga; // מסלול בלי בלוקים מתחלפים: בלוק אחד של 4 שבועות
+  const cali = isCali(p), mob = isMob(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), tai = isTai(p), single = cali || mob || run || hiit || pil || yoga || tai; // מסלול בלי בלוקים מתחלפים: בלוק אחד של 4 שבועות
   const mix = isMix(p), withCali = hasCali(p), withMob = hasMob(p), mobN = mobCount(p);
-  const tracks = [...(run ? [] : yoga ? ['yoga'] : pil ? ['pil'] : hiit ? ['hiit'] : mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
+  const tracks = [...(run ? [] : tai ? ['tai'] : yoga ? ['yoga'] : pil ? ['pil'] : hiit ? ['hiit'] : mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
   const inTracks = (e) => e.tracks.some((t) => tracks.includes(t));
   const libList = EXERCISES.filter((e) => inTracks(e) && (libFilter === 'all' || e.group === libFilter));
 
   root.innerHTML = html`
     <div class="page-head"><div class="h1">${icon(GOALS[p.goal].icon)} ${GOALS[p.goal].name}</div>
-    <div class="sub">${yoga ? `יוגה · ${YOGA_LEVELS[yogaLevel(p)]}` : pil ? `פילאטיס מזרן · רמת ${PIL_LEVELS[pilLevel(p)]}` : hiit ? `HIIT · רמה ${p.level} · ${HIIT_FORMAT[p.level][0]} שנ׳ עבודה / ${HIIT_FORMAT[p.level][1]} מנוחה${lowImpact(p) ? ' · בלי קפיצות' : ''}` : run ? `ריצה${rwWeeksLeft(p, plan.blockIndex * 4 + plan.weekInBlock) ? ' · ריצה־הליכה' : ` · רמה ${p.runLevel || 2}`}` : mob ? `מוביליטי וגמישות${mobTested(p.mob) ? ` · ציון טווחים ${mobScore(p.mob)}` : ''}` : cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`}${mobN ? ` · כולל ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`}` : ''} · ${p.days} אימונים בשבוע ${run ? '' : ` · ${mob ? `${p.mob.minutes || 20}` : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : p.sessionMin} דק׳`}</div></div>
+    <div class="sub">${tai ? `טאי צ'י · ${TAI_LEVELS[taiLevel(p)]}` : yoga ? `יוגה · ${YOGA_LEVELS[yogaLevel(p)]}` : pil ? `פילאטיס מזרן · רמת ${PIL_LEVELS[pilLevel(p)]}` : hiit ? `HIIT · רמה ${p.level} · ${HIIT_FORMAT[p.level][0]} שנ׳ עבודה / ${HIIT_FORMAT[p.level][1]} מנוחה${lowImpact(p) ? ' · בלי קפיצות' : ''}` : run ? `ריצה${rwWeeksLeft(p, plan.blockIndex * 4 + plan.weekInBlock) ? ' · ריצה־הליכה' : ` · רמה ${p.runLevel || 2}`}` : mob ? `מוביליטי וגמישות${mobTested(p.mob) ? ` · ציון טווחים ${mobScore(p.mob)}` : ''}` : cali ? `קליסתניקס · ${p.cali.equip.length ? p.cali.equip.map((k) => EQUIP[k].name).join(' + ') : 'בלי ציוד'}` : mix ? `משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס · רמה ${p.level}` : `רמה ${p.level} · ${LEVEL_NAMES[p.level]}`}${mobN ? ` · כולל ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`}` : ''} · ${p.days} אימונים בשבוע ${run ? '' : ` · ${mob ? `${p.mob.minutes || 20}` : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : tai ? p.taiMin || 20 : p.sessionMin} דק׳`}</div></div>
 
     <div class="card cycle" style="margin-top:4px">
       <div class="row between"><b>${esc(plan.week.phase.name)} · ${esc(plan.week.week.name)}</b><span class="sub t-cap num">${single ? `שבוע ${plan.weekInBlock + 1} / 4` : `שבוע ${curInCycle * 4 + plan.weekInBlock + 1} / 12`}</span></div>
       <div class="cycle-bar">${(single ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${single ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${single ? 'בלוק של 4 שבועות' : esc(ph.name)}</span></div>`)}</div>
-      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${yoga ? 'מחזיקים כל תנוחה כמה נשימות. אם הנשימה נעצרת — יוצאים מעט מהתנוחה.' : pil ? 'כל תרגיל כדקה, בתנועה איטית. אם הצוואר מתאמץ — מניחים את הראש.' : hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
+      <div class="sub t-foot">${esc(plan.week.phase.desc)} ${tai ? 'ברך מעל כף הרגל, כיפוף קל בלבד. אם משהו כואב — מזדקפים ונחים.' : yoga ? 'מחזיקים כל תנוחה כמה נשימות. אם הנשימה נעצרת — יוצאים מעט מהתנוחה.' : pil ? 'כל תרגיל כדקה, בתנועה איטית. אם הצוואר מתאמץ — מניחים את הראש.' : hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
     </div>
 
     <div class="h2">השבוע<span class="more" data-act="regen">בנה מחדש</span></div>

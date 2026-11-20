@@ -7,6 +7,7 @@ import { MOB_TIPS } from './mob-exercises.js';
 import { HIIT_TIPS } from './hiit-exercises.js';
 import { PIL_TIPS } from './pil-exercises.js';
 import { YOGA_TIPS } from './yoga-exercises.js';
+import { TAI_SAY } from './tai-exercises.js';
 
 const NUM = ['', 'אחת', 'שתיים', 'שלוש', 'ארבע', 'חמש', 'שש', 'שבע', 'שמונה', 'תשע', 'עשר',
   'אחת עשרה', 'שתים עשרה', 'שלוש עשרה', 'ארבע עשרה', 'חמש עשרה', 'שש עשרה', 'שבע עשרה', 'שמונה עשרה', 'תשע עשרה', 'עשרים'];
@@ -115,6 +116,9 @@ Object.assign(lines, {
 });
 // יוגה (יעל): משפטי הרצף באותם מפתחות mob_* של המוביליטי, בנוסח שלה — ראו COACH_LINES
 lines.hello_yael = 'שלום, אני יעל, המאמנת ליוגה. היום נושמים, נעים לאט, ומקשיבים לגוף. מתחילים.';
+// טאי צ'י (מיי): משפטי הרצף באותם מפתחות mob_*, בנוסח שלה; ההנחיות בזמן התרגול הן tc_* (הקריינות מהריפו taichi)
+lines.hello_mei = 'שלום, אני מיי, המאמנת לטאי צ\'י. היום מתרגלים לאט, בצעדים קטנים, ובנוחות. מתחילים.';
+for (const [id, text] of Object.entries(TAI_SAY)) lines[`tc_${id}`] = text;
 const PIL_ONLY = ['pil_hello', 'pil_half', 'pil_done'];
 const HIIT_ONLY = ['hiit_go', 'hiit_10', 'hiit_round', 'hiit_last', 'hiit_low'];
 const HIIT_SAYS = ['n1', 'n2', 'n3', 'warm_intro', 'warm_go', 'switch_side', 'warm_done', 'cool_intro', 'cool_done', 'next_ex', 'hold_half', 'hold_done', 'workout_start', 'workout_done', 'streak',
@@ -135,7 +139,7 @@ const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_p
 const MOB_SAYS = ['n1', 'n2', 'n3', 'warm_go', 'switch_side', 'next_ex', 'hold_half', 'hold_done', 'workout_start', 'workout_done', 'streak', 'm10'];
 
 // שמות תרגילים — "התרגיל הבא: ..."
-for (const e of EXERCISES) lines[`ex_${e.id}`] = `${e.name}. ${e.cues[0]}.`;
+for (const e of EXERCISES) lines[`ex_${e.id}`] = e.say || `${e.name}. ${e.cues[0]}.`;
 // דגש ביצוע שני לכל תנועת חימום/מתיחה — נאמר כמה שניות אחרי "מתחילים!", כדי שהמאמן ידריך ולא רק יספור
 export const MOBILITY_TIPS = {
   jumping_jacks: 'ידיים עד מעל הראש, בקצב נוח ואחיד.',
@@ -203,6 +207,21 @@ export const COACH_LINES = {
     mob_no_pain: 'בלי כאב. מגיעים רק עד המקום שבו עדיין אפשר לנשום ברוגע.',
     mob_close: 'מסיימים בהרפיה. נותנים לגוף לנוח.',
   },
+  // מיי: איטית וסבלנית. הנוסחים ניטרליים למין המתרגל.
+  mei: {
+    warm_go: 'מתחילים.', switch_side: 'מחליפים צד.', next_ex: 'התנועה הבאה.',
+    hold_half: 'ממשיכים לאט.', hold_done: 'וחוזרים לעמידה.',
+    workout_start: 'השיעור מתחיל. לאט, ובנוחות.',
+    workout_done: 'השיעור הושלם. כל הכבוד על היום הזה.',
+    streak: 'רצף של תרגול! כמה דקות בכל יום, וזה מה שבונה שיווי משקל.',
+    m10: 'כל תרגול נספר, גם הקצר.',
+    mob_intro: 'נעמוד רגע בשקט. שתי נשימות עמוקות. כיסא או קיר בהישג יד.',
+    mob_hold: 'נשארים בעמידה. הנשימה איטית ושקטה.',
+    mob_again: 'ועוד פעם, קצת יותר חלק.',
+    mob_breathe: 'שואפים כשהידיים עולות. נושפים כשהן יורדות.',
+    mob_no_pain: 'ברך מעל כף הרגל. כיפוף קל בלבד. אם כואב, להזדקף.',
+    mob_close: 'ועכשיו מסיימים. לאט, עד הסוף.',
+  },
   // תמר מדברת לאט וברוגע, בלי לדחוף. הנוסחים ניטרליים למין המתאמן.
   tamar: {
     warm_go: 'מתחילים.', switch_side: 'מחליפים צד.', next_ex: 'התנועה הבאה.',
@@ -218,10 +237,11 @@ export function coachSays(key, coach) {
   const track = coachTrack(coach), cali = track === 'cali';
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
+  if (key.startsWith('tc_')) return track === 'tai';
   if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.some((t) => all.includes(t)); }
   if (PIL_ONLY.includes(key)) return all.includes('pil');
   if (MOB_ONLY.includes(key) && all.includes('pil')) return true;
-  if (track === 'yoga') return MOB_ONLY.includes(key) || MOB_SAYS.includes(key);
+  if (track === 'yoga' || track === 'tai') return MOB_ONLY.includes(key) || MOB_SAYS.includes(key);
   if (HIIT_ONLY.includes(key)) return track === 'hiit';
   if (track === 'hiit') return HIIT_SAYS.includes(key);
   if (RUN_ONLY.includes(key)) return track === 'run';
@@ -265,6 +285,7 @@ export const NAME_LINES = {
     shira: { m: '[excited] היי {name}! אני שירה, מאמנת הריצה. היום רצים חכם: רוב הזמן בקלות, ונהנים מהדרך. מתחילים!', f: '[excited] היי {name}! אני שירה, מאמנת הריצה. היום רצים חכם: רוב הזמן בקלות, ונהנים מהדרך. מתחילים!' },
     lia: { m: '[excited] היי {name}! אני ליה. היום אימון קצר וחזק — נותנים הכל בזמן העבודה, ונחים באמת במנוחה. מתחילים!', f: '[excited] היי {name}! אני ליה. היום אימון קצר וחזק — נותנים הכל בזמן העבודה, ונחים באמת במנוחה. מתחילים!' },
     yael: { m: 'שלום {name}, אני יעל, המאמנת ליוגה. היום נושמים, נעים לאט, ומקשיבים לגוף. מתחילים.', f: 'שלום {name}, אני יעל, המאמנת ליוגה. היום נושמים, נעים לאט, ומקשיבים לגוף. מתחילים.' },
+    mei: { m: 'שלום {name}, אני מיי, המאמנת לטאי צ\'י. היום מתרגלים לאט, בצעדים קטנים, ובנוחות. מתחילים.', f: 'שלום {name}, אני מיי, המאמנת לטאי צ\'י. היום מתרגלים לאט, בצעדים קטנים, ובנוחות. מתחילים.' },
     tamar: { m: 'היי {name}, אני תמר, המאמנת למוביליטי וגמישות. היום נעים לאט, נושמים, ונותנים לגוף להיפתח. מתחילים.', f: 'היי {name}, אני תמר, המאמנת למוביליטי וגמישות. היום נעים לאט, נושמים, ונותנים לגוף להיפתח. מתחילים.' },
   },
   welcome: { m: '{name}, בוא נעבוד.', f: '{name}, בואי נעבוד.' },
@@ -275,7 +296,8 @@ export const NAME_LINES = {
   workout_done: { m: '[excited] אימון הושלם, {name}! עבודה מטורפת. תזכור לאכול חלבון.', f: '[excited] אימון הושלם, {name}! עבודה מטורפת. תזכרי לאכול חלבון.',
     lia: { m: '[excited] אימון הושלם, {name}! עכשיו מים, ונשימה עמוקה.', f: '[excited] אימון הושלם, {name}! עכשיו מים, ונשימה עמוקה.' },
     tamar: { m: 'האימון הושלם, {name}. הגוף יודה על זה מחר.', f: 'האימון הושלם, {name}. הגוף יודה על זה מחר.' },
-    yael: { m: 'השיעור הושלם, {name}. תודה על התרגול.', f: 'השיעור הושלם, {name}. תודה על התרגול.' } },
+    yael: { m: 'השיעור הושלם, {name}. תודה על התרגול.', f: 'השיעור הושלם, {name}. תודה על התרגול.' },
+    mei: { m: 'השיעור הושלם, {name}. כל הכבוד על היום הזה.', f: 'השיעור הושלם, {name}. כל הכבוד על היום הזה.' } },
   run_done: { m: '[excited] ריצה הושלמה! {name}, כל הכבוד!', f: '[excited] ריצה הושלמה! {name}, כל הכבוד!' },
   proud: { m: '{name}, כל הכבוד. ברצינות.', f: '{name}, כל הכבוד. ברצינות.' },
   push_on: { m: 'קדימה {name}! אתה חזק יותר ממה שאתה חושב!', f: 'קדימה {name}! את חזקה יותר ממה שאת חושבת!' },
@@ -283,7 +305,7 @@ export const NAME_LINES = {
 };
 // מתי להחליף משפט רגיל בגרסה עם השם: [מפתח שמי, הסתברות]
 export const NAME_SWAP = {
-  hello_ori: ['hello', 1], hello_noa: ['hello', 1], hello_maya: ['hello', 1], hello_tamar: ['hello', 1], hello_lia: ['hello', 1], hello_yael: ['hello', 1], hello_guy: ['hello', 1], hello_shira: ['hello', 1], workout_done: ['workout_done', 1], run_done: ['run_done', 1], pr: ['pr', 1],
+  hello_ori: ['hello', 1], hello_noa: ['hello', 1], hello_maya: ['hello', 1], hello_tamar: ['hello', 1], hello_lia: ['hello', 1], hello_yael: ['hello', 1], hello_mei: ['hello', 1], hello_guy: ['hello', 1], hello_shira: ['hello', 1], workout_done: ['workout_done', 1], run_done: ['run_done', 1], pr: ['pr', 1],
   last_set: ['last_set', 0.6], two_more: ['two_more', 0.4], hr_ready: ['hr_ready', 0.5],
   m1: ['push_on', 0.5], m6: ['proud', 0.5], m10: ['proud', 0.7], workout_start: ['welcome', 0.5],
 };

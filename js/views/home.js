@@ -20,6 +20,7 @@ import { isRun } from '../engine/running.js';
 import { isHiit } from '../engine/hiit.js';
 import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
+import { isTai } from '../engine/tai.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { trackSheet, trackLabel } from './track-sheet.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
@@ -30,7 +31,7 @@ export function nextSession(s) {
 }
 
 export function estMinutes(w) {
-  if (['mob', 'hiit', 'pil', 'yoga'].includes(w.track)) return w.minutes || 20;
+  if (['mob', 'hiit', 'pil', 'yoga', 'tai'].includes(w.track)) return w.minutes || 20;
   if (w.runOnly) return Math.round(w.run.totalSec / 60) || 15;
   const t = w.items.reduce((a, it) => a + it.sets * (40 + it.rest), 0) / 60 + 8 + (w.finisher ? 8 : 0);
   return Math.round(t / 5) * 5;
@@ -41,7 +42,8 @@ function coachLine(s) {
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
   if (!s.sessions.length && !s.runs.length) return { key: 'workout_start', text: `<b>${esc(p.name)}</b>, התוכנית שלך מוכנה. האימון הראשון הוא הכי חשוב — ${g('בוא', 'בואי')} נעשה אותו יחד.` };
-  if (st >= 3) return { key: 'streak', text: `רצף של <b>${st} ימים</b>! ${isYoga(p) ? 'כמה דקות על המזרן בכל יום, וזה מצטבר.' : isPil(p) ? 'שיעור אחרי שיעור, והמרכז מתחזק.' : isHiit(p) ? 'עשרים דקות ביום, וזה מצטבר.' : isRun(p) ? 'ככה בונים סבולת — ריצה אחרי ריצה.' : isMob(p) ? 'טווח תנועה נבנה ככה — קצת בכל יום.' : isCali(p) ? 'ככה בונים שליטה בגוף.' : 'ככה בונים כושר.'} ${ns ? `היום: ${esc(ns.name)}.` : ''}` };
+  if (st >= 3) return { key: 'streak', text: `רצף של <b>${st} ימים</b>! ${isTai(p) ? 'כמה דקות בכל יום, וזה מה שבונה שיווי משקל.' : isYoga(p) ? 'כמה דקות על המזרן בכל יום, וזה מצטבר.' : isPil(p) ? 'שיעור אחרי שיעור, והמרכז מתחזק.' : isHiit(p) ? 'עשרים דקות ביום, וזה מצטבר.' : isRun(p) ? 'ככה בונים סבולת — ריצה אחרי ריצה.' : isMob(p) ? 'טווח תנועה נבנה ככה — קצת בכל יום.' : isCali(p) ? 'ככה בונים שליטה בגוף.' : 'ככה בונים כושר.'} ${ns ? `היום: ${esc(ns.name)}.` : ''}` };
+  if (isTai(p)) return { key: 'workout_start', text: `${ns ? `השיעור הבא: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}לאט, בצעדים קטנים, וכיסא בהישג יד.` };
   if (isYoga(p)) return { key: 'workout_start', text: `${ns ? `השיעור הבא: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}לא צריך להיות גמישים כדי להתחיל — רק לנשום.` };
   if (isPil(p)) return { key: 'workout_start', text: `${ns ? `השיעור הבא: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}תנועה קטנה ומדויקת עדיפה על גדולה ומרושלת.` };
   if (isHiit(p)) return { key: 'workout_start', text: `${ns ? `האימון הבא: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}נותנים הכל בזמן העבודה, ונחים באמת במנוחה.` };
@@ -64,7 +66,7 @@ export function renderHome(root) {
   const line = coachLine(s);
   const doneDays = new Set(s.plan.completedDays);
   const lastW = s.weights[s.weights.length - 1];
-  const heroEx = ns?.items[0]?.exId || (ns?.runOnly || isRun(p) ? 'outdoor_run' : isHiit(p) ? 'h_squat_jump' : isPil(p) ? 'p_hundred' : isYoga(p) ? 'y_warrior2' : isMob(p) ? 'm_cat_cow' : isCali(p) ? 'pushup' : 'back_squat');
+  const heroEx = ns?.items[0]?.exId || (ns?.runOnly || isRun(p) ? 'outdoor_run' : isHiit(p) ? 'h_squat_jump' : isPil(p) ? 'p_hundred' : isYoga(p) ? 'y_warrior2' : isTai(p) ? 't_cloud_hands' : isMob(p) ? 'm_cat_cow' : isCali(p) ? 'pushup' : 'back_squat');
 
   const total = s.plan.week.sessions.length;
   const doneN = s.plan.week.sessions.filter((x) => doneDays.has(x.day)).length;
@@ -101,7 +103,7 @@ export function renderHome(root) {
       <div class="cri">
         ${ring((cri.score ?? 0) / 100, { size: 104, stroke: 10, big: cri.score ?? '—', lbl: cri.score == null ? 'עוד לא נמדד' : 'מתוך 100' })}
         <div>
-          ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) ? '' : isMob(p) ? meter('טווחים', mobTested(p.mob) ? mobScore(p.mob) : null, 'אחרי מבחן הטווחים') : meter('כוח', cri.parts.strength, 'אחרי אימון כוח')}${hasGym(p) || isRun(p) ? meter('סבולת', cri.parts.endurance, 'אחרי מבדק 3 ק״מ') : ''}${hasCali(p) ? meter('מיומנות', cri.parts.skill, 'בחר מיומנות במסך התוכנית') : ''}
+          ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? '' : isMob(p) ? meter('טווחים', mobTested(p.mob) ? mobScore(p.mob) : null, 'אחרי מבחן הטווחים') : meter('כוח', cri.parts.strength, 'אחרי אימון כוח')}${hasGym(p) || isRun(p) ? meter('סבולת', cri.parts.endurance, 'אחרי מבדק 3 ק״מ') : ''}${hasCali(p) ? meter('מיומנות', cri.parts.skill, 'בחר מיומנות במסך התוכנית') : ''}
           ${meter('עקביות', cri.parts.consistency)}${meter('גוף', cri.parts.body, 'אחרי שקילה שנייה')}
         </div>
       </div>
@@ -124,10 +126,10 @@ export function renderHome(root) {
       <div class="hero-in"><div class="eyebrow">האימון הבא · ${esc(s.plan.week.phase.name)}</div>
         <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div>
         <div class="stats"><div><b>${estMinutes(ns)}</b>דקות</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>קטעים</div>` : `<div><b>${ns.items.length}</b>תרגילים</div>`}
-          ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>סבבים</div><div><b>${ns.work}/${ns.rest}</b>שנ׳</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.track === 'yoga' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>סטים</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>ריצה</div>` : ''}</div>
+          ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>סבבים</div><div><b>${ns.work}/${ns.rest}</b>שנ׳</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.track === 'yoga' || ns.track === 'tai' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>סטים</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>ריצה</div>` : ''}</div>
         <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('התחל', 'התחילי')} ${ns.runOnly ? 'ריצה' : 'אימון'}</button>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}
-      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
+      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
     : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div>
         <div class="week-cap"><span>השבוע</span><span><span class="num">${doneN}</span> מתוך <span class="num">${total}</span> אימונים</span></div>
@@ -135,7 +137,7 @@ export function renderHome(root) {
       </div></div>`
     : html`<div class="hero done"><div class="hero-in"><div class="e">${ib('trophy', 'pri', 'xl')}</div><div class="h1" style="font-size:24px">השבוע הושלם!</div><div class="sub">מנוחה — השבוע הבא נטען אוטומטית.</div>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}
-      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
+      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : '')
     : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div></div></div>`}
 
@@ -193,7 +195,7 @@ export function renderHome(root) {
 const meter = (label, v, pending = '') => `<div class="meter"><div class="row"><span>${label}</span><span>${v ?? `<small>${pending}</small>`}</span></div><div class="bar"><i style="width:${v ?? 0}%"></i></div></div>`;
 
 // התחלת אימון: לפני אימון כוח — צ׳ק־אין מוכנות; אימון מוביליטי מתחיל ישר (שם בוחרים רק כמה זמן יש)
-export const begin = (w) => (w.runOnly ? startRun(w.run, { day: w.day, ...(w.extra ? { coach: w.coach, extra: true } : {}) }) : w.track === 'mob' || w.track === 'pil' || w.track === 'yoga' ? startWorkout(w) : checkIn((r) => startWorkout(w, { readiness: r }), false, w.extra ? w.coach : null));
+export const begin = (w) => (w.runOnly ? startRun(w.run, { day: w.day, ...(w.extra ? { coach: w.coach, extra: true } : {}) }) : w.track === 'mob' || w.track === 'pil' || w.track === 'yoga' || w.track === 'tai' ? startWorkout(w) : checkIn((r) => startWorkout(w, { readiness: r }), false, w.extra ? w.coach : null));
 
 // צ׳ק־אין מוכנות לפני אימון → אוטו־רגולציה
 // coach: המאמן של האימון שעומד להתחיל, כשהוא לא המאמן של המסלול הראשי (תחום נוסף) — הוא זה שמגיב לצ'ק־אין

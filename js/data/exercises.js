@@ -17,6 +17,7 @@ import { MOB_EXERCISES } from './mob-exercises.js';
 import { STRETCH_REGION } from './mob.js';
 import { PIL_EXERCISES, PIL_SHARED } from './pil-exercises.js';
 import { YOGA_EXERCISES } from './yoga-exercises.js';
+import { TAI_EXERCISES } from './tai-exercises.js';
 import { HIIT_EXERCISES, HIIT_SHARED, HIIT_WARM, HIIT_COOL } from './hiit-exercises.js';
 
 const E = (o) => ({ unilateral: false, compound: false, inc: 2.5, tempo: [2, 0, 1], alts: [], ...o });
@@ -211,6 +212,8 @@ export const EXERCISES = [
   ...PIL_EXERCISES.map(E),
   // ───── יוגה (js/data/yoga-exercises.js) ─────
   ...YOGA_EXERCISES.map(E),
+  // ───── טאי צ'י (js/data/tai-exercises.js) ─────
+  ...TAI_EXERCISES.map(E),
 ];
 
 // סדר שלבי החזרה: רוב התרגילים מתחילים בירידה (אקסצנטרי). בתרגילים שמתחילים מלמטה/ממצב מתוח — מתחילים במאמץ (קונצנטרי).
@@ -228,7 +231,7 @@ const SHARED = ['pushup', 'pullup', 'dips', 'plank', 'hanging_leg_raise', 'air_s
 for (const e of EXERCISES) {
   if (NEEDS[e.id]) e.needs = NEEDS[e.id];
   // תרגילי המוביליטי של תמר שייכים רק למסלול שלה; שש המתיחות הוותיקות משותפות לכל המסלולים
-  e.tracks = e.yoga ? ['yoga'] : e.pil ? ['pil'] : e.hiit ? ['hiit'] : e.mob ? ['mob'] : e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali', ...(STRETCH_REGION[e.id] ? ['mob'] : [])] : ['gym'];
+  e.tracks = e.tai ? ['tai'] : e.yoga ? ['yoga'] : e.pil ? ['pil'] : e.hiit ? ['hiit'] : e.mob ? ['mob'] : e.cali ? ['cali'] : SHARED.includes(e.id) || e.group === 'mobility' ? ['gym', 'cali', ...(STRETCH_REGION[e.id] ? ['mob'] : [])] : ['gym'];
   if (STRETCH_REGION[e.id]) { e.region = STRETCH_REGION[e.id]; e.kind = 'static'; }
   const ps = PIL_SHARED.find((x) => x[0] === e.id);
   if (ps) { e.area = ps[1]; e.kind ||= ps[2]; e.tracks = [...e.tracks, 'pil']; }

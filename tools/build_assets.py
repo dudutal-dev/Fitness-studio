@@ -10,7 +10,7 @@ OUT = os.path.join(ROOT, "assets")
 
 def coaches():
     os.makedirs(f"{OUT}/coaches", exist_ok=True)
-    for c in ("ori", "noa", "maya", "tamar", "guy", "shira", "lia", "yael"):
+    for c in ("ori", "noa", "maya", "tamar", "guy", "shira", "lia", "yael"):   # מיי: tools/build_tai.py
         if not os.path.exists(f"{SRC}/coach_{c}.png"): continue  # אין מקור מקומי — משאירים את הקובץ הקיים
         im = Image.open(f"{SRC}/coach_{c}.png").convert("RGB")
         w, h = im.size

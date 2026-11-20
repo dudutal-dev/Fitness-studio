@@ -13,10 +13,10 @@ import { newCali } from '../engine/cali.js';
 import { EXTRA_TRACKS, extrasOf } from '../engine/program.js';
 import { targets, wantsNutrition } from '../engine/nutrition.js';
 
-const ORDER = ['gym', 'cali', 'run', 'hiit', 'pil', 'yoga', 'mob', 'mix'];
+const ORDER = ['gym', 'cali', 'run', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'];
 const faces = (id) => (id === 'mix' ? ['ori', 'noa', 'maya'].map((c) => COACHES[c]) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('');
 const nameOf = (id) => (TRACKS[id] || TRACKS.gym).name;
-const isClass = (id) => ['yoga', 'pil', 'hiit'].includes(id);
+const isClass = (id) => ['yoga', 'pil', 'hiit', 'tai'].includes(id);
 // אילו תחומים אפשר להוסיף לצד המסלול הראשי: הכול חוץ ממנו עצמו; ובמסלול המשולב חדר הכושר והקליסתניקס כבר בפנים
 const canAdd = (cur, t) => EXTRA_TRACKS.includes(t) && t !== cur && !(cur === 'mix' && (t === 'gym' || t === 'cali'));
 

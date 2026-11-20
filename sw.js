@@ -1,19 +1,19 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-20261120.090310';
-const MEDIA = 'studio-media-20261120.082653';
+const VERSION = 'studio-20261120.100901';
+const MEDIA = 'studio-media-20261120.100901';
 const MEDIA_CACHE = 'studio-media';
 const MEDIA_TAG = 'x-studio-media';
 const CORE = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'version.json',
   'js/app.js', 'js/intro.js', 'js/brand.js', 'js/app-id.js', 'js/lic.js', 'js/install.js', 'js/version.js', 'js/updater.js', 'js/theme.js', 'js/reminders.js', 'js/views/reminders-ui.js', 'js/store.js', 'js/ui/dom.js', 'js/ui/charts.js', 'js/coach/voice.js', 'js/coach/music.js',
-  'js/data/exercises.js', 'js/data/cali-exercises.js', 'js/data/cali.js', 'js/data/mob-exercises.js', 'js/data/mob.js', 'js/data/hiit-exercises.js', 'js/data/pil-exercises.js', 'js/data/yoga-exercises.js', 'js/data/foods.js', 'js/data/dishes.js', 'js/data/coaches.js', 'js/data/voice-lines.js', 'js/data/names.js', 'js/data/demo-timing.js', 'js/data/voice-timing.js',
-  'js/engine/program.js', 'js/engine/progression.js', 'js/engine/running.js', 'js/engine/nutrition.js', 'js/engine/stats.js', 'js/engine/history-edit.js', 'js/engine/summary.js', 'js/engine/cali.js', 'js/engine/mob.js', 'js/engine/hiit.js', 'js/engine/pil.js', 'js/engine/yoga.js', 'js/backup.js', 'js/barcode.js',
+  'js/data/exercises.js', 'js/data/cali-exercises.js', 'js/data/cali.js', 'js/data/mob-exercises.js', 'js/data/mob.js', 'js/data/hiit-exercises.js', 'js/data/pil-exercises.js', 'js/data/yoga-exercises.js', 'js/data/tai-exercises.js', 'js/data/foods.js', 'js/data/dishes.js', 'js/data/coaches.js', 'js/data/voice-lines.js', 'js/data/names.js', 'js/data/demo-timing.js', 'js/data/voice-timing.js',
+  'js/engine/program.js', 'js/engine/progression.js', 'js/engine/running.js', 'js/engine/nutrition.js', 'js/engine/stats.js', 'js/engine/history-edit.js', 'js/engine/summary.js', 'js/engine/cali.js', 'js/engine/mob.js', 'js/engine/hiit.js', 'js/engine/pil.js', 'js/engine/yoga.js', 'js/engine/tai.js', 'js/backup.js', 'js/barcode.js',
   'js/views/onboarding.js', 'js/views/home.js', 'js/views/plan.js', 'js/views/workout.js', 'js/views/run.js',
   'js/views/progress.js', 'js/views/nutrition.js', 'js/views/nut-prefs.js', 'js/views/track-sheet.js', 'js/views/coach.js', 'js/views/garmin.js', 'js/views/guide.js', 'js/views/history.js', 'js/views/plan-intro.js', 'js/views/cali-ui.js', 'js/views/mob-ui.js',
   'js/devices/fit.js', 'js/devices/importer.js', 'js/devices/health.js', 'js/devices/hr.js', 'js/devices/gps.js', 'js/devices/ui.js',
-  'assets/coaches/ori.webp', 'assets/coaches/noa.webp', 'assets/coaches/ori_face.webp', 'assets/coaches/noa_face.webp', 'assets/coaches/maya.webp', 'assets/coaches/maya_face.webp', 'assets/coaches/tamar.webp', 'assets/coaches/tamar_face.webp', 'assets/coaches/guy.webp', 'assets/coaches/guy_face.webp', 'assets/coaches/shira.webp', 'assets/coaches/shira_face.webp', 'assets/coaches/lia.webp', 'assets/coaches/lia_face.webp',
+  'assets/coaches/ori.webp', 'assets/coaches/noa.webp', 'assets/coaches/ori_face.webp', 'assets/coaches/noa_face.webp', 'assets/coaches/maya.webp', 'assets/coaches/maya_face.webp', 'assets/coaches/tamar.webp', 'assets/coaches/tamar_face.webp', 'assets/coaches/guy.webp', 'assets/coaches/guy_face.webp', 'assets/coaches/shira.webp', 'assets/coaches/shira_face.webp', 'assets/coaches/lia.webp', 'assets/coaches/lia_face.webp', 'assets/coaches/mei.webp', 'assets/coaches/mei_face.webp',
   'assets/icons/icon-192.png', 'assets/icons/icon-512.png',
   'assets/fonts/heebo-hebrew.woff2', 'assets/fonts/heebo-latin.woff2', 'assets/fonts/rubik-hebrew.woff2', 'assets/fonts/rubik-latin.woff2',
 ];

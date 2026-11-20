@@ -197,8 +197,10 @@ function toEntry(item) {
 }
 
 // say('key' | {key} | {text}) — רגיל: נכנס לתור. priority: מנקה את התור.
-export function say(item, { priority = false } = {}) {
+// keep: משפט שחייב להיאמר גם אם חיכה בתור זמן רב (הצגת התרגיל הראשון, כשלוחצים "התחל" בזמן הברכה)
+export function say(item, { priority = false, keep = false } = {}) {
   const e = toEntry(item);
+  if (keep) e.keep = true;
   if (!get().settings.voice) { emit(false, e.text); return; }
   if (priority) stop();
   queue.push(e);
@@ -221,7 +223,7 @@ export const keyDur = (key) => clipDur(resolve(key, { allowName: false }).clip);
 async function next() {
   let e = queue.shift();
   // משפטים שחיכו יותר מדי כבר לא רלוונטיים
-  while (e && performance.now() - e.at > (e.critical ? 1500 : 12000)) e = queue.shift();
+  while (e && !e.keep && performance.now() - e.at > (e.critical ? 1500 : 12000)) e = queue.shift();
   if (!e) { current = null; emit(false); return; }
   current = { entry: e };
   emit(true, e.text);

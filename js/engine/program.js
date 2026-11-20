@@ -4,6 +4,7 @@ import { buildRunSession, isRun, buildRunWeek, buildRunSessions, RUN_PHASE, runL
 import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount, buildCaliFieldWorkout, CALI_PHASE, caliBlocked } from './cali.js';
 import { isPil, buildPilWeek, buildPilSessions, pilBlocked, PIL_PHASE } from './pil.js';
 import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } from './yoga.js';
+import { isTai, buildTaiWeek, buildTaiSessions, taiBlocked, TAI_PHASE } from './tai.js';
 import { isHiit, buildHiitWeek, buildHiitSessions, hiitBlocked, HIIT_PHASE } from './hiit.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -44,12 +45,14 @@ export const GOALS = {
   core: { name: 'ליבה ויציבות', icon: 'target', runs: 0, finisher: false, phaseOrder: ['base'], track: 'pil' },
   // מסלול יוגה בלבד
   zen: { name: 'איזון ורוגע', icon: 'lotus', runs: 0, finisher: false, phaseOrder: ['base'], track: 'yoga' },
+  // מסלול טאי צ'י בלבד
+  bal: { name: 'שיווי משקל ויציבות', icon: 'target', runs: 0, finisher: false, phaseOrder: ['base'], track: 'tai' },
 };
 // המטרות של כל מסלול (מסה וחיטוב משותפות)
-const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'], yoga: ['zen', 'flex', 'cut'] };
-export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil', 'yoga'].includes(track) ? track : 'gym'];
+const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'], yoga: ['zen', 'flex', 'cut'], tai: ['bal', 'zen', 'cut'] };
+export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai'].includes(track) ? track : 'gym'];
 // מעבר בין מסלולים: המטרה המקבילה במסלול השני
-export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : track === 'yoga' ? 'zen' : 'combat');
+export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : track === 'yoga' ? 'zen' : track === 'tai' ? 'bal' : 'combat');
 
 // ───── תבניות פיצול ─────
 // כל משבצת: role + רשימת תרגילים מועדפים לפי סדר (בחירה לפי רמה/פציעות/רוטציה)
@@ -126,6 +129,7 @@ export function blockedSet(profile) {
   if (isHiit(profile)) for (const id of hiitBlocked(profile)) s.add(id);
   if (isPil(profile)) for (const id of pilBlocked(profile)) s.add(id);
   if (isYoga(profile)) for (const id of yogaBlocked(profile)) s.add(id);
+  if (isTai(profile)) for (const id of taiBlocked(profile)) s.add(id);
   return s;
 }
 
@@ -136,6 +140,7 @@ export function phaseFor(profile, blockIndex) {
   if (isHiit(profile)) return HIIT_PHASE;
   if (isPil(profile)) return PIL_PHASE;
   if (isYoga(profile)) return YOGA_PHASE;
+  if (isTai(profile)) return TAI_PHASE;
   const order = GOALS[profile.goal]?.phaseOrder || GOALS.combat.phaseOrder;
   const id = order[blockIndex % order.length];
   return PHASES.find((p) => p.id === id);
@@ -226,9 +231,9 @@ function withMob(profile, week, mobN, opt) {
 // profile.extras = { yoga: 1, run: 2 } — מספר האימונים בשבוע מכל תחום. profile.days הוא סך כל האימונים בשבוע;
 // המסלול הראשי מקבל את מה שנשאר (לפחות אימון אחד). מוביליטי ממשיך לעבוד דרך profile.mobN.
 // במסלול המשולב חדר הכושר והקליסתניקס כבר בפנים, ולכן הם לא נוספים אליו.
-export const EXTRA_TRACKS = ['yoga', 'pil', 'hiit', 'run', 'cali', 'gym'];
-const EXTRA_NAME = { yoga: 'יוגה', pil: 'פילאטיס', hiit: 'HIIT', run: 'ריצה', cali: 'קליסתניקס', gym: 'חדר כושר' };
-export const extraCoach = (profile, t) => (t === 'yoga' ? 'yael' : t === 'pil' || t === 'hiit' ? 'lia' : t === 'run' ? profile.runCoach || 'guy' : t === 'cali' ? 'maya' : profile.gymCoach || 'ori');
+export const EXTRA_TRACKS = ['yoga', 'pil', 'tai', 'hiit', 'run', 'cali', 'gym'];
+const EXTRA_NAME = { yoga: 'יוגה', tai: 'טאי צ\'י', pil: 'פילאטיס', hiit: 'HIIT', run: 'ריצה', cali: 'קליסתניקס', gym: 'חדר כושר' };
+export const extraCoach = (profile, t) => (t === 'yoga' ? 'yael' : t === 'tai' ? 'mei' : t === 'pil' || t === 'hiit' ? 'lia' : t === 'run' ? profile.runCoach || 'guy' : t === 'cali' ? 'maya' : profile.gymCoach || 'ori');
 export const canExtra = (profile, t) => EXTRA_TRACKS.includes(t) && t !== profile.track && !(profile.track === 'mix' && (t === 'gym' || t === 'cali')) && (t !== 'cali' || !!profile.cali);
 export function extrasOf(profile) {
   const all = Math.min(6, Math.max(2, profile?.days || 4));
@@ -243,7 +248,7 @@ export function extrasOf(profile) {
 }
 const extraProfile = (profile, t) => ({ ...profile, track: t, extras: null, mobN: 0, coach: extraCoach(profile, t),
   ...(t === 'run' ? { runBase: profile.runBase ?? (profile.run3k ? 30 : 15) } : {}),
-  level: t === 'yoga' ? profile.yogaLevel || 1 : t === 'pil' ? profile.pilLevel || 1 : t === 'hiit' ? profile.hiitLevel || Math.min(3, profile.level || 2)
+  level: t === 'yoga' ? profile.yogaLevel || 1 : t === 'tai' ? profile.taiLevel || 1 : t === 'pil' ? profile.pilLevel || 1 : t === 'hiit' ? profile.hiitLevel || Math.min(3, profile.level || 2)
     : t === 'run' ? profile.runLevel || runLevelFrom3k(profile.run3k) : t === 'gym' ? profile.gymLevel || 2 : profile.level || 2 });
 function withExtras(profile, week, extras, opt) {
   const out = [...week.sessions];
@@ -251,7 +256,7 @@ function withExtras(profile, week, extras, opt) {
   const add = [];
   for (const { track, n } of extras) {
     const q = extraProfile(profile, track);
-    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : track === 'hiit' ? buildHiitSessions(q, n, opt)
+    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'tai' ? buildTaiSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : track === 'hiit' ? buildHiitSessions(q, n, opt)
       : track === 'run' ? buildRunSessions(q, n, opt) : track === 'cali' ? buildCaliSessions(q, n, opt) : buildMainWeek({ ...q, days: n }, { ...opt, min: 1 }).sessions;
     // חדר כושר כתחום נוסף: רק אימון הכוח (בלי הריצה שמצורפת אליו במסלול חדר הכושר)
     for (const w of list.slice(0, n)) { const { run: _r, ...rest } = track === 'gym' ? w : { ...w, run: undefined }; add.push({ ...(track === 'gym' ? rest : w), ...(track === 'gym' ? {} : { track }), extra: true, xtrack: track, coach: extraCoach(profile, track), name: /^(ריצה|קליסתניקס)/.test(w.name) ? w.name : `${EXTRA_NAME[track]} · ${w.name}` }); }
@@ -282,6 +287,7 @@ function buildCoreWeek(profile, opt = {}) {
 }
 
 function buildMainWeek(profile, { blockIndex = 0, weekInBlock = 0, min = 3 } = {}) {
+  if (isTai(profile)) return min < 3 ? { ...buildTaiWeek(profile, { blockIndex, weekInBlock }), sessions: buildTaiSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildTaiWeek(profile, { blockIndex, weekInBlock });
   if (isYoga(profile)) return min < 3 ? { ...buildYogaWeek(profile, { blockIndex, weekInBlock }), sessions: buildYogaSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildYogaWeek(profile, { blockIndex, weekInBlock });
   if (isPil(profile)) return min < 3 ? { ...buildPilWeek(profile, { blockIndex, weekInBlock }), sessions: buildPilSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildPilWeek(profile, { blockIndex, weekInBlock });
   if (isHiit(profile)) return min < 3 ? { ...buildHiitWeek(profile, { blockIndex, weekInBlock }), sessions: buildHiitSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildHiitWeek(profile, { blockIndex, weekInBlock });
@@ -327,7 +333,7 @@ export function buildFieldWorkout(profile) {
 export function applyReadiness(workout, readiness) {
   const w = structuredClone(workout);
   w.readiness = readiness;
-  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil' || w.track === 'yoga') return w;
+  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil' || w.track === 'yoga' || w.track === 'tai') return w;
   if (w.track === 'hiit') {
     // HIIT: ביום קשה מורידים סבב; אין משקל לשנות
     if (readiness < 0.4 && w.rounds > 2) { w.items = w.items.map((it) => ({ ...it, sets: it.sets - 1 })); w.rounds -= 1; w.note = 'יום קשה? הורדתי סבב אחד. עדיף אימון קצר וטוב.'; }
