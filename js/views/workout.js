@@ -8,7 +8,7 @@ import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { suggest, isPR, roundLoad, bestSet, evaluateLevel } from '../engine/progression.js';
 import { applyReadiness, blockedSet, LEVEL_NAMES, warmupFor, cooldownFor } from '../engine/program.js';
 import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking, useCoach } from '../coach/voice.js';
-import { hasMusic, musicOn, startMusic, stopMusic } from '../coach/music.js';
+import { hasMusic, musicOn, startMusic, stopMusic, setMusicMood } from '../coach/music.js';
 import { MOTIVATION_KEYS, ORDINAL_SET, MOBILITY_TIPS, coachSays } from '../data/voice-lines.js';
 import { DEMO_TIMING } from '../data/demo-timing.js';
 import { startRun } from './run.js';
@@ -95,6 +95,16 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     ...MOTIVATION_KEYS, ...items.map((it) => `ex_${it.exId}`), ...items.filter((it) => MOBILITY_TIPS[it.exId]).map((it) => `tip_${it.exId}`)].filter((key) => coachSays(key, coach))); // רק מה שהמאמן הזה באמת אומר
 
   const mKey = workout.track || 'gym';   // איזו מוזיקה: לפי סוג האימון; אימון בלי סוג הוא אימון חדר כושר
+  // אופי התרגיל הנוכחי — לפיו נבחרת המוזיקה (coach/music.js)
+  const musicMood = () => {
+    const it = item(), e = ex();
+    if (it.role === 'warmup') return 'warm';
+    if (it.role === 'cooldown') return 'calm';
+    if (workout.track === 'yoga' || workout.track === 'pil' || workout.track === 'mob') return workout.track;
+    if (it.role === 'hiit' || it.role === 'finisher') return 'high';
+    if (it.role === 'skill' || e?.pattern === 'core' || e?.hold) return 'focus';
+    return workout.track === 'cali' ? 'groove' : 'power';
+  };
   const deferFirst = ['warmup', 'mob', 'cooldown'].includes(items[0]?.role) && items[0]?.unit === 'sec';
   let firstShown = false;
   const root = el(`<div class="live" role="dialog" aria-label="אימון חי">
@@ -133,6 +143,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     const ii = cur().ii;
     if (ii === lastExShown) return;
     lastExShown = ii;
+    setMusicMood(musicMood());   // המוזיקה הולכת עם אופי התרגיל
     const id = item().exId;
     video.style.display = '';
     poster.src = demoPoster(coach, id);
@@ -604,7 +615,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (a === 'tv') tvMode(!tvOn);
     if (a === 'music') {
       set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
-      if (musicOn()) startMusic(mKey); else stopMusic();
+      if (musicOn()) startMusic(musicMood()); else stopMusic();
       t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
       toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
     }
@@ -705,7 +716,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   // פתיחה
   // מוזיקת רקע (יוגה, פילאטיס, מוביליטי, קליסתניקס) — רק למי שהפעיל; בפעם הראשונה מזכירים שיש כפתור
   if (hasMusic(mKey)) {
-    if (musicOn()) startMusic(mKey);
+    if (musicOn()) startMusic(musicMood());
     else if (!get().settings.musicHint) { set((s2) => { s2.settings.musicHint = true; return s2; }); setTimeout(() => root.isConnected && toast('רוצים מוזיקת רקע? כפתור התו למעלה', 3200), 5000); }
   }
   say(pilW ? 'pil_hello' : `hello_${coach}`, { priority: true });
