@@ -3,14 +3,14 @@
 import { html, esc, on, toast, sheet, icon, ib, em, emi, vibrate } from '../ui/dom.js';
 import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
-import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList } from '../engine/nutrition.js';
+import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList, activityFor } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 // טיפים למי שאוכל בחדר אוכל ובשטח (העדפות ← "בשירות"): במקום הטיפ על ימים עמוסים — שלושה טיפים של שירות
 const SERVICE_TIPS = [
   { icon: '🍽️', title: 'בחדר האוכל', text: 'קודם ממלאים חצי צלחת בחלבון ובירקות — עוף, בשר, ביצים, קטניות וסלט — ורק אז מוסיפים אורז, פתיתים או לחם. מנה שנייה של חלבון עדיפה על מנה שנייה של פחמימה.' },
-  { icon: '🎒', title: 'בשטח', text: 'בימי שטח ההוצאה האנרגטית גבוהה מאוד — לבחור "גבוה מאוד" ברמת הפעילות כדי שהיעד יעלה. טונה, בשר משומר, חלבה, תמרים ואגוזים נותנים הרבה אנרגיה בנפח קטן.' },
+  { icon: '🎒', title: 'בשטח', text: 'בימי שטח ההוצאה האנרגטית גבוהה מאוד — לבחור "שטח" ברמת הפעילות (תזונה ← העדפות) כדי שהיעד יעלה. טונה, בשר משומר, חלבה, תמרים ואגוזים נותנים הרבה אנרגיה בנפח קטן.' },
   { icon: '🛒', title: 'מהשק״ם', text: 'כשהארוחה דלה בחלבון: יוגורט חלבון, גבינה, טונה או חטיף חלבון משלימים אותה. שוקו אחרי אימון הוא התאוששות טובה וזמינה.' },
   ...ARMY_TIPS.filter((t) => t.title !== 'ימים עמוסים'),
 ];
@@ -78,7 +78,7 @@ export function renderNutrition(root) {
   const log = (dd.foods || []).map((it, i) => ({ ...it, i, f: foodLookup(it.id, custom) })).filter((x) => x.f);
   const left = t.kcal - eaten.kcal;
   const actKey = activityKey(p);
-  const act = ACTIVITY[actKey];
+  const act = activityFor(p)[actKey];
   const advice = trendAdvice(s.weights, p);
   const nf = (n) => n.toLocaleString('he-IL');
   // ארוחות שנרשמו אתמול ועדיין לא נרשמו היום — אפשר להעתיק בהקשה אחת
@@ -155,7 +155,7 @@ export function renderNutrition(root) {
   const prefsTab = () => html`
     ${nutPrefsHtml(p)}
     <div class="h2">רמת פעילות</div>
-    <div class="seg" data-activity>${Object.entries(ACTIVITY).map(([k, a]) => `<button data-v="${k}" class="${actKey === k ? 'on' : ''}">${a.name}</button>`).join('')}</div>
+    <div class="seg" data-activity>${Object.entries(activityFor(p)).map(([k, a]) => `<button data-v="${k}" class="${actKey === k ? 'on' : ''}">${a.name}</button>`).join('')}</div>
     <div class="sub t-foot mt-2">${esc(act.full)}: ${esc(act.desc)}. קובע את יעד הקלוריות.</div>
 
     <div class="h2">מה אני לא אוכל<span class="more" data-act="edit">${editDislikes ? 'סיום' : 'עריכה'}</span></div>

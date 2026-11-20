@@ -134,6 +134,8 @@ export const wantsNutrition = (profile) => profile?.nutrition !== false;
 // הלשוניות נקראות "חדר אוכל · בשטח · בבית", וברירת המחדל היא חדר האוכל. ב-MOVA מוצע במסלול חדר הכושר (וגם כשהוא תחום נוסף).
 export const canService = (o) => ['gym', 'mix'].includes(o?.track) || !!o?.extras?.gym;
 export const inService = (o) => o?.eatAt === 'service' && canService(o);
+// רמות הפעילות כפי שהן מוצגות: בשירות הרמה הגבוהה נקראת "שטח", כמו בחוד
+export const activityFor = (o) => (inService(o) ? { ...ACTIVITY, field: { ...ACTIVITY.field, name: 'שטח', full: 'שבוע שטח / אימון כפול', desc: 'מסעות, שטח, אימון כפול' } } : ACTIVITY);
 export const mainCtx = (o) => (inService(o) ? 'base' : 'home');
 export const ctxList = (o) => (inService(o) ? [['base', 'חדר אוכל'], ['field', 'בשטח'], ['home', 'בבית']] : [['home', 'בבית'], ['base', 'בעבודה'], ['field', 'בדרכים']]);
 // השאלון הקצר: סוג תזונה, כשרות, מספר ארוחות, אלרגיות. הסינון לפי התגיות שבמאגר (ועוד כמה מאכלים בשמם).
