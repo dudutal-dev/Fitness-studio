@@ -1262,3 +1262,5 @@ button.mi .tag { margin-inline-end: 4px; }
 .live.run-ended .stage.run-stage .title { display: none; }
 .live.run-ended .stage.run-stage::after { background: linear-gradient(to bottom, rgba(4,5,7,0.45), transparent 22%); }
 .live.run-ended .rmap-tiles { filter: none; }
+.segs i.free { background: var(--acc); opacity: 0.55; } .run-kind.free { color: var(--acc-ink); }
+.free-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 2px; } .free-row .btn:only-child { grid-column: 1 / -1; }

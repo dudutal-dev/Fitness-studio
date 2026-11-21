@@ -1,5 +1,6 @@
 // מצב אימון חי: הדגמת וידאו של המאמן, ספירת חזרות בטמפו עם קול, מדידת מנוחות, רישום ביצועים
 // והתאמת משקל בזמן אמת (אוטו־רגולציה בין סטים).
+import { keepAlive, releaseKeepAlive } from '../coach/keepalive.js';
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, ib } from '../ui/dom.js';
 import { ring, setRing } from '../ui/charts.js';
 import { get, set, addXP, XP, pushEvent, regenerateWeek, today } from '../store.js';
@@ -86,6 +87,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   let intraMsg = '';
 
   try { navigator.wakeLock?.request('screen').then((l) => (wakeLock = l)).catch(() => {}); } catch { /* */ }
+  keepAlive({ title: workout.name || 'אימון', artist: COACHES[coach]?.name || '', artwork: COACHES[coach]?.face });   // ממשיך גם כשהמסך נעול
   const hrRec = recorder(profile);
   const hrMax = maxHrFor(profile);
   // טעינה מראש של כל מה שהמאמן עשוי להגיד באימון הזה (ספירה 1–20, טמפו, סטים, מוטיבציה, שמות התרגילים)
@@ -571,6 +573,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (ladderChanges.some((c) => c.type === 'up')) say('rung_up'); else if (ladderChanges.some((c) => c.type === 'gated')) say('rung_wait');
     confetti(prs.length ? 140 : 80);
     try { wakeLock?.release(); } catch { /* */ }
+    releaseKeepAlive();
 
     // תמונת הסיכום לשיתוף: שם האימון, שלושה מספרים, ושיאים / עליות שלב אם היו
     const moveMin = Math.round(exercises.reduce((t, x) => t + (x.unit === 'sec' ? x.sets.reduce((a, y) => a + (y.reps || 0), 0) : 0), 0) / 60);
@@ -606,6 +609,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     useCoach(null);
     pill._destroy?.(); hrRec.stop();
     try { wakeLock?.release(); } catch { /* */ }
+    releaseKeepAlive();
     root.remove();
     document.body.style.overflow = '';
     dispatchEvent(new HashChangeEvent('hashchange'));

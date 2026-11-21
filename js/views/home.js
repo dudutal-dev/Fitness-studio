@@ -8,11 +8,11 @@ import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stat
 import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, mainCtx } from '../engine/nutrition.js';
 import { FOOD } from '../data/foods.js';
 import { openNutritionTab } from './nutrition.js';
-import { buildFieldWorkout } from '../engine/program.js';
+import { buildFieldWorkout, extraCoach } from '../engine/program.js';
 import { say, onSpeaking, unlock, useCoach } from '../coach/voice.js';
 import { MOTIVATION_KEYS, lineFor } from '../data/voice-lines.js';
 import { startWorkout } from './workout.js';
-import { startRun } from './run.js';
+import { startRun, freeRun } from './run.js';
 import { isCali, hasCali, hasGym, sessionCoach } from '../engine/cali.js';
 import { isMob, hasMob, mobScore, mobTested, retestDue } from '../engine/mob.js';
 import { quickMobSheet, mobTestSheet } from './mob-ui.js';
@@ -143,6 +143,8 @@ export function renderHome(root) {
     : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} אימון חופשי לפי אזור</button>`
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div></div></div>`}
 
+    <div class="free-row"><button class="btn sm" data-act="free-walk">${icon('leaf', 'width="18" height="18"')} הליכה חופשית</button><button class="btn sm" data-act="free-run">${icon('run', 'width="18" height="18"')} ריצה חופשית</button></div>
+
     <div class="card coach-hero">
       <div class="holo"><img src="${coach.face}" alt="${coach.name}"></div>
       <div class="bubble">${line.text}</div>
@@ -178,6 +180,9 @@ export function renderHome(root) {
     if (a === 'speak') say(el.dataset.key, { priority: true });
     if (a === 'start') begin(ns);
     if (a === 'run') startRun(ns.run, { day: ns.day });
+    // אימון חופשי, בלי תוכנית: הליכה עם שירה; ריצה עם המאמן של המסלול (חדר כושר / ריצה / משולב) או עם מאמן הריצה
+    if (a === 'free-walk') startRun(freeRun(true), { coach: s.profile.coach === 'shira' ? null : 'shira' });
+    if (a === 'free-run') startRun(freeRun(false), { coach: ['gym', 'mix', 'run'].includes(s.profile.track) ? null : s.profile.track === 'walk' ? 'shira' : extraCoach(s.profile, 'run') });
     if (a === 'field') checkIn((r) => startWorkout({ ...buildFieldWorkout(p), day: null, field: true }, { readiness: r }));
     if (a === 'water') { setDaily({ water: dd.water + 250 }); if (dd.water + 250 >= t.waterL * 1000 && dd.water < t.waterL * 1000) { addXP(XP.water * 4); toast('יעד השתייה הושלם!'); } renderHome(root); }
     if (a === 'food') location.hash = '#/nutrition';

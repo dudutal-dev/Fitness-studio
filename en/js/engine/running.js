@@ -29,7 +29,7 @@ export function fmtPace(sec) {
 }
 
 const seg = (kind, sec, label) => ({ kind, sec, label });
-export const SEG_LABEL = { warm: 'Warm-up', fast: 'Fast', easy: 'Easy', walk: 'Walk', tempo: 'Tempo', steady: 'Steady', cool: 'Cool-down', test: 'Test', stroll: 'Easy', brisk: 'Fast', power: 'Power' };
+export const SEG_LABEL = { free: 'Free', warm: 'Warm-up', fast: 'Fast', easy: 'Easy', walk: 'Walk', tempo: 'Tempo', steady: 'Steady', cool: 'Cool-down', test: 'Test', stroll: 'Easy', brisk: 'Fast', power: 'Power' };
 
 // weekIdx: אינדקס שבוע מצטבר (להתקדמות הדרגתית)
 export function buildRunSession(profile, type, weekIdx = 0) {

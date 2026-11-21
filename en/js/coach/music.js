@@ -5,6 +5,7 @@
 // כשהתרגיל משתנה והאופי שלו אחר, המוזיקה דועכת ועוברת לרצועה מהמאגר החדש — אבל לא יותר מפעם ב-40 שניות.
 // כבויה כברירת מחדל (settings.music). מתנגנת בשקט מתחת למאמן, ומנמיכה את עצמה כשהוא מדבר.
 // הנגן הוא <audio> שמחובר למנוע ה-Web Audio של הקול — כך אפשר לשלוט בעוצמה גם באייפון (שם audio.volume לא ניתן לשינוי).
+import { keptAlive } from './keepalive.js';
 import { get } from '../store.js';
 import { onSpeaking, audioCtx } from './voice.js';
 
@@ -78,7 +79,7 @@ async function playNext(fade = false) {
   } catch { /* אין רשת / נחסם: האימון ממשיך בלי מוזיקה */ }
 }
 const retry = () => { if (alive && el && el.paused && el.src && !el.src.startsWith('data:')) el.play().catch(() => {}); };
-const onVis = () => { if (!el || !alive) return; if (document.visibilityState === 'hidden') el.pause(); else el.play().catch(() => {}); };
+const onVis = () => { if (!el || !alive) return; if (document.visibilityState === 'hidden') { if (!keptAlive()) el.pause(); } else el.play().catch(() => {}); };
 
 // חייב להיקרא מתוך נגיעה (התחלת האימון או כפתור המוזיקה). m: אופי התרגיל הנוכחי
 export function startMusic(m) {

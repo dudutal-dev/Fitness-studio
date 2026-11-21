@@ -261,5 +261,10 @@
  ": ה-GPS מודד מרחק וקצב ומצייר את המסלול על מפה. לאט מדי בקטע מהיר — היא תבקש להגביר; מהר מדי בהתאוששות — להאט.": ": GPS measures distance and pace and draws your route on a map. Too slow in a brisk segment — she asks you to pick it up; too fast in recovery — to ease off.",
  "— מרחק וקצב מה-GPS, ו": "— distance and pace from GPS, and a",
  "מפה עם המסלול": "map with your route",
- "במקום הסרטון (כפתור המצפן מחליף ביניהם; לחיצה על המפה מציגה את כל המסלול). בסיום: המסלול, קצב ממוצע וזמן לכל קילומטר. להשאיר את המסך דלוק.": "in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer. Keep the screen on."
+ "במקום הסרטון (כפתור המצפן מחליף ביניהם; לחיצה על המפה מציגה את כל המסלול). בסיום: המסלול, קצב ממוצע וזמן לכל קילומטר. להשאיר את המסך דלוק.": "in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer. Keep the screen on.",
+ "במקום הסרטון (כפתור המצפן מחליף ביניהם; לחיצה על המפה מציגה את כל המסלול). בסיום: המסלול, קצב ממוצע וזמן לכל קילומטר.": "in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer.",
+ "גם כשהמסך נעול": "Even with the screen locked",
+ "או כשעוברים לאפליקציה אחרת האימון ממשיך: הטיימר רץ וההנחיות נשמעות. המיקום לא נמדד כשהמסך נעול — לכן למרחק ולמפה מדויקים עדיף להשאיר את המסך דלוק.": "or when you switch to another app, the session keeps going: the timer runs and the coaching is heard. Location is not measured while the screen is locked — so for accurate distance and map, keep the screen on.",
+ "הליכה חופשית / ריצה חופשית": "Free walk / Free run",
+ "במסך הבית: בלי תוכנית ובלי מקטעים — יוצאים, עם מפה, קילומטרים והנחיות, ומסיימים מתי שרוצים. האימון נשמר בפעילות.": "on the Home screen: no plan and no segments — just head out, with a map, kilometers and coaching, and finish whenever you like. The session is saved to your activity."
 }

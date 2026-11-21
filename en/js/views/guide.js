@@ -153,7 +153,9 @@ function slides() {
       id: 'run', title: 'Running', eyebrow: 'Built into the plan',
       visual: `${em('🏃', 'pri', 'xl')}`,
       body: tip('', 'Intervals, tempo and easy runs — your coach announces every segment ("Sprint!", "Walk", "One more minute").') +
-        tip('📡', 'Allow <b>location access</b> — distance and pace from GPS, and a<b>map with your route</b> in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer. Keep the screen on.') +
+        tip('📡', 'Allow <b>location access</b> — distance and pace from GPS, and a<b>map with your route</b> in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer.') +
+        tip('🔒', '<b>Even with the screen locked</b> or when you switch to another app, the session keeps going: the timer runs and the coaching is heard. Location is not measured while the screen is locked — so for accurate distance and map, keep the screen on.') +
+        tip('🧭', '<b>Free walk / Free run</b> on the Home screen: no plan and no segments — just head out, with a map, kilometers and coaching, and finish whenever you like. The session is saved to your activity.') +
         tip('🏁', 'In the fourth week of every block — <b>3 km test</b>. Your coach detects it automatically when you reach 3 km.') +
         tip('❤', 'Have a Garmin watch? You can connect live heart rate or import runs (Settings → Garmin).'),
     },

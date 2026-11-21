@@ -240,6 +240,8 @@ async function next() {
         try { await Promise.race([ctx.resume(), new Promise((r) => setTimeout(r, 250))]); } catch { /* */ }
         if (current?.entry !== e) return;
         if (ctx.state !== 'running') {
+          // מצב רקע (מסך נעול / אפליקציה אחרת): המנוע הראשי עצור, אז מנגנים בנגן רגיל שנפתח בתחילת האימון
+          if (bgEl && document.hidden) return playBackground(e, done);
           if (!e.critical) queue.unshift(e);
           current = null; emit(false);
           return;
@@ -283,6 +285,26 @@ function speakTTS(text, done) {
     speechSynthesis.speak(u);
     setTimeout(done, 5000);
   } catch { done(); }
+}
+
+// ───── מצב רקע (coach/keepalive.js) ─────
+// נגן רגיל אחד שנפתח בתוך הנגיעה של תחילת האימון; כשהמסך נעול הוא משמיע את המשפטים במקום מנוע האודיו שנעצר
+let bgEl = null;
+export function backgroundVoice(on) {
+  if (on && !bgEl) {
+    bgEl = new Audio('../assets/silence.mp3'); bgEl.preload = 'auto';
+    bgEl.play().then(() => { if (!current?.audio) bgEl?.pause(); }).catch(() => {});
+  }
+  if (!on && bgEl) { try { bgEl.pause(); } catch { /* */ } bgEl = null; }
+}
+function playBackground(e, done) {
+  const a = bgEl;
+  let ended = false;
+  const fin = () => { if (ended) return; ended = true; a.onended = null; done(); };
+  a.src = clipUrl(e.clip); a.volume = get().settings.volume ?? 0.9;
+  a.onended = fin; current.audio = a;
+  a.play().then(() => log.push({ clip: e.clip, t: performance.now(), dur: clipDur(e.clip), critical: !!e.critical, bg: true })).catch(fin);
+  setTimeout(fin, (clipDur(e.clip) + 2.5) * 1000);
 }
 
 function stopCurrent() {

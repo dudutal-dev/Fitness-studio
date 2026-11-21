@@ -120,10 +120,10 @@
   "ratio": 1.0
  },
  "ori/down": {
-  "state": "bad",
+  "state": "ok",
   "text": "Down...",
-  "heard": "Dallas",
-  "ratio": 0.0
+  "heard": "down",
+  "ratio": 1.0
  },
  "ori/up": {
   "state": "ok",
@@ -198,10 +198,10 @@
   "ratio": 1.0
  },
  "ori/set6": {
-  "state": "bad",
+  "state": "ok",
   "text": "Sixth set.",
-  "heard": "Six sets",
-  "ratio": 0.5
+  "heard": "Sixth set",
+  "ratio": 1.0
  },
  "ori/last_set": {
   "state": "ok",
@@ -276,10 +276,10 @@
   "ratio": 1.0
  },
  "ori/rate_set": {
-  "state": "bad",
+  "state": "ok",
   "text": "How was that set? Mark it for me.",
-  "heard": "How was that set market for",
-  "ratio": 0.71
+  "heard": "How was that set? Mark it for me",
+  "ratio": 1.0
  },
  "ori/weight_up": {
   "state": "ok",
@@ -360,7 +360,7 @@
   "ratio": 1.0
  },
  "ori/m5": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Breathe, focus, and one more.",
   "heard": "Breathe, focus, and one more",
   "ratio": 1.0
@@ -888,10 +888,10 @@
   "ratio": 1.0
  },
  "ori/tip_jumping_jacks": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Arms all the way overhead, at an easy, steady rhythm.",
-  "heard": "Arms all the way overhead at an easy, steady rate",
-  "ratio": 0.9
+  "heard": "Arms all the way overhead at an easy, steady rhythm",
+  "ratio": 1.0
  },
  "ori/tip_arm_circles": {
   "state": "ok",
@@ -906,10 +906,10 @@
   "ratio": 1.0
  },
  "ori/tip_inchworm": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Walk your hands out to a plank, and come back slowly.",
-  "heard": "Walk your hands out to a plank and come back slow",
-  "ratio": 0.91
+  "heard": "Walk your hands out to a plank and come back slowly",
+  "ratio": 1.0
  },
  "ori/tip_bw_squat": {
   "state": "ok",
@@ -986,8 +986,8 @@
  "ori/rate_set__f": {
   "state": "bad",
   "text": "How was that set? Mark it for me.",
-  "heard": "How was that said? Mark it for me",
-  "ratio": 0.88
+  "heard": "How was that set market for",
+  "ratio": 0.71
  },
  "ori/form_first__f": {
   "state": "ok",
@@ -1272,10 +1272,10 @@
   "ratio": 1.0
  },
  "noa/pull": {
-  "state": "bad",
+  "state": "ok",
   "text": "Pull!",
-  "heard": "Oh",
-  "ratio": 0.0
+  "heard": "Pull",
+  "ratio": 1.0
  },
  "noa/press": {
   "state": "ok",
@@ -1410,10 +1410,10 @@
   "ratio": 1.0
  },
  "noa/rate_set": {
-  "state": "bad",
+  "state": "ok",
   "text": "How was that set? Mark it for me.",
-  "heard": "How is that set? Mark it for me",
-  "ratio": 0.88
+  "heard": "How was that set? Mark it for me",
+  "ratio": 1.0
  },
  "noa/weight_up": {
   "state": "ok",
@@ -1430,7 +1430,7 @@
  "noa/hello_noa": {
   "state": "suspect",
   "text": "[excited] Hi! I'm Noa, your personal coach. Today we work hard. Let's get started!",
-  "heard": "Hi, I'm Noah, your personal coach. Today, we work hard. Let's get started",
+  "heard": "Hi, I'm Noah, your personal coach. Today we work hard. Let's get started",
   "ratio": 0.92
  },
  "noa/warmup": {
@@ -2298,10 +2298,10 @@
   "ratio": 1.0
  },
  "maya/n6": {
-  "state": "bad",
+  "state": "ok",
   "text": "Six!!",
-  "heard": "Sixth",
-  "ratio": 0.0
+  "heard": "Six",
+  "ratio": 1.0
  },
  "maya/n7": {
   "state": "ok",
@@ -2400,10 +2400,10 @@
   "ratio": 1.0
  },
  "maya/hold": {
-  "state": "bad",
+  "state": "ok",
   "text": "Hold!",
-  "heard": "Oh",
-  "ratio": 0.0
+  "heard": "Hold",
+  "ratio": 1.0
  },
  "maya/pull": {
   "state": "bad",
@@ -2892,10 +2892,10 @@
   "ratio": 1.0
  },
  "maya/ex_one_arm_pushup": {
-  "state": "suspect",
+  "state": "ok",
   "text": "One-arm push-up. Feet wide apart, one hand under your shoulder and the other behind your back.",
-  "heard": "One arm pushup. Feet wide apart, one hand under your shoulder, and the other behind your back",
-  "ratio": 0.91
+  "heard": "One arm push-up. Feet wide apart, one hand under your shoulder and the other behind your back",
+  "ratio": 1.0
  },
  "maya/ex_pike_pushup": {
   "state": "ok",
@@ -2916,10 +2916,10 @@
   "ratio": 1.0
  },
  "maya/ex_wall_hspu": {
-  "state": "bad",
+  "state": "ok",
   "text": "Handstand push-up. Handstand with your back to the wall, abs and glutes tight.",
-  "heard": "Handstand pushup. Handstand with your back to the wall, abs and glutes tight",
-  "ratio": 0.89
+  "heard": "Handstand push-up. Handstand with your back to the wall, abs and glutes tight",
+  "ratio": 1.0
  },
  "maya/ex_support_hold": {
   "state": "ok",
@@ -3228,10 +3228,10 @@
   "ratio": 1.0
  },
  "maya/ex_planche_lean": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Planche lean. From a push-up position with straight arms, lean forward until your shoulders pass your hands.",
-  "heard": "Planche lean. From a pushup position with straight arms, lean forward until your shoulders pass your hands",
-  "ratio": 0.91
+  "heard": "Planche lean. From a push-up position with straight arms, lean forward until your shoulders pass your hands",
+  "ratio": 1.0
  },
  "maya/ex_frog_stand": {
   "state": "ok",
@@ -3288,10 +3288,10 @@
   "ratio": 1.0
  },
  "maya/ex_scap_pushup": {
-  "state": "bad",
+  "state": "ok",
   "text": "Scapular push-ups. Push-up position with straight arms — elbows don't bend.",
-  "heard": "Scapular pushups. Pushup position with straight arms. Elbows don't bend",
-  "ratio": 0.87
+  "heard": "Scapular push-ups. Push-up position with straight arms. Elbows don't bend",
+  "ratio": 1.0
  },
  "maya/tip_jumping_jacks": {
   "state": "ok",
@@ -3654,10 +3654,10 @@
   "ratio": 1.0
  },
  "tamar/ex_chest_stretch": {
-  "state": "bad",
+  "state": "ok",
   "text": "Chest stretch. Forearm against the post at shoulder height.",
-  "heard": "Chest stretch. Form against the post at shoulder height",
-  "ratio": 0.89
+  "heard": "Chest stretch. Forearm against the post at shoulder height",
+  "ratio": 1.0
  },
  "tamar/ex_shoulder_stretch": {
   "state": "ok",
@@ -3960,9 +3960,9 @@
   "ratio": 1.0
  },
  "tamar/tip_m_wrist_stretch": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Whole palm on the mat. Lean back slowly.",
-  "heard": "Whole palm on the mat lean back slowly",
+  "heard": "Whole palm on the mat Lean back slowly",
   "ratio": 1.0
  },
  "tamar/tip_m_cat_cow": {
@@ -4821,6 +4821,12 @@
   "state": "ok",
   "text": "Another kilometer behind us! Very nice.",
   "heard": "Another kilometer behind us. Very nice",
+  "ratio": 1.0
+ },
+ "shira/walk_free": {
+  "state": "ok",
+  "text": "A free walk — your pace, your route. I'll count the kilometers.",
+  "heard": "A free walk. Your pace, your route. I'll count the kilometers",
   "ratio": 1.0
  },
  "shira/pr__f": {
@@ -5712,9 +5718,9 @@
   "ratio": 1.0
  },
  "lia/names/omer/go": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Let's go, Omer!",
-  "heard": "Let's go Omer",
+  "heard": "Let's go, Omer",
   "ratio": 1.0
  },
  "lia/names/omer/last_set": {
@@ -6234,10 +6240,10 @@
   "ratio": 1.0
  },
  "yael/names/omer/last_set": {
-  "state": "bad",
+  "state": "ok",
   "text": "[excited] Omer, last set! Give it everything!",
-  "heard": "Omar, last set. Give it everything",
-  "ratio": 0.83
+  "heard": "Omer, last set. Give it everything",
+  "ratio": 1.0
  },
  "yael/names/omer/two_more": {
   "state": "ok",
@@ -6378,10 +6384,10 @@
   "ratio": 1.0
  },
  "mei/mob_no_pain": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Knee over the foot. Only a slight bend. If it hurts, straighten up.",
-  "heard": "Me over the foot. Only a slight bend. If it hurts, straighten up",
-  "ratio": 0.92
+  "heard": "Knee over the foot, only a slight bend. If it hurts, straighten up",
+  "ratio": 1.0
  },
  "mei/mob_close": {
   "state": "ok",
@@ -6720,7 +6726,7 @@
   "ratio": 1.0
  },
  "mei/ex_t_needle_sea_bottom": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Needle at sea bottom. The gentle version. Weight back. Your back stays long, bending only slightly from the hips. Your right hand lowers in front of the knee. Not deep.",
   "heard": "Needle at sea bottom, the gentle version. Weight back. Your back stays long, bending only slightly from the hips. Your right hand lowers in front of the knee, not deep",
   "ratio": 1.0
@@ -6792,9 +6798,9 @@
   "ratio": 1.0
  },
  "mei/names/omer/hr_ready": {
-  "state": "suspect",
+  "state": "ok",
   "text": "Omer, your heart rate has recovered. You're ready for the next set.",
-  "heard": "Omar, your heart rate has recovered. You're ready for the next set",
-  "ratio": 0.92
+  "heard": "Omer, your heart rate has recovered. You're ready for the next set",
+  "ratio": 1.0
  }
 }
