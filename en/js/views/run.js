@@ -63,7 +63,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   };
 
   const root = el(`<div class="live" role="dialog" aria-label="${walkS ? 'Walk' : 'Run'}">
-    <div class="stage" style="flex:0 0 34%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
+    <div class="stage run-stage" style="flex:0 0 38%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
       <video muted playsinline loop autoplay src="${demoVideo(coach, demo)}"></video>
       <div class="run-map" id="rmap" data-act="mapmode" hidden></div>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>

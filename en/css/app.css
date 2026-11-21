@@ -1228,3 +1228,6 @@ button.mi .tag { margin-inline-end: 4px; }
 .run-stats b.pace-ok { color: #4cd787; } .run-stats b.pace-off { color: var(--pri); }
 .run-splits { text-align: center; line-height: 1.7; margin-bottom: 8px; } .run-splits b { color: var(--text); }
 .run-map.hist { position: relative; height: 190px; border-radius: 14px; margin: 10px 0 8px; }
+/* מסך הריצה / ההליכה: הבמה נמוכה, ולכן הסרטון ממלא את כל הרוחב (חיתוך לפלג הגוף העליון) במקום להופיע כפס צר */
+.live .stage.run-stage video, .live .stage.run-stage img.poster { top: 0; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.live .icon-btn[hidden] { display: none; }
