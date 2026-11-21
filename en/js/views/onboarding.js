@@ -436,7 +436,7 @@ export function renderOnboarding(root, done) {
     readInputs();
     const i = Number(t.dataset.wd), cur = wdays(), next = (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]).sort();
     const opts = [...root.querySelectorAll('[data-seg="days"] button')].map((b) => Number(b.dataset.v));
-    if (!opts.includes(next.length)) { toast(`You can pick between ${Math.min(...opts)} and${Math.max(...opts)} days`); return; }
+    if (!opts.includes(next.length)) { toast(`You can pick between ${Math.min(...opts)} and ${Math.max(...opts)} days`); return; }
     d.schedDays = next; d.days = next.length; d.daysTouched = true;
     paint();
   });
