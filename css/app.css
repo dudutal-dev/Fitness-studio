@@ -1018,7 +1018,7 @@ html.locked body { overflow: hidden; }
 .hero.done .e { margin-bottom: 10px; }
 .home .coach-hero { padding: 9px 12px; }
 .home .coach-hero .bubble { font-size: 13.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.today { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.today { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .today .tracker { padding: 9px 8px 8px; text-align: center; }
 .today .tracker .tr-top { justify-content: center; margin-bottom: 4px; }
 .today .tracker .tr-add { display: none; }
@@ -1109,7 +1109,7 @@ html.locked body { overflow: hidden; }
 .track-chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; flex: 0 0 auto; }
 .track-chip span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-chip svg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--mute); transform: rotate(-90deg); }
-.home .today { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.home .today { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 /* כרטיס התזונה במסך צר: כל שורה נשארת שלמה */
 .nh-left { white-space: normal; line-height: 1.25; }
 .nh-left small { white-space: nowrap; }

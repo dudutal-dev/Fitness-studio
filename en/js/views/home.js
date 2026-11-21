@@ -155,7 +155,7 @@ export function renderHome(root) {
 
     ${wantsNutrition(p) ? nutCard() : ''}
     <div class="today">
-      ${tile('water', ib('drop', 'acc'), (dd.water / 1000).toFixed(1), `/ ${t.waterL} L`, 'Water', pct(dd.water, t.waterL * 1000))}
+      ${/* מעקב השתייה עבר למסך התזונה (החלטת בעל המוצר, 21.11.2026); כאן יבוא מונה צעדים כשתהיה אפליקציה מהחנות */''}
       ${tile('weight', ib('scale'), lastW ? lastW.kg : '—', 'kg', 'Weight', null)}
       ${tile('checkin', ib('pulse', 'ok'), dd.checkin != null ? Math.round(dd.checkin * 100) : '—', dd.checkin != null ? '%' : '', 'Readiness', dd.checkin != null ? Math.round(dd.checkin * 100) : null)}
       ${tile('fitness', ib('trophy', 'pri'), cri.score ?? '—', '', 'Fitness', cri.score ?? null)}
@@ -186,7 +186,6 @@ export function renderHome(root) {
     if (a === 'free-walk') startRun(freeRun(true), { coach: s.profile.coach === 'shira' ? null : 'shira' });
     if (a === 'free-run') startRun(freeRun(false), { coach: ['gym', 'mix', 'run'].includes(s.profile.track) ? null : s.profile.track === 'walk' ? 'shira' : extraCoach(s.profile, 'run') });
     if (a === 'field') checkIn((r) => startWorkout({ ...buildFieldWorkout(p), day: null, field: true }, { readiness: r }));
-    if (a === 'water') { setDaily({ water: dd.water + 250 }); if (dd.water + 250 >= t.waterL * 1000 && dd.water < t.waterL * 1000) { addXP(XP.water * 4); toast('Water goal reached!'); } renderHome(root); }
     if (a === 'food') location.hash = '#/nutrition';
     if (a === 'track') return trackSheet(rerender);
     if (a === 'nut') { openNutritionTab('menu'); location.hash = '#/nutrition'; }
