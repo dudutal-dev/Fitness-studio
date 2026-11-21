@@ -17,7 +17,7 @@ export function reminderCard() {
       ${needsInstall() ? html`<div class="g-tip" style="margin-top:12px">${ib('phone', 'acc', 'sm')}<div>באייפון, תזכורות עובדות רק כשהאפליקציה <b>מותקנת במסך הבית</b>. ${installOneLine(platform()) || installOneLine('ios-safari')} אחר כך פותחים משם ומפעילים כאן.</div></div>`
         : !pushSupported() ? '<div class="sub" style="margin-top:10px">הדפדפן הזה לא תומך בתזכורות. אפשר להשתמש בלוח השנה</div>'
         : '<button class="btn primary block" style="margin-top:12px" data-rem="on">הפעל תזכורות</button>'}
-      <button class="sched-line" style="margin-top:10px" data-sched><span>${scheduleText(st)}</span><b>ימים ושעות</b></button>
+      <button class="sched-line" style="margin-top:10px" data-sched><span class="txt">${scheduleText(st)}</span><b>ימים ושעות</b></button>
       <button class="btn sm ghost block" style="margin-top:8px" data-rem="ics">הוספה ליומן של הטלפון</button>
     </div>`;
   }
@@ -26,7 +26,7 @@ export function reminderCard() {
     <div class="row between"><b>תזכורות פעילות</b><button class="btn sm" data-rem="test">שלח דוגמה</button></div>
 
     ${tog('workout', 'תזכורת אימון', 'לא נשלחת אם כבר התאמנת באותו יום')}
-    ${st.workout?.on ? html`<div class="rem-sub"><button class="sched-line" data-sched><span>${scheduleText(st)}</span><b>שינוי</b></button></div>` : ''}
+    ${st.workout?.on ? html`<div class="rem-sub"><button class="sched-line" data-sched><span class="txt">${scheduleText(st)}</span><b>שינוי</b></button></div>` : ''}
 
     ${tog('water', 'תזכורת שתייה', 'כל כמה שעות, בשעות היום')}
     ${st.water?.on ? html`<div class="rem-sub"><div class="seg" data-rwater>${[[90, 'שעה וחצי'], [120, 'שעתיים'], [180, '3 שעות']].map(([v, t]) => `<button data-v="${v}" class="${st.water.every === v ? 'on' : ''}">${t}</button>`).join('')}</div>
@@ -88,7 +88,7 @@ export function scheduleText(st = reminders().settings) {
   return times.length === 1 ? `${days.map((d) => DAY_NAMES[d]).join(' · ')} — ב-${times[0]}` : days.map((d) => `${DAY_NAMES[d]} ${workoutTime(st, d)}`).join(' · ');
 }
 // שורה במסך הבית: ימי האימון והשעות, ולחיצה פותחת את המסך
-export const scheduleRowHtml = () => `<button class="sched-line home" data-sched>${ib('plan', 'acc', 'sm')}<span>${scheduleText()}</span><b>ימים ושעות</b></button>`;
+export const scheduleRowHtml = () => `<button class="sched-line sched-home" data-sched>${ib('plan', 'acc', 'sm')}<span class="txt">${scheduleText()}</span><b>ימים ושעות</b></button>`;
 export const bindSchedule = (root, rerender) => on(root, 'click', '[data-sched]', () => scheduleSheet(rerender));
 
 // המסך: לכל יום בשבוע — מתג ושעה. נשמר מיד; מכאן גם שולחים ליומן של הטלפון ומפעילים תזכורות
