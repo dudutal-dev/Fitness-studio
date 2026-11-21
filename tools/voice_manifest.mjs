@@ -32,7 +32,7 @@ export function manifest() {
     for (const n of NAMES) {
       const sx = n.sex === 'f' ? 'f' : 'm';
       for (const [k, v] of Object.entries(NAME_LINES)) {
-        const tpl = nameTpl(v, coach)[sx];
+        const tpl = nameTpl(v, coach)?.[sx]; if (!tpl) continue;   // משפט שאין למאמן הזה
         let spoken = tpl.replaceAll('{name}', n.spoken || n.name);
         for (const [re, rep] of PRONOUN_FIX[sx]) spoken = spoken.replace(re, rep);
         out[`${coach}/names/${n.slug}/${k}`] = { text: tpl.replaceAll('{name}', n.name), spoken };

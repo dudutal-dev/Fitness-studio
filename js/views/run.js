@@ -172,7 +172,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const lastPower = walkS && sg.kind === 'power' && !segs.slice(i + 1).some((x) => x.kind === 'power');
     // הליכה: בפתיחה שירה מציגה את עצמה, ואז את המקטע הראשון (בלי לקטוע את הברכה)
     if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
-    else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: true });
+    else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) });
     tipped = false; praised = false;
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
     else { $('#testDone').style.display = 'none'; $('[data-act="skip"]').style.display = sg.kind === 'free' ? 'none' : ''; }
@@ -348,6 +348,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   });
 
   if (walkS) say('walk_hello', { priority: true });
+  else if (runCoach && run.type !== 'test') say(`hello_${coach}`, { priority: true });   // מאמני הריצה מברכים בפתיחה, ובשם
   keepAlive({ title: run.name, artist: COACHES[coach].name, artwork: COACHES[coach].face, togglePause: setPaused });   // ממשיך גם כשהמסך נעול
   enterSeg();
   timer = setInterval(tick, 250);

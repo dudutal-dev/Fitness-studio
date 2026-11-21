@@ -18,7 +18,7 @@ export async function manifestEn() {
     // באנגלית אין הבדל בין פנייה לזכר ולנקבה, אבל האפליקציה מבקשת את הקובץ __f למתאמנת — אותו טקסט בדיוק
     for (const [k, text] of Object.entries(FEMALE)) { if (own(k) && femaleLine(k, coach)) out[`${coach}/${k}__f`] = { text: SPOKEN[`${k}__f`] ?? text, spoken: SPOKEN[`${k}__f`] ?? text }; }
     for (const n of NAMES) { const sx = n.sex === 'f' ? 'f' : 'm';
-      for (const [k, v] of Object.entries(NAME_LINES)) { const t = nameTpl(v, coach)[sx].replaceAll('{name}', n.spoken || n.name); out[`${coach}/names/${n.slug}/${k}`] = { text: t, spoken: t }; } }
+      for (const [k, v] of Object.entries(NAME_LINES)) { if (!nameTpl(v, coach)) continue; const t = nameTpl(v, coach)[sx].replaceAll('{name}', n.spoken || n.name); out[`${coach}/names/${n.slug}/${k}`] = { text: t, spoken: t }; } }
   }
   return out;
 }

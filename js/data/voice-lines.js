@@ -321,6 +321,12 @@ export const NAME_LINES = {
     yael: { m: 'השיעור הושלם, {name}. תודה על התרגול.', f: 'השיעור הושלם, {name}. תודה על התרגול.' },
     mei: { m: 'השיעור הושלם, {name}. כל הכבוד על היום הזה.', f: 'השיעור הושלם, {name}. כל הכבוד על היום הזה.' } },
   run_done: { m: '[excited] ריצה הושלמה! {name}, כל הכבוד!', f: '[excited] ריצה הושלמה! {name}, כל הכבוד!' },
+  // מילה טובה בשם באמצע תרגיל לפי זמן (מוחלף לפעמים במקום "חצי, ממשיכים") — כך השם נשמע גם בשיעורים שאין בהם סטים
+  half: { m: 'יפה מאוד, {name}. ממשיכים.', f: 'יפה מאוד, {name}. ממשיכים.' },
+  // פתיחות וסיומים שיש רק למאמנת אחת (המפתח הוא שם המאמנת — מאמנים אחרים לא מקליטים אותם)
+  pil_hello: { lia: { m: 'היי {name}, אני ליה. היום פילאטיס: תנועה איטית, מדויקת, שיוצאת מהמרכז. מתחילים.', f: 'היי {name}, אני ליה. היום פילאטיס: תנועה איטית, מדויקת, שיוצאת מהמרכז. מתחילים.' } },
+  walk_hello: { shira: { m: 'היי {name}! אני שירה. היום יוצאים להליכה — בקצב נכון, ועם ראש פתוח. מתחילים!', f: 'היי {name}! אני שירה. היום יוצאים להליכה — בקצב נכון, ועם ראש פתוח. מתחילים!' } },
+  walk_done: { shira: { m: '[excited] הליכה הושלמה! {name}, כל הכבוד!', f: '[excited] הליכה הושלמה! {name}, כל הכבוד!' } },
   proud: { m: '{name}, כל הכבוד. ברצינות.', f: '{name}, כל הכבוד. ברצינות.' },
   push_on: { m: 'קדימה {name}! אתה חזק יותר ממה שאתה חושב!', f: 'קדימה {name}! את חזקה יותר ממה שאת חושבת!' },
   hr_ready: { m: '{name}, הדופק התאושש. אתה מוכן לסט הבא.', f: '{name}, הדופק התאושש. את מוכנה לסט הבא.' },
@@ -330,6 +336,7 @@ export const NAME_SWAP = {
   hello_ori: ['hello', 1], hello_noa: ['hello', 1], hello_maya: ['hello', 1], hello_tamar: ['hello', 1], hello_lia: ['hello', 1], hello_yael: ['hello', 1], hello_mei: ['hello', 1], hello_guy: ['hello', 1], hello_shira: ['hello', 1], workout_done: ['workout_done', 1], run_done: ['run_done', 1], pr: ['pr', 1],
   last_set: ['last_set', 0.6], two_more: ['two_more', 0.4], hr_ready: ['hr_ready', 0.5],
   m1: ['push_on', 0.5], m6: ['proud', 0.5], m10: ['proud', 0.7], workout_start: ['welcome', 0.5],
+  hold_half: ['half', 0.3], pil_half: ['half', 0.3], pil_hello: ['pil_hello', 1], walk_hello: ['walk_hello', 1], walk_done: ['walk_done', 1],
 };
 
 // הגייה: גרסאות מנוקדות למילים קצרות/דו־משמעיות — משמשות רק ליצירת הקול (הטקסט המוצג נשאר ללא ניקוד).
@@ -362,7 +369,8 @@ export function lineFor(key, coach, sex = 'm') {
 }
 
 // נוסח לפי מאמן אם יש (hello לכולם; workout_done לתמר), אחרת הנוסח הכללי
-export const nameTpl = (v, coach) => v[coach] || (v.m ? v : v.ori);
+// התבנית של משפט־שם למאמן: נוסח משלו, או הנוסח הכללי. משפט שיש רק למאמנים מסוימים (pil_hello — רק ליה) מחזיר undefined לאחרים
+export const nameTpl = (v, coach) => v[coach] || (v.m ? v : v.hello_generic);
 export function nameLine(nkey, coach, sex, name) {
   const v = NAME_LINES[nkey];
   if (!v) return null;
