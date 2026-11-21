@@ -1281,3 +1281,11 @@ button.mi .tag { margin-inline-end: 4px; }
 .about p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.55; color: var(--mute); } .about p b { color: var(--text); } .about p:last-child { margin-bottom: 0; }
 /* התגיות שמעל שם התרגיל: לא מתכווצות (הטקסט גלש מהן ועלה על השכנות במצב שוכב) — ואם אין מקום, יורדות שורה */
 .live .title .row { flex-wrap: wrap; row-gap: 5px; } .live .title .row > .tag { flex: 0 0 auto; white-space: nowrap; }
+/* ימים ושעות לאימון */
+.sched-line { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); text-align: right; font-size: 13.5px; }
+.sched-line span { flex: 1; min-width: 0; color: var(--mute); line-height: 1.35; } .sched-line b { flex: none; color: var(--acc-ink); font-size: 13px; }
+.sched-line.home { margin: 10px 0 2px; }
+.sched-day { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); } .sched-day:last-child { border-bottom: 0; }
+.sched-tog { flex: 1; display: flex; align-items: center; gap: 12px; text-align: right; background: none; min-height: 44px; } .sched-day:not(.on) .sched-tog b { color: var(--mute); font-weight: 600; }
+.sched-day input[type="time"] { flex: none; width: 138px; height: 42px; text-align: center; } .sched-day input:disabled { opacity: 0.35; }
+.due { display: flex; align-items: center; gap: 14px; } .due img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid var(--acc); flex: none; }

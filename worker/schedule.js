@@ -47,7 +47,7 @@ export function dueReminders(sub, now = new Date()) {
   const out = [];
   const T = texts(sub, L.min + L.dow);
   const trainedToday = sub.lastWorkout && localNow(sub.tz, new Date(sub.lastWorkout)).date === L.date;
-  if (s.workout?.on && (s.workout.days || []).includes(L.dow) && inWindow(L.min, toMin(s.workout.time)) && !trainedToday) {
+  if (s.workout?.on && (s.workout.days || []).includes(L.dow) && inWindow(L.min, toMin(s.workout.times?.[L.dow] || s.workout.time)) && !trainedToday) {
     const key = `workout:${L.date}`;
     if (!sent[key]) out.push({ key, tag: 'workout', url: './#/home', ...T.workout });
   }

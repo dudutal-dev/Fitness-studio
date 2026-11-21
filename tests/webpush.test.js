@@ -59,3 +59,13 @@ test('reminder schedule: workout days/time, skip if trained, water slots, weigh-
   assert.ok(f.title.startsWith('נועה') && /(מוכנה|תתחילי|צאי|בואי)/.test(f.body));
   assert.deepEqual(Object.keys(pruneSent({ 'water:2026-11-01:1': 1, 'water:2026-11-16:2': 1 }, at('10:00'))), ['water:2026-11-16:2']);
 });
+
+test('reminder schedule: a separate time per day (workout.times) overrides the general time', async () => {
+  const { dueReminders } = await import('../worker/schedule.js');
+  const at = (hhmm) => new Date(`2026-11-17T${hhmm}:00+02:00`);   // Tuesday
+  const sub = { tz: 'Asia/Jerusalem', name: 'דנה', sex: 'f', coach: 'yael', sent: {}, settings: { workout: { on: true, days: [0, 2, 4], time: '18:30', times: { 2: '07:15' } } } };
+  assert.equal(dueReminders(sub, at('07:16')).filter((x) => x.tag === 'workout').length, 1, 'Tuesday uses its own time');
+  assert.equal(dueReminders(sub, at('18:32')).filter((x) => x.tag === 'workout').length, 0, 'the general time no longer applies on Tuesday');
+  const thu = new Date('2026-11-19T18:32:00+02:00');
+  assert.equal(dueReminders(sub, thu).filter((x) => x.tag === 'workout').length, 1, 'Thursday has no time of its own — the general one applies');
+});

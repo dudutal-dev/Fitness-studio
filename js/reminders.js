@@ -20,6 +20,15 @@ export function defaultReminderSettings(profile) {
     comeback: { on: true },
   };
 }
+// שעת האימון ביום מסוים: לכל יום אפשר שעה משלו (workout.times: { <יום 0–6>: 'HH:MM' }); אחרת השעה הכללית (workout.time)
+export const workoutTime = (settings, dow) => settings?.workout?.times?.[dow] || settings?.workout?.time || '18:00';
+// האם הגיע עכשיו זמן האימון — לתזכורת הקופצת באפליקציה: היום ברשימה, ועברו עד 30 דקות מהשעה שנקבעה
+export function workoutDue(settings, now = new Date()) {
+  const w = settings?.workout;
+  if (!w?.on || !(w.days || []).includes(now.getDay())) return false;
+  const [h, m] = workoutTime(settings, now.getDay()).split(':').map(Number), late = now.getHours() * 60 + now.getMinutes() - (h * 60 + (m || 0));
+  return late >= 0 && late < 30;
+}
 export const reminders = () => get().reminders || { enabled: false, id: null, settings: defaultReminderSettings(get().profile) };
 
 const b64uToBytes = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
@@ -88,7 +97,7 @@ export function pingWorkout() {
 
 // ───── חלופה בלי Push: קובץ לוח שנה (iCal) עם התראות ─────
 const ICS_DAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-export function buildICS(settings, { name = '', coach = 'אורי' } = {}) {
+export function buildICS(settings, { name = '', coach = 'אורי', mins = 60 } = {}) {
   const pad = (n) => String(n).padStart(2, '0');
   const now = new Date();
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
@@ -96,11 +105,16 @@ export function buildICS(settings, { name = '', coach = 'אורי' } = {}) {
   const nextDate = (dow) => { const d = new Date(now); d.setDate(d.getDate() + ((dow - d.getDay() + 7) % 7)); return d; };
   const dt = (d, hhmm) => { const [h, m] = hhmm.split(':'); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(h)}${pad(m)}00`; };
   const add = (uid, summary, desc, start, rrule, mins) => ev.push(['BEGIN:VEVENT', `UID:${uid}@lohem`, `DTSTAMP:${stamp}`, `DTSTART:${start}`, `DURATION:PT${mins}M`, `RRULE:${rrule}`, `SUMMARY:${summary}`, `DESCRIPTION:${desc}`,
-    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT'].join('\r\n'));
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:-PT15M', 'END:VALARM', 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT'].join('\r\n'));
   if (settings.workout?.on && settings.workout.days?.length) {
-    const first = Math.min(...settings.workout.days.map((d) => (d - now.getDay() + 7) % 7));
-    const d = new Date(now); d.setDate(d.getDate() + first);
-    add('workout', `💪 אימון ב־MOVA${name ? ` — ${name}` : ''}`, `${coach} מחכה לך באפליקציה. https://dudutal-dev.github.io/Fitness-studio/`, dt(d, settings.workout.time), `FREQ=WEEKLY;BYDAY=${settings.workout.days.map((x) => ICS_DAYS[x]).join(',')}`, 60);
+    // אירוע שבועי חוזר לכל שעה: ימים עם אותה שעה נכנסים לאירוע אחד
+    const byTime = {};
+    for (const day of settings.workout.days) (byTime[workoutTime(settings, day)] ||= []).push(day);
+    for (const [time, ds] of Object.entries(byTime)) {
+      const first = Math.min(...ds.map((x) => (x - now.getDay() + 7) % 7));
+      const d = new Date(now); d.setDate(d.getDate() + first);
+      add(`workout-${time.replace(':', '')}`, `💪 אימון ב־MOVA${name ? ` — ${name}` : ''}`, `${coach} מחכה לך באפליקציה. https://dudutal-dev.github.io/Fitness-studio/`, dt(d, time), `FREQ=WEEKLY;BYDAY=${ds.map((x) => ICS_DAYS[x]).join(',')}`, mins);
+    }
   }
   if (settings.weigh?.on) add('weigh', '⚖️ שקילה שבועית', 'בבוקר, לפני אוכל — לרשום באפליקציה.', dt(nextDate(Number(settings.weigh.day)), settings.weigh.time), `FREQ=WEEKLY;BYDAY=${ICS_DAYS[Number(settings.weigh.day)]}`, 5);
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LOHEM//Reminders//HE', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:MOVA', ...ev, 'END:VCALENDAR'].join('\r\n');

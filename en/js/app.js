@@ -80,6 +80,10 @@ route();
 playIntro();
 
 initUpdater();
+// תזכורת קופצת בשעת האימון, כשהאפליקציה פתוחה ("מתחילים" עובר לבית ומתחיל את האימון הבא)
+const dueCheck = () => import('./views/reminders-ui.js').then((m) => m.checkWorkoutDue(() => { location.hash = '#/home'; setTimeout(() => document.querySelector('#view [data-act="start"]')?.click(), 400); })).catch(() => {});
+setInterval(dueCheck, 30000); setTimeout(dueCheck, 4000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(dueCheck, 1500); });
 initUsage();     // סטטיסטיקת שימוש: שמות רכיבים ומונים בלבד (אפשר לכבות בהגדרות)
 initLicense();   // קישור הפעלה אישי — חוסם רק כשהאכיפה מופעלת במסך הניהול
 // קובצי הקול של המאמן יורדים ברקע כמה שניות אחרי הפתיחה (ושוב אחרי החלפת מאמן)

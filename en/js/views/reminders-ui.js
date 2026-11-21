@@ -2,7 +2,7 @@
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
 import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
-import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS } from '../reminders.js';
+import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
 
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -17,7 +17,8 @@ export function reminderCard() {
       ${needsInstall() ? html`<div class="g-tip" style="margin-top:12px">${ib('phone', 'acc', 'sm')}<div>On iPhone, reminders work only when the app is <b>installed on the Home Screen</b>. ${installOneLine(platform()) || installOneLine('ios-safari')} Then open it from there and turn them on here.</div></div>`
         : !pushSupported() ? '<div class="sub" style="margin-top:10px">This browser doesn\'t support reminders. You can use the calendar</div>'
         : '<button class="btn primary block" style="margin-top:12px" data-rem="on">Turn on reminders</button>'}
-      <button class="btn sm ghost block" style="margin-top:8px" data-rem="ics">Or: add to calendar</button>
+      <button class="sched-line" style="margin-top:10px" data-sched><span>${scheduleText(st)}</span><b>Days and times</b></button>
+      <button class="btn sm ghost block" style="margin-top:8px" data-rem="ics">Add to phone calendar</button>
     </div>`;
   }
   const tog = (k, label, sub) => `<button class="row between rem-tog" data-rtog="${k}"><div><b>${label}</b><div class="sub" style="font-size:12px">${sub}</div></div><span class="sw ${st[k]?.on ? 'on' : ''}"><i></i></span></button>`;
@@ -25,8 +26,7 @@ export function reminderCard() {
     <div class="row between"><b>Reminders are on</b><button class="btn sm" data-rem="test">Send a sample</button></div>
 
     ${tog('workout', 'Workout reminder', 'Not sent if you\'ve already worked out that day')}
-    ${st.workout?.on ? html`<div class="rem-sub"><div class="chips">${DAY_NAMES.map((d, i) => `<button class="chip ${st.workout.days.includes(i) ? 'on' : ''}" data-rday="${i}">${d}</button>`).join('')}</div>
-      <label class="rem-time">At <input class="input num" type="time" data-rtime="workout" value="${st.workout.time}"></label></div>` : ''}
+    ${st.workout?.on ? html`<div class="rem-sub"><button class="sched-line" data-sched><span>${scheduleText(st)}</span><b>Change</b></button></div>` : ''}
 
     ${tog('water', 'Water reminder', 'Every few hours, during the day')}
     ${st.water?.on ? html`<div class="rem-sub"><div class="seg" data-rwater>${[[90, '1.5 hours'], [120, '2 hours'], [180, '3 hours']].map(([v, t]) => `<button data-v="${v}" class="${st.water.every === v ? 'on' : ''}">${t}</button>`).join('')}</div>
@@ -37,7 +37,7 @@ export function reminderCard() {
       <label class="rem-time"><input class="input num" type="time" data-rtime="weigh" value="${st.weigh.time}"></label></div>` : ''}
 
     ${tog('comeback', '"I miss you"', 'After 3 days without a workout, at 19:00')}
-    <div class="row" style="margin-top:12px"><button class="btn sm ghost" data-rem="ics">Add to calendar</button><span class="spacer"></span><button class="btn sm danger" data-rem="off">Turn off</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn sm ghost" data-rem="ics">Add to phone calendar</button><span class="spacer"></span><button class="btn sm danger" data-rem="off">Turn off</button></div>
   </div>`;
 }
 
@@ -57,8 +57,8 @@ export function bindReminders(root, rerender) {
     if (a === 'off') { await disableReminders(); toast('Reminders are off'); rerender(); }
     if (a === 'ics') downloadICS();
   });
+  on(root, 'click', '[data-sched]', () => scheduleSheet(rerender));
   on(root, 'click', '[data-rtog]', (e, b) => edit((s) => { const k = b.dataset.rtog; s[k] = { ...s[k], on: !s[k]?.on }; }));
-  on(root, 'click', '[data-rday]', (e, b) => edit((s) => { const d = Number(b.dataset.rday); const i = s.workout.days.indexOf(d); i >= 0 ? s.workout.days.splice(i, 1) : s.workout.days.push(d); s.workout.days.sort(); }));
   on(root, 'click', '[data-rwater] button', (e, b) => edit((s) => { s.water.every = Number(b.dataset.v); }));
   root.addEventListener('change', (e) => {
     const t = e.target;
@@ -67,16 +67,78 @@ export function bindReminders(root, rerender) {
   });
 }
 
-function downloadICS() {
-  const p = get().profile;
-  const ics = buildICS(reminders().settings, { name: p.name, coach: COACHES[p.coach]?.name });
+export function downloadICS() {
+  const p = get().profile, ns = get().plan?.week?.sessions?.[0];
+  const ics = buildICS(reminders().settings, { name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'lohem-reminders.ics';
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-  toast('The file was downloaded — open it and choose "Add All" to add to the calendar', 4500);
+  toast('A calendar file opens — choose "Add All", and the workouts go into your calendar with an alert', 5000);
+}
+
+// ───── ימים ושעות ─────
+// סיכום קצר של לוח האימונים: "א׳ 18:00 · ג׳ 07:00 · ה׳ 18:00" (או "לא נקבעו ימים")
+export function scheduleText(st = reminders().settings) {
+  const days = [...(st.workout?.days || [])].sort();
+  if (!st.workout?.on || !days.length) return 'No workout days set yet';
+  const times = [...new Set(days.map((d) => workoutTime(st, d)))];
+  return times.length === 1 ? `${days.map((d) => DAY_NAMES[d]).join(' · ')} — at${times[0]}` : days.map((d) => `${DAY_NAMES[d]} ${workoutTime(st, d)}`).join(' · ');
+}
+// שורה במסך הבית: ימי האימון והשעות, ולחיצה פותחת את המסך
+export const scheduleRowHtml = () => `<button class="sched-line home" data-sched>${ib('plan', 'acc', 'sm')}<span>${scheduleText()}</span><b>Days and times</b></button>`;
+export const bindSchedule = (root, rerender) => on(root, 'click', '[data-sched]', () => scheduleSheet(rerender));
+
+// המסך: לכל יום בשבוע — מתג ושעה. נשמר מיד; מכאן גם שולחים ליומן של הטלפון ומפעילים תזכורות
+export function scheduleSheet(rerender) {
+  const cur = () => structuredClone(reminders().settings);
+  const save = (fn) => { const s = cur(); s.workout = { on: true, days: [], time: '18:00', ...s.workout, times: { ...(s.workout?.times || {}) } }; fn(s.workout); s.workout.days.sort(); saveReminderSettings(s); };
+  const rows = () => { const st = cur(); return DAY_FULL.map((d, i) => { const on = st.workout?.on && (st.workout.days || []).includes(i);
+    return `<div class="sched-day ${on ? 'on' : ''}"><button class="sched-tog" data-sday="${i}" role="switch" aria-checked="${on}"><span class="sw ${on ? 'on' : ''}"><i></i></span><b> ${d}</b></button>
+      <input class="input num" type="time" data-stime="${i}" value="${workoutTime(st, i)}" ${on ? '' : 'disabled'} aria-label="Workout time on ${d}"></div>`; }).join(''); };
+  sheet(html`<div class="h1" style="font-size:22px">Days and times</div><p class="sub">When do you train? Pick the days, and a time for each. Reminders follow this schedule.</p>
+    <div data-srows>${rows()}</div>
+    <button class="btn primary block" style="margin-top:14px" data-scal>Add to phone calendar</button>
+    ${reminders().enabled ? '<p class="sub" style="text-align:center;margin-top:10px">Reminders are on — they will arrive at these times.</p>'
+    : needsInstall() || !pushSupported() ? '<p class="sub" style="text-align:center;margin-top:10px">While the app is open, a reminder appears at workout time. For reminders when it is closed too: install it on the Home Screen and turn them on in Settings, or add the workouts to your calendar.</p>'
+    : '<button class="btn block" style="margin-top:8px" data-spush>Turn on reminders when the app is closed too</button>'}
+    <button class="btn ghost block" style="margin-top:8px" data-close>Done</button>`, {
+    onMount(sh, close) {
+      const paint = () => { sh.querySelector('[data-srows]').innerHTML = rows(); };
+      on(sh, 'click', '[data-sday]', (e, b) => { const d = Number(b.dataset.sday); save((w) => { const i = w.days.indexOf(d); if (i >= 0) w.days.splice(i, 1); else w.days.push(d); }); paint(); });
+      sh.addEventListener('change', (e) => { const t = e.target; if (t.dataset.stime === undefined || !t.value) return; save((w) => { w.times[Number(t.dataset.stime)] = t.value; }); });
+      on(sh, 'click', '[data-scal]', () => { if (!cur().workout?.days?.length) return toast('Pick at least one day first'); downloadICS(); });
+      on(sh, 'click', '[data-spush]', async (e, b) => { b.disabled = true; b.textContent = 'Turning on…';
+        try { await enableReminders(); toast('Reminders are on'); b.remove(); } catch (err) { b.disabled = false; b.textContent = 'Turn on reminders when the app is closed too'; toast(err.message === 'denied' ? 'Notifications weren\'t allowed. You can allow them in the phone\'s Settings → Notifications.' : `Couldn't turn on: ${err.message}`, 4500); } });
+      void close;
+    },
+    onClose: () => rerender?.(),   // בכל סגירה (כפתור, גרירה, לחיצה בחוץ) המסך שמתחת מתעדכן
+  });
+}
+
+// ───── תזכורת קופצת בתוך האפליקציה ─────
+// כשהאפליקציה פתוחה והגיעה שעת האימון (עד חצי שעה אחריה): חלונית עם המאמן. פעם אחת ביום; לא באמצע אימון, לא בהיכרות, ולא אם כבר התאמנו היום.
+const SHOWN = 'remShown';
+export function checkWorkoutDue(start) {
+  const s = get(), st = reminders().settings, now = new Date(), today = now.toDateString();
+  if (!s.profile?.name || !workoutDue(st, now) || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
+  try { const v = JSON.parse(localStorage.getItem(SHOWN) || 'null'); if (v && v.day === today && (v.done || Date.now() < v.until)) return false; } catch { /* */ }
+  const trained = [...(s.sessions || []), ...(s.runs || [])].some((x) => new Date(x.date).toDateString() === today);
+  if (trained) return false;
+  const mark = (done, mins = 0) => { try { localStorage.setItem(SHOWN, JSON.stringify({ day: today, done, until: Date.now() + mins * 60000 })); } catch { /* */ } };
+  mark(false, 9999);
+  const coach = COACHES[s.profile.coach] || {}, ns = (s.plan?.week?.sessions || []).find((x) => !(s.plan.completedDays || []).includes(x.day));
+  sheet(html`<div class="due"><img src="${coach.face || ''}" alt=""><div><div class="eyebrow">${workoutTime(st, now.getDay())} · reminder</div><div class="h1" style="font-size:22px">Time to work out</div>
+      <div class="sub">${ns ? `Today: ${ns.name}` : 'Today\'s workout is waiting.'}</div></div></div>
+    <button class="btn primary block xl" style="margin-top:14px" data-due="go">Let's start</button>
+    <div class="row" style="gap:8px;margin-top:8px"><button class="btn" style="flex:1" data-due="later">In 15 minutes</button><button class="btn ghost" style="flex:1" data-due="no">Not today</button></div>`, {
+    onMount(sh, close) { on(sh, 'click', '[data-due]', (e, b) => { const a = b.dataset.due; close();
+      if (a === 'later') return mark(false, 15);
+      mark(true); if (a === 'go') start?.(); }); },
+  });
+  return true;
 }
 
 // הצעה חד־פעמית במסך הבית

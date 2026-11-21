@@ -22,7 +22,7 @@ import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
 import { isWalk } from '../engine/walking.js';
-import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
+import { reminderPromptHtml, bindReminderPrompt, scheduleRowHtml, bindSchedule } from './reminders-ui.js';
 import { trackSheet, trackLabel } from './track-sheet.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
 
@@ -145,6 +145,8 @@ export function renderHome(root) {
 
     <div class="free-row"><button class="btn sm" data-act="free-walk">${icon('leaf', 'width="18" height="18"')} הליכה חופשית</button><button class="btn sm" data-act="free-run">${icon('run', 'width="18" height="18"')} ריצה חופשית</button></div>
 
+    ${scheduleRowHtml()}
+
     <div class="card coach-hero">
       <div class="holo"><img src="${coach.face}" alt="${coach.name}"></div>
       <div class="bubble">${line.text}</div>
@@ -195,6 +197,7 @@ export function renderHome(root) {
     if (a === 'quick-mob') quickMobSheet((w) => startWorkout(w));
     if (a === 'mob-test') mobTestSheet(() => renderHome(root));
   };
+  bindSchedule(root, () => renderHome(root));
   on(root, 'click', '[data-act]', (e, el) => act(el.dataset.act, el));
 }
 
