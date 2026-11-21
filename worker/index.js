@@ -4,6 +4,7 @@
 import { sendPush } from './webpush.js';
 import { dueReminders, pruneSent, COACH } from './schedule.js';
 import { lic } from './lic.js';
+import { breathe } from './breathe.js';
 
 const ALLOWED = ['https://dudutal-dev.github.io'];
 const allowed = (o) => ALLOWED.includes(o) || /^http:\/\/localhost(:\d+)?$/.test(o || '');   // localhost: פיתוח ובדיקות
@@ -33,6 +34,7 @@ export default {
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/') return json(req, { ok: true, service: 'lohem-reminders', vapid: env.VAPID_PUBLIC });
     if (url.pathname.startsWith('/lic/')) return lic(req, env, url, (data, status) => json(req, data, status));   // קישורי הפעלה
+    if (url.pathname.startsWith('/breathe/')) return breathe(req, env, url, (data, status) => json(req, data, status), cors(req));   // המדיה של "נשימה"
     if (req.method !== 'POST') return json(req, { error: 'method' }, 405);
     let b;
     try { b = await req.json(); } catch { return json(req, { error: 'json' }, 400); }

@@ -1,4 +1,4 @@
-// רישיונות (קישורי הפעלה אישיים) לאפליקציות: LOHEM, סטודיו כושר, קליסתניקס, ו"מאחורי הקלעים" (behind).
+// רישיונות (קישורי הפעלה אישיים) לאפליקציות: LOHEM, סטודיו כושר, קליסתניקס, "מאחורי הקלעים" (behind) ו"נשימה" (breathe).
 // אותו מנגנון כמו באפליקציות אתונה וליסבון (athens/push-worker/lic.js), בלי "מקומות לקבוצה".
 // הכול נשמר ב-KV (binding בשם SUBS) תחת המפתחות lic:*.
 //   lic:key            מפתח ההנפקה הראשי (HMAC). נוצר בשרת ולא יוצא ממנו.
@@ -11,7 +11,7 @@
 const te = new TextEncoder();
 const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const DAY = 86400e3, STALE = 60 * DAY, MAX_DEV = 1;
-export const APPS = ['lohem', 'studio', 'calisthenics', 'behind'];
+export const APPS = ['lohem', 'studio', 'calisthenics', 'behind', 'breathe'];
 
 async function hmacKey(env) {
   let k = await env.SUBS.get('lic:key');
@@ -26,7 +26,7 @@ async function parse(env, tok) {   // מחזיר את מזהה הרישיון ר
   if (!m) return null;
   return (await sign(env, m[1])) === m[2] ? m[1] : null;
 }
-const getPass = (env, id) => env.SUBS.get('lic:p:' + id, 'json');
+export const getPass = (env, id) => env.SUBS.get('lic:p:' + id, 'json');
 const putPass = (env, p) => env.SUBS.put('lic:p:' + p.id, JSON.stringify(p));
 const newId = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
 const okDev = (d) => /^[a-z0-9]{8,24}$/.test(String(d || ''));
@@ -37,7 +37,7 @@ async function pwHash(pw, salt) {
   const km = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveBits']);
   return b64u(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: te.encode(salt), iterations: 60000, hash: 'SHA-256' }, km, 256));
 }
-async function admin(env, pw, sess) {   // סיסמה, או כניסה שאושרה בזיהוי פנים (מפתח גישה) בחצי השעה האחרונה
+export async function admin(env, pw, sess) {   // סיסמה, או כניסה שאושרה בזיהוי פנים (מפתח גישה) בחצי השעה האחרונה
   // הכניסה תקפה לחצי שעה מהפעולה האחרונה (כל פעולת ניהול מאריכה אותה), ולא לחצי שעה מרגע הזיהוי
   if (typeof sess === 'string' && /^[A-Za-z0-9_-]{30,60}$/.test(sess) && await env.SUBS.get('lic:sess:' + sess)) { await env.SUBS.put('lic:sess:' + sess, '1', { expirationTtl: 1800 }); return true; }
   const a = await env.SUBS.get('lic:admin', 'json');

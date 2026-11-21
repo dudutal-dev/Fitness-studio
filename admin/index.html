@@ -217,13 +217,16 @@
 // אפליקציית ניהול נפרדת (מותקנת למסך הבית בפני עצמה) לקישורי ההפעלה של האפליקציות, כולל "מאחורי הקלעים".
 // השרת הוא שרת התזכורות המשותף שלהן (worker/lic.js). כאן רואים גם את יומן השימוש של כל קישור: פתיחות לפי יום ולפי שעה.
 const API = (window.__LIC_API || 'https://lohem-reminders.dudu-tal.workers.dev') + '/lic/admin';
-const BASE = { lohem: 'https://dudutal-dev.github.io/Fitness-center/', studio: 'https://dudutal-dev.github.io/Fitness-studio/', calisthenics: 'https://dudutal-dev.github.io/Calisthenics/', behind: 'https://dudutal-dev.github.io/behind-the-scenes/' };
-const HE = { lohem: 'חוד', studio: 'MOVA', calisthenics: 'קליסתניקס', behind: 'מאחורי הקלעים' };
-const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + (k === 'behind' ? 'icon-192.png' : 'assets/icons/icon-192.png')])), COL = ['#c2551b', '#0f9f94', '#e5587f', '#d98a1c', '#7b61f0', '#2b8a3e'];
-// המתגים של כל קישור (מה פתוח בו). מפתח שלא כבוי = פתוח. כרגע רק ל"מאחורי הקלעים": חלקי האפליקציה, ואחריהם התחומים.
+const BASE = { lohem: 'https://dudutal-dev.github.io/Fitness-center/', studio: 'https://dudutal-dev.github.io/Fitness-studio/', calisthenics: 'https://dudutal-dev.github.io/Calisthenics/', behind: 'https://dudutal-dev.github.io/behind-the-scenes/', breathe: 'https://dudutal-dev.github.io/Breathe/' };
+const HE = { lohem: 'חוד', studio: 'MOVA', calisthenics: 'קליסתניקס', behind: 'מאחורי הקלעים', breathe: 'נשימה' };
+const ICON = Object.fromEntries(Object.entries(BASE).map(([k, u]) => [k, u + (k === 'behind' ? 'icon-192.png' : k === 'breathe' ? 'icons/icon-192.png' : 'assets/icons/icon-192.png')])), COL = ['#c2551b', '#0f9f94', '#e5587f', '#d98a1c', '#7b61f0', '#2b8a3e'];
+// המתגים של כל קישור (מה פתוח בו). מפתח שלא כבוי = פתוח. ל"מאחורי הקלעים": חלקי האפליקציה, ואחריהם התחומים.
+// ל"נשימה": מתג אחד. דולק (ברירת המחדל) = גרסת משתמש הקצה, עם המדיה שפורסמה ובלי כלי היצירה. כבוי = הגרסה המלאה, לקישור של בעל המוצר.
 const PERMS = { behind: [
   ['חלקי האפליקציה', [['feed', 'פיד הסרטונים', 'הטאב "פיד", שורת הסרטונים בבית והקישורים לסרטונים'], ['sims', 'הדמיות', 'כרטיס "נסה בעצמך" בנושאים'], ['review', 'חזרה מרווחת', 'שאלות שחוזרות אחרי שמסיימים נושא']]],
   ['תחומים', [['home', 'בבית'], ['move', 'בדרכים'], ['cars', 'מכוניות'], ['tech', 'בכיס'], ['energy', 'חשמל ואנרגיה'], ['infra', 'תשתיות'], ['nature', 'טבע ומזג אוויר'], ['body', 'גוף ובריאות'], ['life', 'החיים עצמם'], ['space', 'חלל'], ['digital', 'מחשבים ורשת'], ['ai', 'בינה מלאכותית'], ['frontier', 'חזית הטכנולוגיה'], ['psy', 'פסיכדלים'], ['arms', 'נשק ולחימה'], ['invent', 'המצאות'], ['wonders', 'פלאי תבל'], ['secrets', 'סודות העבר']].map(([k, t]) => ['cat-' + k, t])],
+], breathe: [
+  ['סוג הגרסה', [['player', 'גרסת משתמש קצה', 'מדיה מוכנה בלבד, בלי פרומפטים והעלאות. מכבים רק בקישור שלך']]],
 ] };
 const offCount = p => (PERMS[p.app] || []).flatMap(g => g[1]).filter(([k]) => (p.perms || {})[k] === false).length;
 const DURS = [[7, 'שבוע'], [14, 'שבועיים'], [30, 'חודש'], [90, '3 חודשים'], [180, 'חצי שנה'], [365, 'שנה'], [730, 'שנתיים'], [1095, '3 שנים']];
@@ -500,7 +503,11 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261121.061032';
+<<<<<<< HEAD
+const ADMIN_V = '20261121.061221';
+=======
+const ADMIN_V = '20261121.011518';
+>>>>>>> 065ed6d080e3e3f958dd36fbe35717db7da7d633
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
