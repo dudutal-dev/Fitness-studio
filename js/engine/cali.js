@@ -7,7 +7,7 @@ import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, LADDER_OF, MAX_ACTIVE_SKILLS 
 export const isCali = (profile) => profile?.track === 'cali';            // קליסתניקס בלבד
 export const isMix = (profile) => profile?.track === 'mix' && !!profile.cali;
 export const hasCali = (profile) => (profile?.track === 'cali' || profile?.track === 'mix') && !!profile.cali;
-export const hasGym = (profile) => !['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai'].includes(profile?.track);
+export const hasGym = (profile) => !['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'].includes(profile?.track);
 // מי מאמן: במסלול משולב כל אימון עם המאמן של המסלול שלו — מאיה בקליסתניקס, אורי/נועה בחדר הכושר
 // אימון מוביליטי תמיד עם תמר, גם כשהוא משולב בשבוע של מסלול אחר
 export const sessionCoach = (profile, workout) => (workout?.track === 'mob' ? 'tamar' : workout?.extra && workout.coach ? workout.coach : profile?.track === 'mix' ? (workout?.track === 'cali' ? 'maya' : profile.gymCoach || 'ori') : profile?.coach || 'ori');

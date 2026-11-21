@@ -13,6 +13,7 @@ import { isHiit, HIIT_FORMAT, lowImpact } from '../engine/hiit.js';
 import { isPil, PIL_LEVELS, pilLevel } from '../engine/pil.js';
 import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
 import { isTai, TAI_LEVELS, taiLevel } from '../engine/tai.js';
+import { isWalk, WALK_LEVELS, walkLevel } from '../engine/walking.js';
 import { isMob, hasMob, mobCount, mobTested, mobScore, weakRegions, REGIONS } from '../engine/mob.js';
 import { estMinutes } from './home.js';
 
@@ -22,7 +23,7 @@ export function openPlanIntro(onDone) {
   document.querySelector('.plan-intro')?.remove();
   const s = get(), p = s.profile, week = s.plan.week;
   const cali = isCali(p), mix = isMix(p);
-  const mob = isMob(p), mobN = mobCount(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), tai = isTai(p);
+  const mob = isMob(p), mobN = mobCount(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), tai = isTai(p), walk = isWalk(p);
   const coaches = [...(mix ? [COACHES[p.gymCoach || p.coach], COACHES.maya] : [COACHES[p.coach]]), ...(mobN ? [COACHES.tamar] : [])];
   const fem = p.sex === 'f';
   const plan = mealPlan(p, { ctx: CTX, seed: new Date().getDate() });
@@ -47,8 +48,8 @@ export function openPlanIntro(onDone) {
       <div class="card tight">
         <div class="pi-kpis">
           <div><b class="num">${week.sessions.length}</b><span>workouts a week</span></div>
-          <div><b class="num">${run ? Math.round(Math.max(...week.sessions.filter((x) => x.run).map((x) => x.run.totalSec)) / 60) : mob ? '10–30' : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : tai ? p.taiMin || 20 : p.sessionMin}</b><span>${run ? (rwWeeksLeft(p) ? 'min per run' : 'min in the long run') : 'min per workout'}</span></div>
-          <div><b>${tai ? TAI_LEVELS[taiLevel(p)] : yoga ? YOGA_LEVELS[yogaLevel(p)] : pil ? PIL_LEVELS[pilLevel(p)] : hiit ? `${HIIT_FORMAT[p.level][0]}/${HIIT_FORMAT[p.level][1]}` : run ? (rwWeeksLeft(p) ? 'Run-walk' : `Level ${p.runLevel || 2}`) : mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'Range of motion') : cali ? 'Ladders' : `Level ${p.level}`}</b><span>${pil || yoga || tai ? 'Level' : hiit ? 'sec work / rest' : run ? (rwWeeksLeft(p) ? ` ${rwWeeksLeft(p)} weeks to nonstop running` : 'Running level') : mob ? (mobTested(p.mob) ? 'Range-of-motion score' : 'instead of weights') : cali ? 'instead of weights' : LEVEL_NAMES[p.level]}</span></div>
+          <div><b class="num">${run ? Math.round(Math.max(...week.sessions.filter((x) => x.run).map((x) => x.run.totalSec)) / 60) : mob ? '10–30' : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : tai ? p.taiMin || 20 : walk ? p.walkMin || 30 : p.sessionMin}</b><span>${run ? (rwWeeksLeft(p) ? 'min per run' : 'min in the long run') : 'min per workout'}</span></div>
+          <div><b>${walk ? WALK_LEVELS[walkLevel(p)] : tai ? TAI_LEVELS[taiLevel(p)] : yoga ? YOGA_LEVELS[yogaLevel(p)] : pil ? PIL_LEVELS[pilLevel(p)] : hiit ? `${HIIT_FORMAT[p.level][0]}/${HIIT_FORMAT[p.level][1]}` : run ? (rwWeeksLeft(p) ? 'Run-walk' : `Level ${p.runLevel || 2}`) : mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'Range of motion') : cali ? 'Ladders' : `Level ${p.level}`}</b><span>${pil || yoga || tai || walk ? 'Level' : hiit ? 'sec work / rest' : run ? (rwWeeksLeft(p) ? ` ${rwWeeksLeft(p)} weeks to nonstop running` : 'Running level') : mob ? (mobTested(p.mob) ? 'Range-of-motion score' : 'instead of weights') : cali ? 'instead of weights' : LEVEL_NAMES[p.level]}</span></div>
         </div>
         <div class="pi-goal">${icon(GOALS[p.goal].icon)} <b>${GOALS[p.goal].name}</b>${mix ? ` · combined: ${p.days - mobN - mixCaliCount(p)} gym + ${mixCaliCount(p)} calisthenics` : ''}${mobN ? ` · ${mobN === 1 ? '1 mobility workout' : `${mobN} mobility workouts`} with ${COACHES.tamar.name}` : ''}</div>
       </div>
@@ -62,6 +63,7 @@ export function openPlanIntro(onDone) {
         <div class="pi-ladders">${ladders.map(({ lid, st }) => `<div><span>${esc(LADDERS[lid].name)}</span><b>${esc(EX[st.rung.id].name)}</b><small class="num">${st.i + 1}/${st.n}</small></div>`).join('')}</div>
         ${skills.length ? `<div class="sub t-foot" style="margin-top:8px">Skills that go into your workouts: <b>${skills.map(esc).join(', ')}</b>. Others unlock when the base is ready.</div>` : ''}
         <div class="sub t-foot" style="margin-top:6px">When all sets reach the top target — you move up a step automatically. If a step doesn't suit you, change it on the Plan screen.</div></div>` : ''}
+      ${walk ? `<div class="card tight"><b>How it works</b><div class="sub t-foot" style="margin-top:4px">Every walk opens with a warm-up and ends with a cool-down. In between: a brisk walk, power intervals with recovery between them, or a long walk that grows by five minutes every week. ${COACHES.shira.name} tells you when to speed up and when to ease off, and distance and pace are measured by GPS.</div></div>` : ''}
       ${tai ? `<div class="card tight"><b>How it works</b><div class="sub t-foot" style="margin-top:4px">Every class opens with a short warm-up and an opening stance, continues with slow movements in a high stance, and ends with a closing stance. ${COACHES.mei.name} demonstrates every movement from the front and the side, and explains it step by step. A chair or wall within reach, and no pain.</div></div>` : ''}
       ${yoga ? `<div class="card tight"><b>How it works</b><div class="sub t-foot" style="margin-top:4px">Every class opens seated with breathing, continues to standing and balance poses, comes down to the mat, and ends with relaxation. Hold each pose for a few breaths. ${COACHES.yael.name} demonstrates every pose and reminds you what to watch for.</div>
         <div class="sub t-foot" style="margin-top:6px">Classes rotate: full class, hips and flexibility, standing and strength, back and chest. Complete most of your classes and you level up after four weeks, with new poses unlocked.</div></div>` : ''}

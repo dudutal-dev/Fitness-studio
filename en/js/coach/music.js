@@ -17,6 +17,7 @@ const POOLS = {
   groove: n('cali', 9),
   high: n('hiit', 7),
   run: n('run', 9),
+  walk: n('walk', 4),
   yoga: n('yoga', 4),
   tai: n('tai', 4),
   pil: n('pil', 4),

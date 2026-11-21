@@ -21,6 +21,7 @@ import { isHiit } from '../engine/hiit.js';
 import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
+import { isWalk } from '../engine/walking.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { trackSheet, trackLabel } from './track-sheet.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
@@ -42,11 +43,12 @@ function coachLine(s) {
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
   if (!s.sessions.length && !s.runs.length) return { key: 'workout_start', text: `<b>${esc(p.name)}</b>, your plan is ready. The first workout matters most — ${g('let\'s', 'let\'s')} do it together.` };
-  if (st >= 3) return { key: 'streak', text: `A streak of <b>${st} days</b>! ${isTai(p) ? 'A few minutes every day — that is what builds balance.' : isYoga(p) ? 'A few minutes on the mat every day adds up.' : isPil(p) ? 'Class after class, your core gets stronger.' : isHiit(p) ? 'Twenty minutes a day adds up.' : isRun(p) ? 'This is how endurance is built — run after run.' : isMob(p) ? 'This is how range of motion is built — a little every day.' : isCali(p) ? 'This is how body control is built.' : 'This is how fitness is built.'} ${ns ? `Today: ${esc(ns.name)}.` : ''}` };
+  if (st >= 3) return { key: 'streak', text: `A streak of <b>${st} days</b>! ${isWalk(p) ? 'Step by step, it adds up.' : isTai(p) ? 'A few minutes every day — that is what builds balance.' : isYoga(p) ? 'A few minutes on the mat every day adds up.' : isPil(p) ? 'Class after class, your core gets stronger.' : isHiit(p) ? 'Twenty minutes a day adds up.' : isRun(p) ? 'This is how endurance is built — run after run.' : isMob(p) ? 'This is how range of motion is built — a little every day.' : isCali(p) ? 'This is how body control is built.' : 'This is how fitness is built.'} ${ns ? `Today: ${esc(ns.name)}.` : ''}` };
   if (isTai(p)) return { key: 'workout_start', text: `${ns ? `Next class: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}Slowly, in small steps, with a chair within reach.` };
   if (isYoga(p)) return { key: 'workout_start', text: `${ns ? `Next class: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}You don't need to be flexible to start — just breathe.` };
   if (isPil(p)) return { key: 'workout_start', text: `${ns ? `Next class: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}A small, precise movement beats a big, sloppy one.` };
   if (isHiit(p)) return { key: 'workout_start', text: `${ns ? `Next workout: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}Give it everything during work, and truly rest during rest.` };
+  if (isWalk(p)) return { key: 'walk_talk', text: `${ns ? `Next walk: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}A good pace is one where you can talk, but not sing.` };
   if (isRun(p)) return { key: 'workout_start', text: `${ns ? `Next run: <b>${esc(ns.name)}</b>. ` : ''}Most runs at a pace you can talk at — that is where endurance is built.` };
   if (isMob(p)) return { key: 'workout_start', text: `${ns ? `Next workout: <b>${esc(ns.name)}</b>. ` : ''}Ten minutes today are worth more than an hour once a week.` };
   const key = MOTIVATION_KEYS[new Date().getDate() % MOTIVATION_KEYS.length];
@@ -66,7 +68,7 @@ export function renderHome(root) {
   const line = coachLine(s);
   const doneDays = new Set(s.plan.completedDays);
   const lastW = s.weights[s.weights.length - 1];
-  const heroEx = ns?.items[0]?.exId || (ns?.runOnly || isRun(p) ? 'outdoor_run' : isHiit(p) ? 'h_squat_jump' : isPil(p) ? 'p_hundred' : isYoga(p) ? 'y_warrior2' : isTai(p) ? 't_cloud_hands' : isMob(p) ? 'm_cat_cow' : isCali(p) ? 'pushup' : 'back_squat');
+  const heroEx = ns?.items[0]?.exId || (ns?.run?.walk || isWalk(p) ? 'outdoor_walk' : ns?.runOnly || isRun(p) ? 'outdoor_run' : isHiit(p) ? 'h_squat_jump' : isPil(p) ? 'p_hundred' : isYoga(p) ? 'y_warrior2' : isTai(p) ? 't_cloud_hands' : isMob(p) ? 'm_cat_cow' : isCali(p) ? 'pushup' : 'back_squat');
 
   const total = s.plan.week.sessions.length;
   const doneN = s.plan.week.sessions.filter((x) => doneDays.has(x.day)).length;
@@ -103,7 +105,7 @@ export function renderHome(root) {
       <div class="cri">
         ${ring((cri.score ?? 0) / 100, { size: 104, stroke: 10, big: cri.score ?? '—', lbl: cri.score == null ? 'Not measured yet' : 'out of 100' })}
         <div>
-          ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? '' : isMob(p) ? meter('Range', mobTested(p.mob) ? mobScore(p.mob) : null, 'After the range test') : meter('Strength', cri.parts.strength, 'After a strength workout')}${hasGym(p) || isRun(p) ? meter('Endurance', cri.parts.endurance, 'After a 3 km test') : ''}${hasCali(p) ? meter('Skill', cri.parts.skill, 'Pick a skill on the Plan screen') : ''}
+          ${isRun(p) || isWalk(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? '' : isMob(p) ? meter('Range', mobTested(p.mob) ? mobScore(p.mob) : null, 'After the range test') : meter('Strength', cri.parts.strength, 'After a strength workout')}${hasGym(p) || isRun(p) ? meter('Endurance', cri.parts.endurance, 'After a 3 km test') : ''}${hasCali(p) ? meter('Skill', cri.parts.skill, 'Pick a skill on the Plan screen') : ''}
           ${meter('Consistency', cri.parts.consistency)}${meter('Body', cri.parts.body, 'After a second weigh-in')}
         </div>
       </div>
@@ -127,9 +129,9 @@ export function renderHome(root) {
         <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div>
         <div class="stats"><div><b>${estMinutes(ns)}</b>min</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>segments</div>` : `<div><b>${ns.items.length}</b>exercises</div>`}
           ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>rounds</div><div><b>${ns.work}/${ns.rest}</b>sec</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.track === 'yoga' || ns.track === 'tai' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>sets</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>run</div>` : ''}</div>
-        <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('Start', 'Start')} ${ns.runOnly ? 'run' : 'workout'}</button>
+        <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('Start', 'Start')} ${ns.run?.walk ? 'walk' : ns.runOnly ? 'run' : 'workout'}</button>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} Run only</button>` : ''}
-      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : '')
+      ${isRun(p) || isWalk(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : '')
     : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Free session by area</button>`
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} No-equipment workout</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : ''}`}</div>
         <div class="week-cap"><span>This week</span><span><span class="num">${doneN}</span> of <span class="num">${total}</span> workouts</span></div>
@@ -137,7 +139,7 @@ export function renderHome(root) {
       </div></div>`
     : html`<div class="hero done"><div class="hero-in"><div class="e">${ib('trophy', 'pri', 'xl')}</div><div class="h1" style="font-size:24px">Week complete!</div><div class="sub">Rest — next week loads automatically.</div>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} Run only</button>` : ''}
-      ${isRun(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : '')
+      ${isRun(p) || isWalk(p) || isHiit(p) || isPil(p) || isYoga(p) || isTai(p) ? (hasMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : '')
     : isMob(p) ? `<button class="btn sm" data-act="quick-mob" style="grid-column:1/-1">${icon('sparkle', 'width="18" height="18"')} Free session by area</button>`
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} No-equipment workout</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} Quick mobility</button>` : ''}`}</div></div></div>`}
 

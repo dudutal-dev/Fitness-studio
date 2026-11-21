@@ -84,7 +84,7 @@ export const equipChips = (equip) => `<div class="chips">${Object.entries(EQUIP)
 // ───── מעבר בין מסלולים ─────
 // ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר,
 // ובמסלול המשולב — כל אימון עם המאמן של המסלול שלו.
-const NO_GYM = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai'];   // מסלולים בלי מאמן ורמה של חדר כושר
+const NO_GYM = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'];   // מסלולים בלי מאמן ורמה של חדר כושר
 export function switchTrack(track, rerender) {
   const p = get().profile;
   // יוצאים מ-HIIT: זוכרים את הרמה שלו לפעם הבאה
@@ -92,6 +92,19 @@ export function switchTrack(track, rerender) {
   if (p.track === 'pil' && track !== 'pil') set((s) => { s.profile.pilLevel = s.profile.level; return s; });
   if (p.track === 'yoga' && track !== 'yoga') set((s) => { s.profile.yogaLevel = s.profile.level; return s; });
   if (p.track === 'tai' && track !== 'tai') set((s) => { s.profile.taiLevel = s.profile.level; return s; });
+  if (p.track === 'walk' && track !== 'walk') set((s) => { s.profile.walkLevel = s.profile.level; return s; });
+  if (track === 'walk') {
+    set((s) => {
+      const q = s.profile;
+      if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+      q.level = q.walkLevel || 1;
+      q.track = 'walk'; q.coach = 'shira'; q.goal = goalForTrack(q.goal, 'walk'); q.walkMin ??= 30; q.days = Math.max(3, q.days || 4);
+      s.plan = createPlan(q);
+      return s;
+    });
+    after('walk', rerender);
+    return;
+  }
   if (track === 'tai') {
     set((s) => {
       const q = s.profile;
@@ -229,14 +242,14 @@ function toCali(track, cali, rerender) {
 
 function after(track, rerender) {
   const p = get().profile;
-  unlock(); stop(); say(track === 'pil' ? 'pil_hello' : `hello_${p.coach}`, { priority: true });
-  toast(track === 'tai' ? `You've switched to the tai chi track with ${COACHES.mei.name}` : track === 'yoga' ? `You've switched to the yoga track with ${COACHES.yael.name}` : track === 'pil' ? `You've switched to the Pilates track with ${COACHES.lia.name}` : track === 'hiit' ? `You've switched to the HIIT track with ${COACHES.lia.name}` : track === 'run' ? `You've switched to the running track with ${COACHES[p.coach].name}` : track === 'mob' ? `You've switched to the mobility & flexibility track with ${COACHES.tamar.name}` : track === 'cali' ? `You've switched to the calisthenics track with ${COACHES.maya.name}` : track === 'mix' ? `Combined track: ${COACHES[p.coach].name} in the gym, ${COACHES.maya.name} for calisthenics` : `You've switched to the gym track with ${COACHES[p.coach].name}`, 3600);
+  unlock(); stop(); say(track === 'pil' ? 'pil_hello' : track === 'walk' ? 'walk_hello' : `hello_${p.coach}`, { priority: true });
+  toast(track === 'walk' ? `Switched to the walking track with ${COACHES.shira.name}` : track === 'tai' ? `You've switched to the tai chi track with ${COACHES.mei.name}` : track === 'yoga' ? `You've switched to the yoga track with ${COACHES.yael.name}` : track === 'pil' ? `You've switched to the Pilates track with ${COACHES.lia.name}` : track === 'hiit' ? `You've switched to the HIIT track with ${COACHES.lia.name}` : track === 'run' ? `You've switched to the running track with ${COACHES[p.coach].name}` : track === 'mob' ? `You've switched to the mobility & flexibility track with ${COACHES.tamar.name}` : track === 'cali' ? `You've switched to the calisthenics track with ${COACHES.maya.name}` : track === 'mix' ? `Combined track: ${COACHES[p.coach].name} in the gym, ${COACHES.maya.name} for calisthenics` : `You've switched to the gym track with ${COACHES[p.coach].name}`, 3600);
   rerender();
 }
 
 // ───── המלצת המערכת (הגדרות) ─────
 // אותה המלצה כמו בסוף ההיכרות: שאלה אחת על גישה לחדר כושר, והשאר מהפרופיל (מטרה, ימים, פציעות).
-const TRACK_NAME = { gym: 'Gym', cali: 'Calisthenics', mix: 'Combined', mob: 'Mobility', run: 'Running', hiit: 'HIIT', pil: 'Pilates', yoga: 'Yoga', tai: 'Tai chi' };
+const TRACK_NAME = { gym: 'Gym', cali: 'Calisthenics', mix: 'Combined', mob: 'Mobility', run: 'Running', hiit: 'HIIT', pil: 'Pilates', yoga: 'Yoga', tai: 'Tai chi', walk: 'Walking' };
 export function recommendSheet(rerender) {
   const p = get().profile;
   const cur = p.track || 'gym';

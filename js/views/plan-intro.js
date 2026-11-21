@@ -13,6 +13,7 @@ import { isHiit, HIIT_FORMAT, lowImpact } from '../engine/hiit.js';
 import { isPil, PIL_LEVELS, pilLevel } from '../engine/pil.js';
 import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
 import { isTai, TAI_LEVELS, taiLevel } from '../engine/tai.js';
+import { isWalk, WALK_LEVELS, walkLevel } from '../engine/walking.js';
 import { isMob, hasMob, mobCount, mobTested, mobScore, weakRegions, REGIONS } from '../engine/mob.js';
 import { estMinutes } from './home.js';
 
@@ -22,7 +23,7 @@ export function openPlanIntro(onDone) {
   document.querySelector('.plan-intro')?.remove();
   const s = get(), p = s.profile, week = s.plan.week;
   const cali = isCali(p), mix = isMix(p);
-  const mob = isMob(p), mobN = mobCount(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), tai = isTai(p);
+  const mob = isMob(p), mobN = mobCount(p), run = isRun(p), hiit = isHiit(p), pil = isPil(p), yoga = isYoga(p), tai = isTai(p), walk = isWalk(p);
   const coaches = [...(mix ? [COACHES[p.gymCoach || p.coach], COACHES.maya] : [COACHES[p.coach]]), ...(mobN ? [COACHES.tamar] : [])];
   const fem = p.sex === 'f';
   const plan = mealPlan(p, { ctx: CTX, seed: new Date().getDate() });
@@ -47,8 +48,8 @@ export function openPlanIntro(onDone) {
       <div class="card tight">
         <div class="pi-kpis">
           <div><b class="num">${week.sessions.length}</b><span>אימונים בשבוע</span></div>
-          <div><b class="num">${run ? Math.round(Math.max(...week.sessions.filter((x) => x.run).map((x) => x.run.totalSec)) / 60) : mob ? '10–30' : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : tai ? p.taiMin || 20 : p.sessionMin}</b><span>${run ? (rwWeeksLeft(p) ? 'דקות לריצה' : 'דקות בריצה הארוכה') : 'דקות לאימון'}</span></div>
-          <div><b>${tai ? TAI_LEVELS[taiLevel(p)] : yoga ? YOGA_LEVELS[yogaLevel(p)] : pil ? PIL_LEVELS[pilLevel(p)] : hiit ? `${HIIT_FORMAT[p.level][0]}/${HIIT_FORMAT[p.level][1]}` : run ? (rwWeeksLeft(p) ? 'ריצה־הליכה' : `רמה ${p.runLevel || 2}`) : mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'טווחים') : cali ? 'סולמות' : `רמה ${p.level}`}</b><span>${pil || yoga || tai ? 'רמה' : hiit ? 'שניות עבודה / מנוחה' : run ? (rwWeeksLeft(p) ? `עוד ${rwWeeksLeft(p)} שבועות עד ריצה רצופה` : 'רמת ריצה') : mob ? (mobTested(p.mob) ? 'ציון טווחים' : 'במקום משקלים') : cali ? 'במקום משקלים' : LEVEL_NAMES[p.level]}</span></div>
+          <div><b class="num">${run ? Math.round(Math.max(...week.sessions.filter((x) => x.run).map((x) => x.run.totalSec)) / 60) : mob ? '10–30' : hiit ? p.hiitMin || 20 : pil ? p.pilMin || 30 : yoga ? p.yogaMin || 30 : tai ? p.taiMin || 20 : walk ? p.walkMin || 30 : p.sessionMin}</b><span>${run ? (rwWeeksLeft(p) ? 'דקות לריצה' : 'דקות בריצה הארוכה') : 'דקות לאימון'}</span></div>
+          <div><b>${walk ? WALK_LEVELS[walkLevel(p)] : tai ? TAI_LEVELS[taiLevel(p)] : yoga ? YOGA_LEVELS[yogaLevel(p)] : pil ? PIL_LEVELS[pilLevel(p)] : hiit ? `${HIIT_FORMAT[p.level][0]}/${HIIT_FORMAT[p.level][1]}` : run ? (rwWeeksLeft(p) ? 'ריצה־הליכה' : `רמה ${p.runLevel || 2}`) : mob ? (mobTested(p.mob) ? mobScore(p.mob) : 'טווחים') : cali ? 'סולמות' : `רמה ${p.level}`}</b><span>${pil || yoga || tai || walk ? 'רמה' : hiit ? 'שניות עבודה / מנוחה' : run ? (rwWeeksLeft(p) ? `עוד ${rwWeeksLeft(p)} שבועות עד ריצה רצופה` : 'רמת ריצה') : mob ? (mobTested(p.mob) ? 'ציון טווחים' : 'במקום משקלים') : cali ? 'במקום משקלים' : LEVEL_NAMES[p.level]}</span></div>
         </div>
         <div class="pi-goal">${icon(GOALS[p.goal].icon)} <b>${GOALS[p.goal].name}</b>${mix ? ` · משולב: ${p.days - mobN - mixCaliCount(p)} חדר כושר + ${mixCaliCount(p)} קליסתניקס` : ''}${mobN ? ` · ${mobN === 1 ? 'אימון מוביליטי אחד' : `${mobN} אימוני מוביליטי`} עם ${COACHES.tamar.name}` : ''}</div>
       </div>
@@ -62,6 +63,7 @@ export function openPlanIntro(onDone) {
         <div class="pi-ladders">${ladders.map(({ lid, st }) => `<div><span>${esc(LADDERS[lid].name)}</span><b>${esc(EX[st.rung.id].name)}</b><small class="num">${st.i + 1}/${st.n}</small></div>`).join('')}</div>
         ${skills.length ? `<div class="sub t-foot" style="margin-top:8px">מיומנויות שנכנסות לאימונים: <b>${skills.map(esc).join(', ')}</b>. אחרות נפתחות כשהבסיס מוכן.</div>` : ''}
         <div class="sub t-foot" style="margin-top:6px">כשכל הסטים מגיעים ליעד העליון — עולים שלב לבד. אם שלב לא מתאים, משנים אותו במסך התוכנית.</div></div>` : ''}
+      ${walk ? `<div class="card tight"><b>איך זה עובד</b><div class="sub t-foot" style="margin-top:4px">כל הליכה נפתחת בחימום ומסתיימת בשחרור. באמצע: הליכה מהירה, קטעים נמרצים עם התאוששות ביניהם, או הליכה ארוכה שגדלה בחמש דקות כל שבוע. ${COACHES.shira.name} אומרת מתי להגביר ומתי להאט, והמרחק והקצב נמדדים ב-GPS.</div></div>` : ''}
       ${tai ? `<div class="card tight"><b>איך זה עובד</b><div class="sub t-foot" style="margin-top:4px">כל שיעור נפתח בחימום קצר ובעמידת פתיחה, ממשיך לתנועות איטיות בעמידה גבוהה, ומסתיים בעמידת סיום. ${COACHES.mei.name} מדגימה כל תנועה מלפנים ומהצד, ומסבירה אותה שלב אחרי שלב. כיסא או קיר בהישג יד, ובלי כאב.</div></div>` : ''}
       ${yoga ? `<div class="card tight"><b>איך זה עובד</b><div class="sub t-foot" style="margin-top:4px">כל שיעור נפתח בישיבה ובנשימה, ממשיך לתנוחות עמידה ושיווי משקל, יורד למזרן, ומסתיים בהרפיה. מחזיקים כל תנוחה כמה נשימות. ${COACHES.yael.name} מדגימה כל תנוחה ומזכירה על מה לשים לב.</div>
         <div class="sub t-foot" style="margin-top:6px">השיעורים מתחלפים: שיעור מלא, ירכיים וגמישות, עמידה וכוח, גב וחזה. מי שמשלים את רוב השיעורים עולה רמה אחרי ארבעה שבועות, ונפתחות תנוחות חדשות.</div></div>` : ''}

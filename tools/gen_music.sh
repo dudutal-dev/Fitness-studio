@@ -73,6 +73,11 @@ P[tai_1]="$I Slow, serene music for a tai chi class in a quiet garden at dawn. A
 P[tai_2]="$I Meditative ambient piece for slow tai chi movement. Soft erhu-like bowed strings over deep warm pads, sparse plucked pipa notes, distant wind chimes, no percussion. Very slow and unhurried, spacious, peaceful and steady. Wide, polished, cinematic mix. Begins softly and ends in a long fade out."
 P[tai_3]="$I Gentle flowing music for tai chi practice. Slow felt piano and guzheng trading simple phrases, soft cello underneath, airy pads, a very quiet low frame-drum pulse at 54 bpm. Tender, balanced, patient. Natural, refined production. Soft intro and a long fade out."
 P[tai_4]="$I Still, clear music for breathing and slow tai chi. A solo bamboo flute with long reverb, soft singing-bowl tones, slow evolving warm pads, occasional harp-like plucks, no drums. Like mist over a lake at sunrise: quiet, open, calming. Wide, detailed, polished mix. Soft start and a long fade out."
+# הליכה (שירה): קצב הליכה נמרץ — כ-120 פעימות בדקה, קליל ואופטימי
+P[walk_1]="$I Bright, feel-good indie pop instrumental for a brisk outdoor walk. Steady four-on-the-floor beat at 120 bpm, bouncy bass, clean rhythm guitar, hand claps, warm synth chords. Sunny, light, optimistic, forward-moving. Polished, modern production. Short intro and fade out ending."
+P[walk_2]="$I Breezy tropical house instrumental for power walking. Soft kick at 118 bpm, marimba and plucked synth melody, warm sub bass, airy pads, light percussion. Relaxed but energetic, like a morning walk by the sea. Clean, spacious mix. Short intro and fade out ending."
+P[walk_3]="$I Upbeat funk-pop instrumental for a fast walk. Tight drums at 124 bpm, funky bass line, muted guitar chops, bright keys, subtle brass hits. Confident, playful, keeps the feet moving. Punchy, warm production. Short intro and fade out ending."
+P[walk_4]="$I Light acoustic folk-pop instrumental for an easy walk outdoors. Strummed acoustic guitar, soft stomps and claps at 112 bpm, upright bass, gentle whistling-like lead synth, warm piano. Easygoing, happy, open-air feeling. Natural, polished mix. Short intro and fade out ending."
 LEN=${LEN:-210000}
 names=("$@"); [ ${#names[@]} -eq 0 ] && names=(yoga_1 yoga_2 pil_1 pil_2 mob_1 mob_2)
 one() {

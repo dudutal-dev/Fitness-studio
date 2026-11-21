@@ -795,6 +795,11 @@
   "breathes slowly and deeply, the belly rising and falling",
   "mob"
  ],
+ "outdoor_walk": [
+  "walking briskly on a paved park path, mid-stride with the front heel touching the ground, upright posture, arms bent and swinging naturally, relaxed shoulders, side view",
+  "walks briskly with an energetic, natural fitness-walking stride — heel to toe, arms swinging — while the camera tracks alongside at the same speed, the walker staying centered in the frame. She is walking, not running: one foot is always on the ground",
+  "walk"
+ ],
  "outdoor_run": [
   "running on the red track, mid-stride with one foot off the ground, relaxed shoulders, arms bent at 90 degrees, side view",
   "runs at a steady relaxed pace with good running form while the camera tracks alongside at the same speed, the runner staying centered in the frame",

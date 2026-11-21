@@ -132,6 +132,21 @@ Object.assign(lines, {
   run_breathe: 'If you can\'t talk, slow down a little. That\'s exactly the right pace.',
 });
 const RUN_ONLY = ['run_long', 'run_form', 'run_breathe'];
+// הליכה (שירה): מה שנאמר רק במסלול ההליכה
+Object.assign(lines, {
+  walk_hello: 'Hi! I\'m Shira. Today we\'re heading out for a walk — at the right pace, with a clear head. Let\'s go!',
+  walk_warm: 'We start with an easy walk to warm up the body.',
+  walk_stroll: 'Easy walk. Breathe, and let your shoulders drop.',
+  walk_brisk: 'Brisk walk! Short, quick steps, and let your arms work.',
+  walk_power: 'Now power walk! As fast as you can — without running.',
+  walk_last: 'Last power interval! Give it everything.',
+  walk_cool: 'Slow down. An easy walk to finish.',
+  walk_half: 'Halfway there! Keep the same pace.',
+  walk_form: 'Back tall, eyes forward, arms swinging by your sides.',
+  walk_talk: 'A good pace is one where you can talk, but not sing.',
+  walk_done: '[excited] Walk complete! Well done!',
+});
+const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done'];
 // מה אומרים מאמני הריצה: כל משפטי הריצה והדופק, ספירה לאחור, פתיחה וסיום — בלי סטים, משקלים ותרגילים
 const RUN_SAYS = ['n1', 'n2', 'n3', 'go', 'workout_start', 'streak', 'pr', 'm2', 'm4', 'm5', 'm6', 'm8', 'm10', 'watch_on', 'zone_up', 'zone_down', 'checkin_low', 'checkin_high'];
 const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'];
@@ -238,6 +253,7 @@ export function coachSays(key, coach) {
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
   if (key.startsWith('tc_')) return track === 'tai';
+  if (WALK_ONLY.includes(key)) return all.includes('walk');
   if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.some((t) => all.includes(t)); }
   if (PIL_ONLY.includes(key)) return all.includes('pil');
   if (MOB_ONLY.includes(key) && all.includes('pil')) return true;

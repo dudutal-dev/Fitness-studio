@@ -42,7 +42,7 @@ def icons():
 if __name__ == "__main__":
     coaches(); icons()
     demos = json.load(open(os.path.join(os.path.dirname(__file__), "demos.json")))
-    WHO = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "hiit": ("lia",), "pil": ("lia",), "yoga": ("yael",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+    WHO = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "walk": ("shira",), "hiit": ("lia",), "pil": ("lia",), "yoga": ("yael",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
     extra = json.load(open(os.path.join(os.path.dirname(__file__), "demos_extra.json")))
     jobs = [(c, e) for e, v in demos.items() for c in WHO[v[2] if len(v) > 2 else "gym"]] + [(c, e) for c, ids in extra.items() for e in ids]
     with ThreadPoolExecutor(4) as ex:

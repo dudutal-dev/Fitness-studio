@@ -18,7 +18,7 @@ import { say, unlock, stop } from '../coach/voice.js';
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
 const GATE_TILES = {
   gym: ['Gym', 'with Ori and Noa', ['ori', 'noa']], cali: ['Calisthenics', 'with Maya', ['maya']], run: ['Running', 'with Guy and Shira', ['guy', 'shira']],
-  hiit: ['HIIT', 'with Lia', ['lia']], pil: ['Pilates', 'with Lia', ['lia']], yoga: ['Yoga', 'with Yael', ['yael']], tai: ['Tai chi', 'with Mei', ['mei']], mob: ['Mobility', 'with Tamar', ['tamar']],
+  hiit: ['HIIT', 'with Lia', ['lia']], pil: ['Pilates', 'with Lia', ['lia']], yoga: ['Yoga', 'with Yael', ['yael']], tai: ['Tai chi', 'with Mei', ['mei']], walk: ['Walking', 'with Shira', ['shira']], mob: ['Mobility', 'with Tamar', ['tamar']],
   mix: ['Combined', 'Several tracks a week', []],
 };
 
@@ -38,12 +38,13 @@ const GOAL_DESC = {
 };
 const MOB_GOAL_DESC = { cut: 'Fat loss through nutrition, with daily movement that\'s easy to stick with.' };
 const PIL_GOAL_DESC = { posture: 'Back extensors, shoulder blades and length: stand and sit tall without effort.', cut: 'Fat loss through nutrition, with classes that strengthen and lengthen.' };
+const WALK_GOAL_DESC = { health: 'Heart, lungs and mood: half an hour of brisk walking on most days of the week — the basic recommendation for health.', cut: 'Fat loss through nutrition, with walks that are easy to stick to.' };
 const TAI_GOAL_DESC = { bal: 'A steadier, safer stance: strong legs, balance, and less fear of falling.', zen: 'Slow down, breathe and relax — in slow, continuous movement.', cut: 'Fat loss through nutrition, with a gentle practice that\'s easy to stick with.' };
 const YOGA_GOAL_DESC = { zen: 'Slow down, breathe and release tension — with a stronger, more flexible body.', flex: 'Bigger range of motion: hips, hamstrings, back and shoulders.', cut: 'Fat loss through nutrition, with a practice that strengthens and calms.' };
 const HIIT_GOAL_DESC = { cut: 'Fat loss: short, intense workouts, with a moderate calorie deficit.' };
 const RUN_GOAL_DESC = { cut: 'Fat loss with long, easy runs and a moderate calorie deficit.' };
 const CALI_GOAL_DESC = { muscle: 'Build muscle with bodyweight: more volume and sets, with a small calorie surplus.', cut: 'Fat loss while keeping strength. A lighter body — easier skills.' };
-export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goal]) || (track === 'mob' && MOB_GOAL_DESC[goal]) || (track === 'run' && RUN_GOAL_DESC[goal]) || (track === 'hiit' && HIIT_GOAL_DESC[goal]) || (track === 'pil' && PIL_GOAL_DESC[goal]) || (track === 'yoga' && YOGA_GOAL_DESC[goal]) || (track === 'tai' && TAI_GOAL_DESC[goal]) || GOAL_DESC[goal];
+export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goal]) || (track === 'mob' && MOB_GOAL_DESC[goal]) || (track === 'run' && RUN_GOAL_DESC[goal]) || (track === 'hiit' && HIIT_GOAL_DESC[goal]) || (track === 'pil' && PIL_GOAL_DESC[goal]) || (track === 'yoga' && YOGA_GOAL_DESC[goal]) || (track === 'tai' && TAI_GOAL_DESC[goal]) || (track === 'walk' && WALK_GOAL_DESC[goal]) || GOAL_DESC[goal];
 // "2 אימוני חדר כושר + אימון קליסתניקס אחד"
 const nWorkouts = (n, kind) => (n === 1 ? `1 × ${kind} ` : `${n} × ${kind}`);
 export const splitText = (gym, cali) => `${nWorkouts(gym, 'Gym')} + ${nWorkouts(cali, 'Calisthenics')}`;
@@ -53,6 +54,7 @@ export const TRACKS = {
   run: { name: 'Running', sub: 'From a first 5 km to a half marathon', desc: 'A running plan with Guy or Shira: run-walk for beginners, easy runs, intervals and a long run that grows every week. Distance and pace by GPS, and a 3 km test once a month.' },
   hiit: { name: 'HIIT', sub: 'Short, intense workouts at home', desc: 'Interval workouts with Lia: 15 to 25 minutes, bodyweight only, no equipment. A hard work interval, a short rest, and the next exercise. Every jumping exercise has a no-jump version.' },
   pil: { name: 'Pilates', sub: 'Mat classes — core, back and posture', desc: 'Mat Pilates with Lia: 20 to 40 minute classes, slow, precise movement from the center. Three levels, no equipment — just a mat.' },
+  walk: { name: 'Walking', sub: 'Guided outdoor walks, with music', desc: 'A walking plan with Shira: brisk walks, walking intervals and a long walk that grows every week. Shira guides you in your earphones, and distance and pace are measured by GPS. No equipment — just comfortable shoes.' },
   tai: { name: 'Tai chi', sub: 'Slow movement, balance and breathing — standing', desc: 'Tai chi classes with Mei: 15 to 30 minutes, in a high stance with small steps. Start with the fundamentals, move on to the 8-form and to movements from the 24-form. No equipment — just a chair or wall within reach.' },
   yoga: { name: 'Yoga', sub: 'Breathing, poses and relaxation — on a mat', desc: 'Yoga classes with Yael: 20 to 45 minutes, from standing and balance poses to relaxation at the end. Three levels, no equipment — just a mat.' },
   mob: { name: 'Mobility', sub: 'Flexibility and range of motion — mat and wall', desc: 'Mobility & flexibility workouts with Tamar: an at-home range-of-motion test, a 10 to 30 minute workout to fit the time you have, and a focus on the areas that need it most. No equipment and no pain.' },
@@ -63,7 +65,7 @@ export function renderOnboarding(root, done) {
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1,
+    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1, walkMin: 30, walkLevel: 1,
   };
   let step = 0;
   const STEPS = 11;
@@ -79,6 +81,7 @@ export function renderOnboarding(root, done) {
   const pil = () => !undecided() && d.track === 'pil';                                // פילאטיס בלבד
   const yoga = () => !undecided() && d.track === 'yoga';                              // יוגה בלבד
   const tai = () => !undecided() && d.track === 'tai';                                // טאי צ'י בלבד
+  const walk = () => !undecided() && d.track === 'walk';                              // הליכה בלבד
   const cls = () => pil() || yoga() || tai();                                                  // מסלולי שיעורים: רמה, אורך שיעור ושאלון בטיחות
   const mob = () => !undecided() && d.track === 'mob';                                // מוביליטי בלבד
   // כמה אימוני מוביליטי אפשר לשלב בשבוע של מסלול אחר (נשאר לפחות אימון אחד לכל חלק אחר)
@@ -93,7 +96,7 @@ export function renderOnboarding(root, done) {
   const decide = (track, mixCali) => {
     d.decided = true; d.track = track; d.goal = goalForTrack(d.goalWanted || d.goal, track);
     if (track === 'mix') d.mixCali = mixCali ?? rec().mixCali ?? undefined; else delete d.mixCali;
-    d.coach = track === 'cali' ? 'maya' : track === 'mob' ? 'tamar' : track === 'run' ? (d.runCoach || 'guy') : track === 'hiit' || track === 'pil' ? 'lia' : track === 'yoga' ? 'yael' : track === 'tai' ? 'mei' : (d.gymCoach || 'ori');
+    d.coach = track === 'cali' ? 'maya' : track === 'mob' ? 'tamar' : track === 'run' ? (d.runCoach || 'guy') : track === 'hiit' || track === 'pil' ? 'lia' : track === 'yoga' ? 'yael' : track === 'tai' ? 'mei' : track === 'walk' ? 'shira' : (d.gymCoach || 'ori');
   };
   const fem = () => !!COACHES[d.coach].f;
   const recMix = () => { const r = recommendTrack({ gymAccess: 'yes', goal: d.goal, days: d.days - mobN(), injuries: d.injuries }); return r.track === 'mix' ? r.mixCali : Math.floor((d.days - mobN()) / 2); };
@@ -104,9 +107,9 @@ export function renderOnboarding(root, done) {
       const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids, ...ids, ...ids].map(tile).join('')}</div></div>`;
       return html`<div class="gate">
         <div class="gate-top"><div class="gate-logo">${BRAND.name}</div><div class="gate-tag">Your studio. Anywhere.</div></div>
-        <div class="gate-wall" aria-hidden="true">${row(['gym', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit'], 'tall b')}${row(['mob', 'tai', 'mix'], 'tall')}${row(['gym', 'yoga', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'mob', 'mix'], 'short b')}</div>
+        <div class="gate-wall" aria-hidden="true">${row(['gym', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit'], 'tall b')}${row(['mob', 'tai', 'walk', 'mix'], 'tall')}${row(['gym', 'yoga', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'walk', 'mob', 'mix'], 'short b')}</div>
         <div class="gate-copy">
-          <div class="gate-h">Eight kinds of training.<br><em>One studio.</em></div>
+          <div class="gate-h">Nine kinds of training.<br><em>One studio.</em></div>
           <p class="sub">Nine coaches by your side — on one track or a mix of them.</p>
           <div class="gate-feats"><span>${icon('target')}A plan that changes with you</span><span>${icon('vol')}Reps counted out loud</span><span>${icon('chart')}Nutrition and tracking</span></div>
           ${lohemData() ? `<button class="btn block" style="margin-top:12px" data-lohem>${icon('download', 'width="18" height="18"')} Continue with my data from "HOD"</button><p class="sub" style="font-size:12px;margin-top:6px">The profile, workouts, weigh-ins and nutrition of ${esc(lohemData().profile.name)} will be copied here. The "HOD" app stays as it is.</p>` : ''}
@@ -114,7 +117,7 @@ export function renderOnboarding(root, done) {
     // 1 — מסלול
     () => html`<div class="eyebrow">Step 1 · Your track</div><div class="q">How ${d.sex === 'f' ? 'do you train' : 'do you train'}?</div>
       <p class="sub">Pick one track or combine. You can switch in Settings anytime, without losing history.</p>
-      ${['gym', 'cali', 'run', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
+      ${['gym', 'cali', 'run', 'walk', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
         <div class="tc-img">${(id === 'mix' ? ['ori', 'noa', 'maya', 'tamar'].map((c) => COACHES[c]) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('')}</div>
         <div><b>${t.name}</b><span class="tc-sub">${t.sub}</span><span>${t.desc}</span></div></button>`)}
       <button class="track-card auto ${d.auto ? 'on' : ''}" data-track="auto"><div class="tc-ico">${icon('sparkle')}</div>
@@ -135,6 +138,11 @@ export function renderOnboarding(root, done) {
           <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
       <p class="sub" style="margin-top:14px">${esc(COACHES[d.coach].bio)}</p>
       <div class="card tight" style="margin-top:6px"><b>What do you need?</b><div class="sub">Running shoes and a phone. Distance and pace are measured by the phone's GPS; a heart-rate watch is a bonus, not a must.</div></div>`
+      : walk() ? html`<div class="eyebrow">Step 2 · Your coach</div><div class="q">${esc(COACHES.shira.name)} will walk with you</div>
+      <div class="coach-solo"><img src="${COACHES.shira.img}" alt="${COACHES.shira.name}"><div><b>${COACHES.shira.name}</b><span>${COACHES.shira.title}</span><p class="sub">${esc(COACHES.shira.bio)}</p>
+        <button class="btn sm teal" data-coach="shira">${icon('play', 'width="16" height="16"')} Hear her</button></div></div>
+      <div class="card tight" style="margin-top:16px"><b>What do you need?</b><div class="sub">Comfortable shoes, earphones, and a route you enjoy walking. The phone measures distance and pace by GPS.</div></div>
+      <div class="card tight" style="margin-top:10px"><b>What does a walk look like?</b><div class="sub">A warm-up at an easy walk, the main part — a brisk walk or power intervals — and a cool-down. Shira tells you when to speed up and when to ease off, and music at walking pace keeps you company.</div></div>`
       : tai() ? html`<div class="eyebrow">Step 2 · Your coach</div><div class="q">${esc(COACHES.mei.name)} will guide you</div>
       <div class="coach-solo"><img src="${COACHES.mei.img}" alt="${COACHES.mei.name}"><div><b>${COACHES.mei.name}</b><span>${COACHES.mei.title}</span><p class="sub">${esc(COACHES.mei.bio)}</p>
         <button class="btn sm teal" data-coach="mei">${icon('play', 'width="16" height="16"')} Hear her</button></div></div>
@@ -194,12 +202,15 @@ export function renderOnboarding(root, done) {
       ${(undecided() ? ['combat', 'muscle', 'strength', 'cut', 'skill'] : goalsFor(d.track)).map((id) => html`<button class="goal-card ${d.goal === id ? 'on' : ''}" data-goal="${id}">
         <div class="gi">${icon(GOALS[id].icon)}</div><div><b>${GOALS[id].name}</b><span>${goalDesc(id, d.track)}</span></div></button>`)}`,
     // 5 — מבדק רמה
-    () => (tai() ? html`<div class="eyebrow">Step 5 · Starting point</div><div class="q">How much tai chi have you done?</div>
+    () => (walk() ? html`<div class="eyebrow">Step 5 · Starting point</div><div class="q">How much ${d.sex === 'f' ? 'do you walk' : 'do you walk'} these days?</div>
+      <p class="sub">This sets how much of the walk is at a brisk pace. Stay consistent and you move up a level after four weeks.</p>
+      <div class="mt-opts" data-walklevel>${[[1, 'Beginners', 'Hardly walking, or coming back after a long break'], [2, 'Regular walkers', 'Half an hour nonstop without difficulty, a few times a week'], [3, 'Fast walkers', 'An hour nonstop at a brisk pace; looking for a challenge']].map(([v, t, x]) => `<button data-v="${v}" class="${d.walkLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
+      : tai() ? html`<div class="eyebrow">Step 5 · Starting point</div><div class="q">How much tai chi have you done?</div>
       <p class="sub">This decides which movements go into your class. Stick with it and you level up after four weeks, with new movements unlocked.</p>
       <div class="mt-opts" data-tailevel>${[[1, 'Fundamentals', 'First time: stance, weight shifting and the first movements'], [2, '8-form', 'You know the fundamentals; adding steps and a low heel kick'], [3, '24-form', 'You practice regularly; adding movements from the long form']].map(([v, t, x]) => `<button data-v="${v}" class="${d.taiLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
       : yoga() ? html`<div class="eyebrow">Step 5 · Starting point</div><div class="q">How much yoga have you done?</div>
       <p class="sub">This decides which poses go into your class. Stick with it and you level up after four weeks, with new poses unlocked.</p>
-      <div class="mt-opts" data-yogalevel>${[[1, 'Beginners', 'First time, or after a long break'], [2, 'Intermediate', 'You know the basic poses — Warrior, Downward-facing dog, Cobra'], [3, 'Advanced', 'You practice regularly; ready for arm balances too']].map(([v, t, x]) => `<button data-v="${v}" class="${d.yogaLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
+      <div class="mt-opts" data-yogalevel>${[[1, 'Get started', 'First time, or after a long break'], [2, 'Intermediate', 'You know the basic poses — Warrior, Downward-facing dog, Cobra'], [3, 'Advanced', 'You practice regularly; ready for arm balances too']].map(([v, t, x]) => `<button data-v="${v}" class="${d.yogaLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
       : pil() ? html`<div class="eyebrow">Step 5 · Starting point</div><div class="q">How much Pilates have you done?</div>
       <p class="sub">This decides which exercises go into your class. Stick with it and you level up after four weeks, with new exercises unlocked.</p>
       <div class="mt-opts" data-pillevel>${[[1, 'Basic', 'First time, or after a long break'], [2, 'Intermediate', 'You know the basic exercises — including The Hundred and Scissors'], [3, 'Advanced', 'You practice regularly; ready for the Teaser too']].map(([v, t, x]) => `<button data-v="${v}" class="${d.pilLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
@@ -253,10 +264,11 @@ export function renderOnboarding(root, done) {
         <div class="sub" style="font-size:12px;margin-top:4px">★ System recommendation for your goal. You can choose otherwise.</div></label>` : ''}
       ${mob() ? `<label class="field"><span>Usual workout length (minutes)</span><div class="seg" data-seg="mobMin">${[10, 20, 30].map((v) => `<button data-v="${v}" class="${d.mobMin == v ? 'on' : ''}">${v}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">This is just the default — you can choose differently before each workout.</div></label>`
-    : html`${tai() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="taiMin">${[15, 20, 30].map((v) => `<button data-v="${v}" class="${d.taiMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : yoga() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="yogaMin">${[20, 30, 45].map((v) => `<button data-v="${v}" class="${d.yogaMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : pil() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="pilMin">${[20, 30, 40].map((v) => `<button data-v="${v}" class="${d.pilMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : hiit() ? `<label class="field"><span>Workout length (minutes)</span><div class="seg" data-seg="hiitMin">${[15, 20, 25].map((v) => `<button data-v="${v}" class="${d.hiitMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : run() || cls() ? '' : `<label class="field"><span>Workout duration (minutes)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>`}
+    : html`${walk() ? `<label class="field"><span>Usual walk length (minutes)</span><div class="seg" data-seg="walkMin">${[20, 30, 45, 60].map((v) => `<button data-v="${v}" class="${d.walkMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : tai() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="taiMin">${[15, 20, 30].map((v) => `<button data-v="${v}" class="${d.taiMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : yoga() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="yogaMin">${[20, 30, 45].map((v) => `<button data-v="${v}" class="${d.yogaMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : pil() ? `<label class="field"><span>Class length (minutes)</span><div class="seg" data-seg="pilMin">${[20, 30, 40].map((v) => `<button data-v="${v}" class="${d.pilMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : hiit() ? `<label class="field"><span>Workout length (minutes)</span><div class="seg" data-seg="hiitMin">${[15, 20, 25].map((v) => `<button data-v="${v}" class="${d.hiitMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : run() || cls() ? '' : `<label class="field"><span>Workout duration (minutes)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>`}
       <label class="field"><span>Add mobility & flexibility workouts with ${COACHES.tamar.name}?</span><div class="seg" data-seg="mobN">${Array.from({ length: mobMax() + 1 }, (_, i) => `<button data-v="${i}" class="${mobN() === i ? 'on' : ''}">${i === 0 ? 'None' : i}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">${mobN() ? `${mobN() === 1 ? '1 workout' : `${mobN()} workouts`} out of ${d.days} a week ${mobN() === 1 ? 'will be' : 'will be'} mobility (10–30 min), and the rest on the track you chose.` : 'You can also add them later, in Settings.'}</div></label>`}
       ${mob() ? `<div class="card tight" style="margin-top:8px"><b>Short and often beats long and rare.</b><div class="sub">Ten minutes four times a week improves range of motion more than one long workout. The target is about ten minutes a week for each body area.</div></div>`
+    : walk() ? `<div class="card tight" style="margin-top:8px"><b>Five walks a week is the goal; three is a good start.</b><div class="sub">The health recommendation is 150 minutes of brisk walking a week. The long walk is built separately and grows by five minutes every week.</div></div>`
     : tai() ? `<div class="card tight" style="margin-top:8px"><b>Three short classes a week, or more.</b><div class="sub">In tai chi, consistency matters more than length: twenty minutes a few times a week builds balance and leg strength.</div></div>`
     : yoga() ? `<div class="card tight" style="margin-top:8px"><b>Two or three classes a week.</b><div class="sub">A short, regular practice beats one long class a week. More is fine too — classes rotate between standing, hips, back and a calm class.</div></div>`
     : pil() ? `<div class="card tight" style="margin-top:8px"><b>Two or three classes a week.</b><div class="sub">That's what most Pilates studies tested, and it's enough to feel a change. More is fine too — classes rotate between core, back and hips.</div></div>`
@@ -289,17 +301,18 @@ export function renderOnboarding(root, done) {
         ${isRec ? r.why.map((w) => `<span class="why">${icon('check', 'width="14" height="14"')} ${esc(w)}</span>`).join('') : `<span>The recommendation was: ${TRACKS[r.track].name}${r.track === 'mix' ? ` (${splitText(d.days - r.mixCali, r.mixCali)})` : ''}.</span>`}</div></div>
       ${isRec ? '' : `<button class="btn sm teal" data-rec>${icon('sparkle', 'width="16" height="16"')} Back to the system recommendation</button>`}
       ${d.track === 'mix' ? `<label class="field" style="margin-top:14px"><span>How many of the workouts are calisthenics?</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${r.track === 'mix' && r.mixCali === v ? ' ★' : ''}</button>`).join('')}</div></label>` : ''}
-      ${!['cali', 'mob', 'hiit', 'pil', 'yoga', 'tai'].includes(d.track) ? html`<div style="font-weight:700;margin:14px 0 8px">${d.track === 'run' ? 'Who will run with you?' : 'Who will coach you in the gym?'}</div>
+      ${!['cali', 'mob', 'hiit', 'pil', 'yoga', 'tai', 'walk'].includes(d.track) ? html`<div style="font-weight:700;margin:14px 0 8px">${d.track === 'run' ? 'Who will run with you?' : 'Who will coach you in the gym?'}</div>
         <div class="coach-pick mini">${coachesFor(d.track === 'run' ? 'run' : 'gym').map((c) => `<button class="coach-card ${d.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span><div class="cap"><b>${c.name}</b></div></button>`).join('')}</div>` : ''}
       <div style="font-weight:700;margin:16px 0 8px">${d.sex === 'f' ? 'Prefer' : 'Prefer'} something else?</div>
-      <div class="seg" data-pick-track>${['gym', 'cali', 'run', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
+      <div class="seg" data-pick-track>${['gym', 'cali', 'run', 'walk', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
       <p class="sub" style="font-size:12px;margin-top:8px">The recommendation is a starting point. You can change track and split anytime in Settings.</p>`;
     },
     // 10 — בנייה
     () => html`<div class="build-anim"><div class="core"></div>
       <div class="h1" style="font-size:24px">${esc(COACHES[d.coach].name)} ${fem() ? 'is building' : 'is building'} your plan…</div>
       <ul id="buildList">
-        ${tai() ? '<li>Choosing movements for your level</li><li>Adapting to injuries and your condition</li><li>Building classes for the week</li><li>Calculating nutrition targets and menu</li>'
+        ${walk() ? '<li>Sets how much of the walk is brisk</li><li>Builds a long walk that grows every week</li><li>Schedules walking intervals</li><li>Calculating nutrition targets and menu</li>'
+    : tai() ? '<li>Choosing movements for your level</li><li>Adapting to injuries and your condition</li><li>Building classes for the week</li><li>Calculating nutrition targets and menu</li>'
     : yoga() ? '<li>Choosing poses for your level</li><li>Adapting to injuries and your condition</li><li>Building classes for the week</li><li>Calculating nutrition targets and menu</li>'
     : pil() ? '<li>Choosing exercises for your level</li><li>Adapting to injuries and your condition</li><li>Building classes for the week</li><li>Calculating nutrition targets and menu</li>'
     : hiit() ? '<li>Setting the work-to-rest ratio</li><li>Adapting exercises to injuries</li><li>Building circuits for the week</li><li>Calculating nutrition targets and menu</li>'
@@ -348,7 +361,7 @@ export function renderOnboarding(root, done) {
       <div class="content">${views[step]()}</div>
       ${isBuild ? '' : html`<div class="actions">
         ${step > 0 ? '<button class="btn" data-act="back">Back</button>' : ''}
-        <button class="btn primary block xl" data-act="next">${step === 0 ? 'Get started' : last ? 'Build my plan' : step === REC - 1 ? 'To the recommendation' : 'Continue'}</button></div>
+        <button class="btn primary block xl" data-act="next">${step === 0 ? 'Beginners' : last ? 'Build my plan' : step === REC - 1 ? 'To the recommendation' : 'Continue'}</button></div>
         ${step === 0 ? `<button class="gate-guide" data-act="guide">${icon('info', 'width="16" height="16"')} How does it work? A quick explanation</button><button class="gate-guide gate-lang" data-act="lang" lang="${OTHER.code}">${OTHER.label}</button>` : ''}`}
     </div>`;
     // הסעיף נשאר פתוח גם כשהמסך מצויר מחדש (למשל אחרי בחירת ניסיון)
@@ -388,7 +401,7 @@ export function renderOnboarding(root, done) {
     if (d.auto) { d.goalWanted = d.goal; paint(); return; }
     delete d.goalWanted;
     d.track = t.dataset.track;
-    d.coach = cali() ? 'maya' : mob() ? 'tamar' : run() ? (d.runCoach || 'guy') : hiit() || pil() ? 'lia' : yoga() ? 'yael' : tai() ? 'mei' : (d.gymCoach || 'ori');
+    d.coach = cali() ? 'maya' : mob() ? 'tamar' : run() ? (d.runCoach || 'guy') : hiit() || pil() ? 'lia' : yoga() ? 'yael' : tai() ? 'mei' : walk() ? 'shira' : (d.gymCoach || 'ori');
     d.goal = goalForTrack(d.goal, d.track);
     if (cls() && d.days > 3 && !d.daysTouched) d.days = 3;
     if (hiit() && d.days > 3 && !d.daysTouched) d.days = 3;
@@ -414,6 +427,7 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-runbase] button', (e, t) => { readInputs(); d.runBase = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-pillevel] button', (e, t) => { d.pilLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-yogalevel] button', (e, t) => { d.yogaLevel = Number(t.dataset.v); paint(); });
+  on(root, 'click', '[data-walklevel] button', (e, t) => { d.walkLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-tailevel] button', (e, t) => { d.taiLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-hiitlevel] button', (e, t) => { d.hiitLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-flag]', (e, t) => { toggle(d.flags, t.dataset.flag); paint(); });
@@ -431,9 +445,9 @@ export function renderOnboarding(root, done) {
       const caliState = anyCali() ? newCali({ pushups: d.pushups, pullups: mix() || d.equip.includes('bar') || d.equip.includes('rings') ? d.pullups : 0, squats: d.squats,
         dips: d.equip.includes('pbars') || d.equip.includes('rings') ? d.dips : 0, plankSec: d.plankSec, bmi: d.weightKg / (hM * hM) }, d.equip) : null;
       const mobState = withMob() ? { ...newMob(testDone() ? d.mobTest : null, d.flags), minutes: d.mobMin } : null;
-      const level = tai() ? d.taiLevel : yoga() ? d.yogaLevel : pil() ? d.pilLevel : hiit() ? d.hiitLevel : run() ? runLevelFrom3k(run3k) : mob() ? mobLevel(mobState) : caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
+      const level = walk() ? d.walkLevel : tai() ? d.taiLevel : yoga() ? d.yogaLevel : pil() ? d.pilLevel : hiit() ? d.hiitLevel : run() ? runLevelFrom3k(run3k) : mob() ? mobLevel(mobState) : caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
       const profile = {
-        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}), ...(tai() ? { taiMin: d.taiMin, taiFlags: [...d.flags] } : {}),
+        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}), ...(tai() ? { taiMin: d.taiMin, taiFlags: [...d.flags] } : {}), ...(walk() ? { walkMin: d.walkMin } : {}),
         coach: d.coach, name: d.name, age: d.age, sex: d.sex, heightCm: d.heightCm, weightKg: d.weightKg, targetWeight: d.targetWeight,
         goal: d.goal, level, days: d.days, sessionMin: d.sessionMin, run3k, runLevel: runLevelFrom3k(run3k), injuries: d.injuries,
         nutrition: d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies, health: d.health, ...(d.eatAt === 'service' ? { eatAt: 'service' } : {}) } : {}),
@@ -445,7 +459,7 @@ export function renderOnboarding(root, done) {
         s.plan = createPlan(profile);
         s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
-        s.events = [{ type: 'coach', text: tai() ? `Your tai chi plan is ready! ${d.days} classes a week, ${d.taiMin} min each.` : yoga() ? `Your yoga plan is ready! ${d.days} classes a week, ${d.yogaMin} min each.` : pil() ? `Your Pilates plan is ready! ${d.days} classes a week, ${d.pilMin} min each.` : hiit() ? `Your HIIT plan is ready! ${d.hiitMin} min per workout, ${d.days} times a week.` : run() ? `Your running plan is ready! Goal: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'Starting with run-walk.' : 'Starting with continuous runs.'}` : mob() ? `Your plan is ready! ${GOALS[d.goal].name}.${testDone() ? ` Range-of-motion score: ${mobScore(mobState)} out of 100.` : ' The range-of-motion test is waiting on the Plan screen.'}` : mix() ? `Your combined plan is ready! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} a week.` : caliState ? `Your plan is ready! ${GOALS[d.goal].name}. A starting step is set on each ladder — you can view and change it on the Plan screen.` : `Your plan is ready! Level ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
+        s.events = [{ type: 'coach', text: walk() ? `Your walking plan is ready! ${d.days} walks a week, ${d.walkMin} minutes for a usual walk.` : tai() ? `Your tai chi plan is ready! ${d.days} classes a week, ${d.taiMin} min each.` : yoga() ? `Your yoga plan is ready! ${d.days} classes a week, ${d.yogaMin} min each.` : pil() ? `Your Pilates plan is ready! ${d.days} classes a week, ${d.pilMin} min each.` : hiit() ? `Your HIIT plan is ready! ${d.hiitMin} min per workout, ${d.days} times a week.` : run() ? `Your running plan is ready! Goal: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'Starting with run-walk.' : 'Starting with continuous runs.'}` : mob() ? `Your plan is ready! ${GOALS[d.goal].name}.${testDone() ? ` Range-of-motion score: ${mobScore(mobState)} out of 100.` : ' The range-of-motion test is waiting on the Plan screen.'}` : mix() ? `Your combined plan is ready! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} a week.` : caliState ? `Your plan is ready! ${GOALS[d.goal].name}. A starting step is set on each ladder — you can view and change it on the Plan screen.` : `Your plan is ready! Level ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
         return s;
       });
       done();

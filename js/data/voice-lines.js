@@ -132,6 +132,21 @@ Object.assign(lines, {
   run_breathe: 'אם אי אפשר לדבר, מאטים קצת. זה בדיוק הקצב הנכון.',
 });
 const RUN_ONLY = ['run_long', 'run_form', 'run_breathe'];
+// הליכה (שירה): מה שנאמר רק במסלול ההליכה
+Object.assign(lines, {
+  walk_hello: 'היי! אני שירה. היום יוצאים להליכה — בקצב נכון, ועם ראש פתוח. מתחילים!',
+  walk_warm: 'מתחילים בהליכה נינוחה, לחמם את הגוף.',
+  walk_stroll: 'הליכה נינוחה. נושמים, ומשחררים את הכתפיים.',
+  walk_brisk: 'הליכה מהירה! צעדים קצרים ומהירים, והידיים עובדות.',
+  walk_power: 'עכשיו נמרץ! הכי מהר שאפשר — בלי לרוץ.',
+  walk_last: 'קטע נמרץ אחרון! נותנים הכול.',
+  walk_cool: 'מאטים. הליכה רגועה לסיום.',
+  walk_half: 'חצי דרך! ממשיכים באותו קצב.',
+  walk_form: 'גב זקוף, מבט קדימה, והידיים נעות לצד הגוף.',
+  walk_talk: 'קצב טוב הוא קצב שאפשר לדבר בו, אבל לא לשיר.',
+  walk_done: '[excited] הליכה הושלמה! כל הכבוד!',
+});
+const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done'];
 // מה אומרים מאמני הריצה: כל משפטי הריצה והדופק, ספירה לאחור, פתיחה וסיום — בלי סטים, משקלים ותרגילים
 const RUN_SAYS = ['n1', 'n2', 'n3', 'go', 'workout_start', 'streak', 'pr', 'm2', 'm4', 'm5', 'm6', 'm8', 'm10', 'watch_on', 'zone_up', 'zone_down', 'checkin_low', 'checkin_high'];
 const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'];
@@ -238,6 +253,7 @@ export function coachSays(key, coach) {
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
   if (key.startsWith('tc_')) return track === 'tai';
+  if (WALK_ONLY.includes(key)) return all.includes('walk');
   if (key.startsWith('ex_') || key.startsWith('tip_')) { const e = EX[key.replace(/^(ex|tip)_/, '')]; return !!e && e.tracks.some((t) => all.includes(t)); }
   if (PIL_ONLY.includes(key)) return all.includes('pil');
   if (MOB_ONLY.includes(key) && all.includes('pil')) return true;

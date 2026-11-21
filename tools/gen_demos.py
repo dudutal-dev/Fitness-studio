@@ -32,7 +32,7 @@ SCENES = {"ori": GYM, "noa": GYM, "guy": PARK, "shira": PARK, "lia": STUDIO,
           "tamar": ("in a calm premium movement studio with a light wooden floor, rolled mats in the background, warm amber and soft teal accent lighting. "
                     "Anatomically correct body, two arms and two legs. Full body visible, centered, vertical 9:16 framing, photorealistic. No text, no logos, no brand names.")}
 # מי מדגים כל תרגיל: האיבר השלישי ב-demos.json — "cali" = רק מאיה, "mob" = רק תמר, "run" = גיא ושירה, "all" = אורי, נועה ומאיה, "stretch" = כולם, בלי = אורי ונועה
-COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "hiit": ("lia",), "pil": ("lia",), "yoga": ("yael",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
+COACHES_FOR = {"gym": ("ori", "noa"), "cali": ("maya",), "mob": ("tamar",), "run": ("guy", "shira"), "walk": ("shira",), "hiit": ("lia",), "pil": ("lia",), "yoga": ("yael",), "all": ("ori", "noa", "maya"), "stretch": ("ori", "noa", "maya", "tamar")}
 EXTRA = json.load(open(os.path.join(os.path.dirname(__file__), "demos_extra.json")))  # מאמן → תרגילים קיימים שגם הוא מדגים
 def coaches_for(ex):
     return tuple(COACHES_FOR[DEMOS[ex][2] if len(DEMOS[ex]) > 2 else "gym"]) + tuple(c for c, ids in EXTRA.items() if ex in ids)
@@ -61,7 +61,7 @@ def job(coach, ex):
             body = {"model_id": "veo-3.1-fast-generate-001", "duration_secs": 4, "resolution": "720p", "aspect_ratio": "9:16",
                     "generate_audio": False, "start_frame": ref,
                     "prompt": f"The athlete {motion}. Smooth realistic human motion, correct technique, fixed static camera, {SCENE}"}
-            if ex not in ("farmer_carry", "sled_push", "treadmill_run", "outdoor_run", "battle_rope"):
+            if ex not in ("farmer_carry", "sled_push", "treadmill_run", "outdoor_run", "outdoor_walk", "battle_rope"):
                 body["end_frame"] = ref  # seamless loop
             gid = el.create("video", body)
             r = el.wait("video", gid)

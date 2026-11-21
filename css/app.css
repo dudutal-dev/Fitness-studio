@@ -1205,3 +1205,9 @@ button.mi .tag { margin-inline-end: 4px; }
 /* בורר השפה בראש ההגדרות */
 .lang-seg { flex: 0 0 auto; width: auto; display: inline-flex; }
 .lang-seg button { flex: 0 0 auto; padding-inline: 14px; min-height: 36px; font-size: 14px; white-space: nowrap; overflow: visible; text-overflow: clip; }
+
+/* מקטעי ההליכה במסך הריצה / ההליכה */
+.segs i.power { height: 100%; background: rgba(255,138,61,0.35); }
+.segs i.brisk { height: 62%; background: rgba(var(--acc-rgb),0.28); }
+.segs i.stroll { height: 34%; }
+.run-kind.power { color: var(--orange); } .run-kind.brisk { color: var(--acc-ink); }

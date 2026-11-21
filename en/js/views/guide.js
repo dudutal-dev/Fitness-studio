@@ -22,7 +22,7 @@ function slides() {
       visual: `<div class="g-trio">${[['ori', 'Gym'], ['maya', 'Calisthenics'], ['shira', 'Running'], ['lia', 'HIIT']].map(([c, t]) => `<figure><img src="${COACHES[c].img}" alt=""><figcaption><b>${COACHES[c].name}</b><span>${t}</span></figcaption></figure>`).join('')}</div>`,
       body: `<div class="g-brand">${BRAND.name}</div><h2>A personal coach for every track, at every level</h2>
         <div class="g-feats">
-          <div>${ib('dumbbell', 'pri')}<span><b>One track or a mix</b>Gym, calisthenics, running, HIIT, Pilates, yoga, tai chi, mobility — or several together</span></div>
+          <div>${ib('dumbbell', 'pri')}<span><b>One track or a mix</b>Gym, calisthenics, running, walking, HIIT, Pilates, yoga, tai chi, mobility — or several together</span></div>
           <div>${ib('vol', 'acc')}<span><b>A coach who talks to you</b>Demonstrates every exercise, counts reps and times rests</span></div>
           <div>${ib('chart', 'ok')}<span><b>A plan that progresses with you</b>Changes by itself based on your performance</span></div>
         </div>
@@ -76,6 +76,14 @@ function slides() {
         tip('🎯', '<b>Three levels</b>: basic, intermediate and advanced. The level decides which exercises go in; complete most of your classes and you level up after four weeks.') +
         tip('🔄', '<b>Classes rotate</b> between core, back and posture, and hips and glutes — so the whole week is balanced.') +
         tip('⚠️', '<b>Quality before quantity</b>: a small, precise movement is better. If your neck strains — rest your head down. If you\'re pregnant, have osteoporosis or a joint replacement, mark it in Settings, and exercises that don\'t suit you are taken out of the class.'),
+    },
+    {
+      id: 'walk', title: 'Walking track', eyebrow: 'Guided walks, with music',
+      visual: `<div class="g-coach"><img src="${COACHES.shira.img}" alt=""></div>`,
+      body: tip('👟', '<b>A walk of 20 to 60 minutes</b>: warm-up, the main part and a cool-down. Shira guides you in your earphones — when to speed up, when to ease off and when a minute is left.') +
+        tip('⚡', '<b>Three kinds</b>: brisk walk, intervals (power stretches with recovery between them), and a long walk that grows by five minutes every week.') +
+        tip('🎵', '<b>Music at walking pace</b>: the note button on the walk screen. Distance and pace are measured by the phone\'s GPS.') +
+        tip('🎯', '<b>Three levels</b>: beginners, regular walkers and fast walkers. Complete most of your walks and you move up a level after four weeks.'),
     },
     {
       id: 'tai', title: 'Tai chi track', eyebrow: 'Slow movement, balance and breathing',

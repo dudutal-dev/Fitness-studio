@@ -26,7 +26,7 @@ export const COACHES = {
     style: 'אנרגטי-מעודד', img: 'assets/coaches/guy.webp', face: 'assets/coaches/guy_face.webp',
   },
   shira: {
-    id: 'shira', name: 'שירה', title: 'מאמנת ריצה', voice: 'ElevenLabs', track: 'run', f: true,
+    id: 'shira', name: 'שירה', title: 'מאמנת ריצה והליכה', voice: 'ElevenLabs', track: 'run', tracks: ['run', 'walk'], f: true,
     bio: 'קלילה, ממוקדת וסבלנית. תשמור שהקצב יהיה נכון: רוב הריצות בקלות, ומעט מאוד במאמץ.',
     style: 'קליל-ממוקד', img: 'assets/coaches/shira.webp', face: 'assets/coaches/shira_face.webp',
   },
@@ -48,7 +48,7 @@ export const COACHES = {
 };
 COACHES.noa.f = true;
 // המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה; מוביליטי — תמר; ריצה — גיא ושירה
-const OWN = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai'];
+const OWN = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'];
 export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.tracks || [c.track || 'gym']).includes(OWN.includes(track) ? track : 'gym'));
 
 export const demoVideo = (coach, exId) => `assets/demos/${coach}/${exId}.mp4`;

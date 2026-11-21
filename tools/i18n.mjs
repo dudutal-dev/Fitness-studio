@@ -83,7 +83,7 @@ function translate(file) {
 const adapt = (file, code) => {
   code = code.replace(/(['"`(])assets\//g, '$1../assets/').replace(/'he-IL'/g, "'en-US'");
   // מקומות שבהם הקוד בודק מילה בעברית בתוך טקסט (לא רק מציג אותה): אותה בדיקה מול המילה האנגלית
-  if (file === 'js/engine/program.js') code = code.replace('/^(ריצה|קליסתניקס)/', '/^(Run|Calisthenics)/');
+  if (file === 'js/engine/program.js') code = code.replace('/^(ריצה|קליסתניקס|הליכה)/', '/^(Run|Calisthenics)|[Ww]alk/');
   if (file === 'js/engine/progression.js') code = code.replace('/מוט/', '/barbell/i').replace('/משקולת/', '/dumbbell/i');
   if (file === 'js/brand.js' || file === 'js/reminders.js') code = code.replace(/github\.io\/Fitness-studio\//g, 'github.io/Fitness-studio/en/');
   // אותה אפליקציה בשתי שפות: אותו מפתח אחסון ואותו רישיון. רק קובץ השפה מתהפך

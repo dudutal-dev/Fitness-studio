@@ -29,7 +29,7 @@ export function fmtPace(sec) {
 }
 
 const seg = (kind, sec, label) => ({ kind, sec, label });
-export const SEG_LABEL = { warm: 'חימום', fast: 'מהיר', easy: 'קל', walk: 'הליכה', tempo: 'טמפו', steady: 'יציב', cool: 'שחרור', test: 'מבדק' };
+export const SEG_LABEL = { warm: 'חימום', fast: 'מהיר', easy: 'קל', walk: 'הליכה', tempo: 'טמפו', steady: 'יציב', cool: 'שחרור', test: 'מבדק', stroll: 'נינוח', brisk: 'מהיר', power: 'נמרץ' };
 
 // weekIdx: אינדקס שבוע מצטבר (להתקדמות הדרגתית)
 export function buildRunSession(profile, type, weekIdx = 0) {
