@@ -194,7 +194,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false) showMap(true); }
     if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); map.draw(gps.path, gps.here); }   // המיקום העדכני — המפה זזה עם ההליכה
     if (Math.floor(d / 1000) > splits.length) splits.push(Math.round(elapsed / 1000));
-    if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳` : 'מחפש GPS…'; }
+    if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳${st.accuracy > 40 ? ' · קליטה חלשה, המרחק מקורב' : ''}` : st.fixes ? 'אין קליטת GPS כרגע…' : 'מחפש GPS…'; }
     if (c.hr) {
       const z = zoneOf(c.hr, hrMax);
       $('#hr').textContent = c.hr; $('#hrz').textContent = `Z${z.z} · ${z.name}`; $('#hr').style.color = z.color;
