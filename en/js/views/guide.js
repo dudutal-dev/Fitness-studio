@@ -82,7 +82,8 @@ function slides() {
       visual: `<div class="g-coach"><img src="${COACHES.shira.img}" alt=""></div>`,
       body: tip('👟', '<b>A walk of 20 to 60 minutes</b>: warm-up, the main part and a cool-down. Shira guides you in your earphones — when to speed up, when to ease off and when a minute is left.') +
         tip('⚡', '<b>Three kinds</b>: brisk walk, intervals (power stretches with recovery between them), and a long walk that grows by five minutes every week.') +
-        tip('🎵', '<b>Music at walking pace</b>: the note button on the walk screen. Distance and pace are measured by the phone\'s GPS.') +
+        tip('🎵', '<b>Music at walking pace</b>: the note button on the walk screen.') +
+        tip('🧭', '<b>Shira coaches to your pace</b>: GPS measures distance and pace and draws your route on a map. Too slow in a brisk segment — she asks you to pick it up; too fast in recovery — to ease off.') +
         tip('🎯', '<b>Three levels</b>: beginners, regular walkers and fast walkers. Complete most of your walks and you move up a level after four weeks.'),
     },
     {
@@ -152,7 +153,7 @@ function slides() {
       id: 'run', title: 'Running', eyebrow: 'Built into the plan',
       visual: `${em('🏃', 'pri', 'xl')}`,
       body: tip('', 'Intervals, tempo and easy runs — your coach announces every segment ("Sprint!", "Walk", "One more minute").') +
-        tip('📡', 'Allow <b>location access</b> — distance and pace from GPS. Keep the screen on.') +
+        tip('📡', 'Allow <b>location access</b> — distance and pace from GPS, and a<b>map with your route</b> in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer. Keep the screen on.') +
         tip('🏁', 'In the fourth week of every block — <b>3 km test</b>. Your coach detects it automatically when you reach 3 km.') +
         tip('❤', 'Have a Garmin watch? You can connect live heart rate or import runs (Settings → Garmin).'),
     },

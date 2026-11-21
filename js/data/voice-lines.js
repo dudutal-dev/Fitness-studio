@@ -145,8 +145,13 @@ Object.assign(lines, {
   walk_form: 'גב זקוף, מבט קדימה, והידיים נעות לצד הגוף.',
   walk_talk: 'קצב טוב הוא קצב שאפשר לדבר בו, אבל לא לשיר.',
   walk_done: '[excited] הליכה הושלמה! כל הכבוד!',
+  // לפי הקצב שנמדד ב-GPS
+  walk_pace_up: 'הקצב ירד קצת. מגבירים — צעדים מהירים יותר, והידיים עובדות.',
+  walk_pace_good: 'קצב מצוין! בדיוק ככה — ממשיכים.',
+  walk_pace_easy: 'עכשיו מאטים. נושמים עמוק, ונותנים לדופק לרדת.',
+  walk_km: 'עוד קילומטר מאחורינו! יפה מאוד.',
 });
-const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done'];
+const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_km'];
 // מה אומרים מאמני הריצה: כל משפטי הריצה והדופק, ספירה לאחור, פתיחה וסיום — בלי סטים, משקלים ותרגילים
 const RUN_SAYS = ['n1', 'n2', 'n3', 'go', 'workout_start', 'streak', 'pr', 'm2', 'm4', 'm5', 'm6', 'm8', 'm10', 'watch_on', 'zone_up', 'zone_down', 'checkin_low', 'checkin_high'];
 const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'];

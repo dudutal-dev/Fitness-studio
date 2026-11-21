@@ -255,5 +255,11 @@
  ": הליכה מהירה, אינטרוולים (קטעים נמרצים עם התאוששות ביניהם), והליכה ארוכה שגדלה בחמש דקות כל שבוע.": ": brisk walk, intervals (power stretches with recovery between them), and a long walk that grows by five minutes every week.",
  "מוזיקה בקצב הליכה": "Music at walking pace",
  ": כפתור התו במסך ההליכה. המרחק והקצב נמדדים ב-GPS של הטלפון.": ": the note button on the walk screen. Distance and pace are measured by the phone's GPS.",
- ": מתחילים, הולכים קבוע והולכים מהר. מי שמשלים את רוב ההליכות עולה רמה אחרי ארבעה שבועות.": ": beginners, regular walkers and fast walkers. Complete most of your walks and you move up a level after four weeks."
+ ": מתחילים, הולכים קבוע והולכים מהר. מי שמשלים את רוב ההליכות עולה רמה אחרי ארבעה שבועות.": ": beginners, regular walkers and fast walkers. Complete most of your walks and you move up a level after four weeks.",
+ ": כפתור התו במסך ההליכה.": ": the note button on the walk screen.",
+ "שירה מכוונת לפי הקצב שלך": "Shira coaches to your pace",
+ ": ה-GPS מודד מרחק וקצב ומצייר את המסלול על מפה. לאט מדי בקטע מהיר — היא תבקש להגביר; מהר מדי בהתאוששות — להאט.": ": GPS measures distance and pace and draws your route on a map. Too slow in a brisk segment — she asks you to pick it up; too fast in recovery — to ease off.",
+ "— מרחק וקצב מה-GPS, ו": "— distance and pace from GPS, and a",
+ "מפה עם המסלול": "map with your route",
+ "במקום הסרטון (כפתור המצפן מחליף ביניהם; לחיצה על המפה מציגה את כל המסלול). בסיום: המסלול, קצב ממוצע וזמן לכל קילומטר. להשאיר את המסך דלוק.": "in place of the video (the compass button switches between them; tap the map to see the whole route). At the end: the route, average pace and the time for each kilometer. Keep the screen on."
 }

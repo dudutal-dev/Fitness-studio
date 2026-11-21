@@ -4,6 +4,7 @@ import { get, set } from '../store.js';
 import { EX } from '../data/exercises.js';
 import { updateSession, deleteSession, updateRun, deleteRun } from '../engine/history-edit.js';
 import { parse3k } from './onboarding.js';
+import { routeMap } from '../ui/map.js';
 
 const toLocalInput = (iso) => { const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
 const fromLocalInput = (v, fallback) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? fallback : d.toISOString(); };
@@ -74,6 +75,7 @@ export function openRunEditor(index, onDone) {
   if (!orig) return;
   const find = (s) => s.runs.findIndex((r) => r.date === orig.date && r.name === orig.name);
   sheet(html`<div class="eyebrow">Edit run</div><div class="h1" style="font-size:22px">${esc(orig.name)}</div>
+    ${orig.route?.length > 1 ? `<div class="run-map hist" id="hmap"></div>${orig.distanceKm && orig.durationSec ? `<div class="sub run-splits">Average pace <b class="num">${fmtTime(orig.durationSec / orig.distanceKm)}</b> per km${(orig.splits || []).map((t, k) => ` · km ${k + 1}: <b class="num">${fmtTime(t - (orig.splits[k - 1] || 0))}</b>`).join('')}</div>` : ''}` : ''}
     <label class="field" style="margin-top:12px"><span>Date and time</span><input class="input" type="datetime-local" name="date" value="${toLocalInput(orig.date)}"></label>
     <div class="grid2">
       <label class="field"><span>Total time (min:sec)</span><input class="input num" name="dur" value="${fmtTime(orig.durationSec || 0)}" inputmode="numeric"></label>
@@ -84,6 +86,8 @@ export function openRunEditor(index, onDone) {
     <button class="btn danger block" style="margin-top:8px" data-del>${icon('trash')} Delete run</button>`, {
     onMount(sh, close) {
       const val = (n) => sh.querySelector(`[name=${n}]`)?.value.trim();
+      const hm = sh.querySelector('#hmap');   // המסלול שנשמר מה-GPS
+      if (hm) { const m = routeMap(hm); m.setMode('fit'); requestAnimationFrame(() => m.draw(orig.route)); }
       const parseDur = (v) => { const m = String(v || '').match(/^(?:(\d+):)?(\d{1,3}):(\d{2})$/); return m ? (Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3])) : null; };
       sh.querySelector('[data-save]').addEventListener('click', () => {
         const dur = parseDur(val('dur'));

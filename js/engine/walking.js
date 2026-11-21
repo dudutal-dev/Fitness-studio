@@ -75,3 +75,21 @@ export function walkLevelUp(profile, runs = [], now = Date.now()) {
   const done = runs.filter((r) => r.walk && now - new Date(r.date).getTime() < 28 * 864e5).length;
   return done >= Math.min(6, Math.max(2, profile.days || 4)) * 4 * 0.8 && walkLevel(profile) < 3;
 }
+
+// ───── קצב מה-GPS ─────
+// יעד הקצב לכל מקטע, בשניות לק״מ. brisk / power: לא לאט מ-max. stroll / cool: לא מהר מ-min (כדי שההתאוששות תהיה התאוששות).
+// הרמות: מתחילים 5.5 קמ״ש בהליכה מהירה ו-6 בנמרצת · הולכים קבוע 6 ו-6.5 · הולכים מהר 6.5 ו-7.
+const BRISK = [0, 655, 600, 555], POWER = [0, 600, 555, 515];
+export function walkTarget(profile, kind) {
+  const l = walkLevel(profile);
+  if (kind === 'brisk') return { max: BRISK[l] };
+  if (kind === 'power') return { max: POWER[l] };
+  if (kind === 'stroll' || kind === 'cool') return { min: BRISK[l] };
+  return null;
+}
+// איך הקצב הנוכחי ביחס ליעד: slow — לאט מדי במקטע מהיר · fast — מהר מדי במקטע רגוע · ok. סטייה של עד 5% נחשבת בסדר
+export function paceVerdict(target, paceSec) {
+  if (!target || !paceSec) return null;
+  if (target.max) return paceSec > target.max * 1.05 ? 'slow' : 'ok';
+  return paceSec < target.min * 0.95 ? 'fast' : 'ok';
+}
