@@ -192,7 +192,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     $('#cpace').className = `num${pc && segPace ? (off ? ' pace-off' : ' pace-ok') : ''}`;
     // מפה: נפתחת לבד כשמתקבל מיקום ראשון (אלא אם כובתה), ומתעדכנת פעם בשנייה
     if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false) showMap(true); }
-    if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); }
+    if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); map.draw(gps.path, gps.here); }   // המיקום העדכני — המפה זזה עם ההליכה
     if (Math.floor(d / 1000) > splits.length) splits.push(Math.round(elapsed / 1000));
     if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'No location access — distance won\'t be measured. You can allow location in your browser settings.' : st.ok ? `GPS · accuracy ${st.accuracy} m` : 'Searching for GPS…'; }
     if (c.hr) {
