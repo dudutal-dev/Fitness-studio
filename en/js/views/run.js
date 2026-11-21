@@ -84,6 +84,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"><div class="eyebrow">${emi(run.icon)} ${esc(run.name)}</div><div class="name" style="font-size:22px">${walkS ? `Walk with ${esc(COACHES[coach].name)}` : run.type === 'free' ? `Run with ${esc(COACHES[coach].name)}` : 'Target pace: <span class="num" id="pace"></span>'}</div></div></div>
     <div class="panel" style="flex:1;display:flex;flex-direction:column">
+      <button class="panel-grab" data-act="panel" aria-label="Hide or show the stats panel" aria-expanded="true"><i></i></button>
       <div class="segs">${segs.map((x, j) => `<i class="${x.kind}" style="flex-grow:${Math.max(30, x.sec || 600)}" data-i="${j}"></i>`).join('')}</div>
       <div class="run-kind" id="kind"></div><div class="run-big" id="big">0:00</div><div class="sub" style="text-align:center" id="lbl"></div>
       <div class="run-stats">
@@ -104,6 +105,14 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   document.body.style.overflow = 'hidden';
   const $ = (q) => root.querySelector(q);
   const pill = hrPill();
+  // גרירה של הלוח למטה / למעלה מקפלת ופותחת אותו (כמו לחיצה על הידית)
+  let grabY = null;
+  $('.panel').addEventListener('touchstart', (e) => { grabY = e.touches[0].clientY; }, { passive: true });
+  $('.panel').addEventListener('touchend', (e) => {
+    const dy = e.changedTouches[0].clientY - (grabY ?? e.changedTouches[0].clientY); grabY = null;
+    if (!root.classList.contains('map-full') || Math.abs(dy) < 40) return;
+    root.classList.toggle('panel-min', dy > 0); $('.panel-grab').setAttribute('aria-expanded', dy < 0); layoutMap();
+  }, { passive: true });
   $('#tot').after(pill);
   $('video').addEventListener('error', (e) => (e.target.style.display = 'none'));
   let sayT;
@@ -261,7 +270,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const measured = distM();
     const route = measured >= 200 ? simplifyPath(gps.path) : [];
     $('#mapBtn').hidden = true;
-    ended = true; root.classList.remove('map-full'); root.classList.add('run-ended');
+    ended = true; root.classList.remove('map-full', 'panel-min'); root.classList.add('run-ended');
     if (route.length > 1) { showMap(true); map.setMode('fit'); }
     else if (mapOn) layoutMap();
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">Average pace <b class="num">${fmtPace(dur / (measured / 1000))}</b> per km${splits.map((t, k) => ` · km ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
@@ -307,6 +316,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       return;
     }
     if (a === 'map') { showMap(!mapOn); set((s2) => { s2.settings.runMap = mapOn; return s2; }); return; }
+    // לוח הנתונים שמעל המפה: מקפלים אותו כדי לראות יותר מפה (נשארות שלוש הקוביות), ולחיצה נוספת מחזירה
+    if (a === 'panel') { const min = root.classList.toggle('panel-min'); t.setAttribute('aria-expanded', !min); layoutMap(); return; }
     if (a === 'zin' || a === 'zout') { map?.zoomBy(a === 'zin' ? 1 : -1); return; }
     if (a === 'mapmode') { if (!e.target.closest('a') && map) map.setMode(map.mode === 'fit' ? 'follow' : 'fit'); return; }
     if (a === 'pause') setPaused(!paused);

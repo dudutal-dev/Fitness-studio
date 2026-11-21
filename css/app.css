@@ -1264,3 +1264,10 @@ button.mi .tag { margin-inline-end: 4px; }
 .live.run-ended .rmap-tiles { filter: none; }
 .segs i.free { background: var(--acc); opacity: 0.55; } .run-kind.free { color: var(--acc-ink); }
 .free-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 2px; } .free-row .btn:only-child { grid-column: 1 / -1; }
+/* קיפול לוח הנתונים שמעל המפה: ידית בראש הלוח; במצב מקופל נשארות רק שלוש הקוביות (מרחק, קצב, דופק) */
+.panel-grab { display: none; }
+.live.map-full .panel-grab { display: block; width: 100%; height: 26px; margin: -8px 0 2px; background: none; }
+.panel-grab i { display: block; width: 44px; height: 5px; border-radius: 3px; margin: 0 auto; background: rgba(var(--fg-rgb), 0.35); }
+.live.map-full.panel-min .panel > *:not(.panel-grab):not(.run-stats) { display: none !important; }
+.live.map-full.panel-min .panel { padding-bottom: 10px; }
+.live.map-full.panel-min .run-stats { margin: 0; }
