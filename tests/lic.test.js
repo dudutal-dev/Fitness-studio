@@ -18,7 +18,7 @@ const DAY = 864e5;
 
 test('licences: admin password, issuing a link, one phone per link, expiry, revoke, reset', async () => {
   const env = makeEnv();
-  assert.deepEqual(APPS, ['lohem', 'studio', 'calisthenics', 'behind']);
+  assert.deepEqual(APPS, ['lohem', 'studio', 'calisthenics', 'behind', 'breathe']);
   // ברירת מחדל: האפליקציה פתוחה לכולם
   const cfg = async (app) => (await worker.fetch(new Request(`https://w.dev/lic/cfg?app=${app}`, { headers: { Origin: ORIGIN } }), env));
   const r0 = await cfg('studio'); assert.equal(r0.headers.get('Access-Control-Allow-Origin'), ORIGIN); assert.deepEqual(await r0.json(), { enforce: false });
@@ -38,7 +38,7 @@ test('licences: admin password, issuing a link, one phone per link, expiry, revo
   assert.ok(made.ok && /^P\.[a-z0-9]{8}\.[A-Za-z0-9_-]{22}$/.test(made.token));
   let list = await admin('list');
   assert.equal(list.passes.length, 1); assert.equal(list.passes[0].name, 'יוסי'); assert.equal(list.passes[0].token, made.token);
-  assert.ok(Math.abs(list.passes[0].exp - list.now - 30 * DAY) < 5000); assert.deepEqual(list.cfg, { lohem: false, studio: false, calisthenics: false, behind: false });
+  assert.ok(Math.abs(list.passes[0].exp - list.now - 30 * DAY) < 5000); assert.deepEqual(list.cfg, { lohem: false, studio: false, calisthenics: false, behind: false, breathe: false });
 
   // הפעלה: טלפון אחד בלבד, רק באפליקציה שלה הונפק, וחתימה מזויפת נדחית
   const A = 'phoneaaaa1', B = 'phonebbbb2';
