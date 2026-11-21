@@ -146,6 +146,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   function setPaused(v) {
     if (paused === v) return;
     paused = v; gps.pause(paused); setKeepAliveState(paused);
+    // בהשהיה גם המאמן והמוזיקה שותקים; בהמשך המוזיקה חוזרת
+    if (paused) { stop(); stopMusic(); } else if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS));
     $('#pauseBtn').innerHTML = paused ? `${icon('play', 'width="22" height="22"')} המשך` : `${icon('pause', 'width="22" height="22"')} השהה`;
     paused ? $('video').pause() : $('video').play().catch(() => {});
   }

@@ -1273,3 +1273,8 @@ button.mi .tag { margin-inline-end: 4px; }
 .live.map-full.panel-min .run-stats { margin: 0; }
 .route-img { display: block; width: 100%; border-radius: 14px; margin: 10px 0 8px; }
 .run-map.hist[hidden], .route-img[hidden] { display: none; }
+/* השהיה באימון החי */
+.paused-badge { display: none; position: absolute; z-index: 4; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 22px; border-radius: 999px; background: rgba(10, 14, 19, 0.82); color: #fff; font-weight: 900; font-size: 20px; letter-spacing: 0.02em; }
+.live.is-paused .paused-badge { display: block; }
+.live.is-paused .counter { opacity: 0.45; }
+.live.is-paused #pauseHud { background: var(--pri); color: var(--on-pri); }
