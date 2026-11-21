@@ -1,7 +1,7 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-20261121.150906';
+const VERSION = 'studio-20261121.174613';
 const MEDIA = 'studio-media-20261121.072352';
 const MEDIA_CACHE = 'studio-media';
 const MEDIA_TAG = 'x-studio-media';
@@ -50,8 +50,13 @@ self.addEventListener('fetch', (e) => {
   if (isMedia) {
     e.respondWith(caches.open(MEDIA_CACHE).then((c) => c.match(req)).then((hit) => {
       if (hit) {
-        // גרסת מדיה חדשה: מגישים את השמור ומרעננים ברקע (בקשה מותנית — אם הקובץ לא השתנה, כמעט בלי תעבורה)
-        if (hit.headers.get(MEDIA_TAG) !== MEDIA) e.waitUntil(fetch(req, { cache: 'no-cache' }).then((res) => putMedia(req, res)).catch(() => {}));
+        if (hit.headers.get(MEDIA_TAG) === MEDIA) return hit;
+        // גרסת מדיה חדשה. קול: קודם מהרשת (בקשה מותנית — אם הקובץ לא השתנה, כמעט בלי תעבורה), כדי שהקלטה שהוחלפה תישמע
+        // כבר בפעם הראשונה אחרי העדכון ולא רק בפעם שאחריה; בלי קליטה, או אם הרשת איטית — ההקלטה השמורה.
+        const fresh = fetch(req, { cache: 'no-cache' }).then((res) => { if (!res.ok) throw new Error('bad'); e.waitUntil(putMedia(req, res.clone()).catch(() => {})); return res; });
+        if (/\/assets\/voice(-en)?\//.test(url.pathname)) return Promise.race([fresh, new Promise((_, no) => setTimeout(no, 3000))]).catch(() => hit);
+        // סרטונים ומוזיקה (קבצים גדולים): מגישים את השמור ומרעננים ברקע
+        e.waitUntil(fresh.catch(() => {}));
         return hit;
       }
       return fetch(req).then((res) => { e.waitUntil(putMedia(req, res.clone()).catch(() => {})); return res; });
