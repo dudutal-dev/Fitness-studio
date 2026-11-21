@@ -106,7 +106,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     mapOn = v; $('#rmap').hidden = !v;
     $('video').style.visibility = $('.poster').style.visibility = v ? 'hidden' : '';
     $('#mapBtn').classList.toggle('off', !v); $('#mapBtn').setAttribute('aria-pressed', v);
-    if (v) { map ||= routeMap($('#rmap')); map.draw(gps.path, gps.here); }
+    if (v) { map ||= routeMap($('#rmap'), { anchor: 0.42, inset: 130 }); map.draw(gps.path, gps.here); }
   }
 
   function enterSeg() {

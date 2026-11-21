@@ -21,7 +21,8 @@ export function fitView(path, w, h, pad = 28, maxZ = 17) {
   return { z: 3, c };
 }
 
-export function routeMap(host, { zoom = 16 } = {}) {
+// anchor: היכן במסגרת (0–1 מלמעלה) יושב המרכז; inset: גובה שמוסתר בתחתית (כותרת ובועת המאמנת) ולא נחשב בהתאמת המסלול
+export function routeMap(host, { zoom = 16, anchor = 0.5, inset = 0 } = {}) {
   host.classList.add('rmap');
   host.innerHTML = `<div class="rmap-tiles"></div>
     <svg class="rmap-line" aria-hidden="true"><polyline class="edge"/><polyline class="path"/><circle class="a" r="5"/><circle class="halo" r="13"/><circle class="b" r="7"/></svg>
@@ -34,8 +35,8 @@ export function routeMap(host, { zoom = 16 } = {}) {
     last = { path, here };
     const w = host.clientWidth, h = host.clientHeight, at = here || path[path.length - 1];
     if (!w || !h || !at) return;
-    const v = mode === 'fit' && path.length > 1 ? fitView(path, w, h) : { z: zoom, c: at };
-    const [cx, cy] = project(v.c[0], v.c[1], v.z), ox = cx - w / 2, oy = cy - h / 2, n = 2 ** v.z;
+    const v = mode === 'fit' && path.length > 1 ? fitView(path, w, h - inset) : { z: zoom, c: at };
+    const [cx, cy] = project(v.c[0], v.c[1], v.z), ox = cx - w / 2, oy = cy - h * anchor, n = 2 ** v.z;
     const want = new Set();
     for (let x = Math.floor(ox / T); x <= Math.floor((ox + w) / T); x++) for (let y = Math.floor(oy / T); y <= Math.floor((oy + h) / T); y++) {
       if (y < 0 || y >= n) continue;
