@@ -8,6 +8,7 @@ export const NAMES = [
   { name: 'טל', en: 'Tal', he: '\u05d8\u05dc', slug: 'tal', sex: 'm', spoken: 'טַל' },
   { name: 'טל', en: 'Tal', he: '\u05d8\u05dc', slug: 'tal_f', sex: 'f', spoken: 'טַל' },
   { name: 'שירה', en: 'Shira', he: '\u05e9\u05d9\u05e8\u05d4', slug: 'shira', sex: 'f', spoken: 'שִׁירָה' },
+  { name: 'שרית', en: 'Sarit', he: '\u05e9\u05e8\u05d9\u05ea', slug: 'sarit', sex: 'f', spoken: 'שָׂרִית' },
   { name: 'יפעת', en: 'Yifat', he: '\u05d9\u05e4\u05e2\u05ea', slug: 'yifat', sex: 'f', spoken: 'יִפְעַת' },
   { name: 'דודו', en: 'Dudu', he: '\u05d3\u05d5\u05d3\u05d5', slug: 'dudu', sex: 'm', spoken: 'דוּדוּ' },
   { name: 'אלכס', en: 'Alex', he: '\u05d0\u05dc\u05db\u05e1', slug: 'alex', sex: 'm', spoken: 'אָלֶקְס' },

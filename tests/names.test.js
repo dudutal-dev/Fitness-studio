@@ -5,7 +5,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { NAMES, nameEntry } from '../js/data/names.js';
 
 test('עשרת השמות הנפוצים קיימים, ושם שמתאים לשני המינים מופיע פעמיים', () => {
-  for (const n of ['טל', 'שירה', 'עומר', 'יפעת', 'דודו', 'אלכס', 'עדי', 'ערן', 'אביב', 'זיו']) assert.ok(NAMES.some((x) => x.name === n), n);
+  for (const n of ['טל', 'שירה', 'עומר', 'יפעת', 'דודו', 'אלכס', 'עדי', 'ערן', 'אביב', 'זיו', 'שרית']) assert.ok(NAMES.some((x) => x.name === n), n);
   for (const n of ['טל', 'עומר', 'אלכס', 'עדי', 'אביב', 'זיו']) assert.deepEqual(NAMES.filter((x) => x.name === n).map((x) => x.sex).sort(), ['f', 'm'], n);
   assert.equal(new Set(NAMES.map((x) => x.slug)).size, NAMES.length);
 });

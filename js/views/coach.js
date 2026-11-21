@@ -125,6 +125,14 @@ export function renderCoach(root) {
       <div class="grid2"><button class="btn sm" data-export>${icon('download', 'width="16" height="16"')} גיבוי</button><label class="btn sm">${icon('upload', 'width="16" height="16"')} שחזור<input type="file" accept="application/json" hidden data-import></label></div>
       <button class="btn sm danger block" style="margin-top:10px" data-reset>איפוס מלא</button>
     </div>`)}
+    ${sec('about', 'אודות', 'פיתוח, זכויות יוצרים ותנאי שימוש', `<div class="about">
+      <p><b>${BRAND.name}</b> · גרסה <span class="num">${APP_VERSION}</span></p>
+      <p>פיתוח ועיצוב: <b>דודו טל</b></p>
+      <p>© 2026 דודו טל. כל הזכויות שמורות.</p>
+      <p>אין להעתיק, לשכפל, להפיץ, למכור או לעשות שימוש מסחרי באפליקציה או בכל חלק ממנה — הקוד, תוכניות האימון, הטקסטים, הדמויות, הקולות, הסרטונים והמוזיקה — בלי אישור בכתב מראש.</p>
+      <p>השימוש אישי בלבד, באמצעות קישור הפעלה אישי שאינו ניתן להעברה.</p>
+      <p>התוכן הוא מידע כללי ואינו ייעוץ רפואי או תזונתי. האימון באחריות המתאמן; לפני תחילת תוכנית אימונים מומלץ אישור רפואי.</p>
+      <p>הדמויות, ההדמיות והקולות נוצרו בבינה מלאכותית (ElevenLabs). המפות: © OpenStreetMap.</p></div>`)}
     <p class="sub" data-about style="text-align:center;font-size:12px;margin-top:18px">${licenseText() ? `${esc(licenseText())}<br>` : ''}${BRAND.name} · גרסה <span class="num">${APP_VERSION}</span> · מתעדכנת אוטומטית · דמויות, הדמיות וקולות נוצרו ב-AI (ElevenLabs)<br>לפני תחילת תוכנית אימונים מומלץ אישור רפואי.</p>`;
 
   root.querySelectorAll('details[data-sec]').forEach((d) => d.addEventListener('toggle', () => { d.open ? openSec.add(d.dataset.sec) : openSec.delete(d.dataset.sec); }));

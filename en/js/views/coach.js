@@ -125,6 +125,14 @@ export function renderCoach(root) {
       <div class="grid2"><button class="btn sm" data-export>${icon('download', 'width="16" height="16"')} Backup</button><label class="btn sm">${icon('upload', 'width="16" height="16"')} Restore<input type="file" accept="application/json" hidden data-import></label></div>
       <button class="btn sm danger block" style="margin-top:10px" data-reset>Full reset</button>
     </div>`)}
+    ${sec('about', 'About', 'Development, copyright and terms of use', `<div class="about">
+      <p><b>${BRAND.name}</b> · version <span class="num">${APP_VERSION}</span></p>
+      <p>Developed and designed by <b>Dudu Tal</b></p>
+      <p>© 2026 Dudu Tal. All rights reserved.</p>
+      <p>No part of this app — the code, training plans, texts, characters, voices, videos or music — may be copied, reproduced, distributed, sold or used commercially without prior written permission.</p>
+      <p>For personal use only, through a personal activation link that may not be transferred.</p>
+      <p>The content is general information, not medical or nutritional advice. You train at your own responsibility; medical clearance is recommended before starting a training program.</p>
+      <p>The characters, demonstrations and voices were created with AI (ElevenLabs). Maps: © OpenStreetMap.</p></div>`)}
     <p class="sub" data-about style="text-align:center;font-size:12px;margin-top:18px">${licenseText() ? `${esc(licenseText())}<br>` : ''}${BRAND.name} · version <span class="num">${APP_VERSION}</span> · updates automatically · characters, demos and voices were created with AI (ElevenLabs)<br>Medical clearance is recommended before starting a training program.</p>`;
 
   root.querySelectorAll('details[data-sec]').forEach((d) => d.addEventListener('toggle', () => { d.open ? openSec.add(d.dataset.sec) : openSec.delete(d.dataset.sec); }));
