@@ -78,3 +78,24 @@ export function pruneSent(sent, now = new Date()) {
   const cutoff = new Date(now - 7 * 864e5).toISOString().slice(0, 10);
   return Object.fromEntries(Object.entries(sent || {}).filter(([k]) => (k.split(':')[1] || '') >= cutoff));
 }
+
+// ───── יומן אימונים בשידור (מנוי webcal) ─────
+// הטלפון נרשם פעם אחת לכתובת /cal/<id>.ics, והיומן שלו מושך אותה מדי פעם — כך שינוי בימים או בשעות מגיע ליומן לבד.
+// rec: { settings: { workout: { on, days, time, times } }, title, desc, mins }. שעות מקומיות ("צפות"), כמו בקובץ שהאפליקציה מורידה.
+const ICS_DAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+const icsText = (t) => String(t || '').replace(/[\\;,]/g, (c) => '\\' + c).replace(/\r?\n/g, ' ').slice(0, 200);
+export function calendarICS(rec, now = new Date()) {
+  const w = rec?.settings?.workout || {}, pad = (n) => String(n).padStart(2, '0');
+  const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const days = (w.on ? w.days || [] : []).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
+  const byTime = {};
+  for (const d of days) { const t = /^\d{1,2}:\d{2}$/.test(w.times?.[d] || '') ? w.times[d] : /^\d{1,2}:\d{2}$/.test(w.time || '') ? w.time : '18:00'; (byTime[t] ||= []).push(d); }
+  const mins = Math.min(180, Math.max(10, Math.round(+rec?.mins || 60)));
+  const ev = Object.entries(byTime).map(([time, ds]) => {
+    const [h, m] = time.split(':').map(Number), first = Math.min(...ds.map((x) => (x - now.getUTCDay() + 7) % 7)), d = new Date(now.getTime() + first * 864e5);
+    return ['BEGIN:VEVENT', `UID:workout-${pad(h)}${pad(m)}@mova-cal`, `DTSTAMP:${stamp}`, `DTSTART:${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(h)}${pad(m)}00`, `DURATION:PT${mins}M`,
+      `RRULE:FREQ=WEEKLY;BYDAY=${ds.map((x) => ICS_DAYS[x]).join(',')}`, `SUMMARY:${icsText(rec.title || 'Workout')}`, `DESCRIPTION:${icsText(rec.desc)}`,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsText(rec.title || 'Workout')}`, 'TRIGGER:-PT15M', 'END:VALARM', 'END:VEVENT'].join('\r\n');
+  });
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MOVA//Workouts//HE', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsText(rec.calName || rec.title || 'Workouts')}`, 'REFRESH-INTERVAL;VALUE=DURATION:PT1H', 'X-PUBLISHED-TTL:PT1H', ...ev, 'END:VCALENDAR'].join('\r\n');
+}

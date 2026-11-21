@@ -2,7 +2,7 @@
 // שומר מנויי Push ושולח תזכורות לפי לוח זמנים (קרון כל 5 דקות), ומנהל קישורי הפעלה אישיים (lic.js, נתיבי /lic/…).
 // סודות/הגדרות: VAPID_PUBLIC (טקסט), VAPID_PRIVATE_JWK (סוד), VAPID_SUBJECT; KV: SUBS
 import { sendPush } from './webpush.js';
-import { dueReminders, pruneSent, COACH } from './schedule.js';
+import { dueReminders, pruneSent, COACH, calendarICS } from './schedule.js';
 import { lic } from './lic.js';
 import { breathe } from './breathe.js';
 
@@ -33,6 +33,12 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
     const url = new URL(req.url);
     if (req.method === 'GET' && url.pathname === '/') return json(req, { ok: true, service: 'lohem-reminders', vapid: env.VAPID_PUBLIC });
+    // יומן אימונים בשידור: הטלפון מושך את הכתובת הזאת (מנוי webcal). רק ימים ושעות — בלי תוכן האימונים
+    if (req.method === 'GET' && url.pathname.startsWith('/cal/')) {
+      const id = url.pathname.slice(5).replace(/\.ics$/, ''), rec = validId(id) ? JSON.parse((await env.SUBS.get(`cal:${id}`)) || 'null') : null;
+      if (!rec) return new Response('not found', { status: 404 });
+      return new Response(calendarICS(rec), { headers: { 'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'public, max-age=900' } });
+    }
     if (url.pathname.startsWith('/lic/')) return lic(req, env, url, (data, status) => json(req, data, status));   // קישורי הפעלה
     if (url.pathname.startsWith('/breathe/')) return breathe(req, env, url, (data, status) => json(req, data, status), cors(req));   // המדיה של "נשימה"
     if (req.method !== 'POST') return json(req, { error: 'method' }, 405);
@@ -45,6 +51,13 @@ export default {
       const id = validId(b.id) ? b.id : crypto.randomUUID();
       const prev = JSON.parse((await env.SUBS.get(`sub:${id}`)) || '{}');
       await env.SUBS.put(`sub:${id}`, JSON.stringify({ ...prev, ...clean(b), subscription: sub, lastWorkout: b.lastWorkout || prev.lastWorkout || null, sent: prev.sent || {}, created: prev.created || new Date().toISOString() }));
+      return json(req, { id });
+    }
+    if (url.pathname === '/cal/set') {   // שמירת הלוח לשידור. נשמר 400 יום מהעדכון האחרון
+      const id = validId(b.id) ? b.id : crypto.randomUUID(), w = b.settings?.workout || {};
+      const rec = { settings: { workout: { on: !!w.on, days: (Array.isArray(w.days) ? w.days : []).slice(0, 7), time: String(w.time || '18:00').slice(0, 5), times: Object.fromEntries(Object.entries(w.times || {}).slice(0, 7).map(([k, v]) => [k, String(v).slice(0, 5)])) } },
+        title: String(b.title || '').slice(0, 80), desc: String(b.desc || '').slice(0, 200), calName: String(b.calName || '').slice(0, 40), mins: +b.mins || 60 };
+      await env.SUBS.put(`cal:${id}`, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
       return json(req, { id });
     }
     if (!validId(b.id)) return json(req, { error: 'id' }, 400);

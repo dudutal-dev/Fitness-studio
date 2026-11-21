@@ -73,5 +73,16 @@
  "האימון של היום מחכה.": "Today's workout is waiting.",
  "מתחילים": "Let's start",
  "בעוד רבע שעה": "In 15 minutes",
- "לא היום": "Not today"
+ "לא היום": "Not today",
+ "שידור ליומן של הטלפון": "Sync to phone calendar",
+ "היומן מחובר — שינוי בימים או בשעות מגיע אליו לבד.": "Calendar connected — changes to days or times reach it automatically.",
+ "מתחברים פעם אחת, ומעכשיו כל שינוי כאן מגיע ליומן לבד.": "Connect once, and from then on every change here reaches your calendar automatically.",
+ "או: הוספה חד־פעמית כקובץ": "Or: add once as a file",
+ "לא הצלחתי לחבר את היומן — צריך חיבור לרשת": "Could not connect the calendar — a network connection is needed",
+ "חיבור ליומן": "Connect calendar",
+ "נפתח היומן של הטלפון עם הצעה להירשם ליומן האימונים. מאשרים פעם אחת — ומעכשיו האימונים מופיעים בו, עם התראה רבע שעה לפני, ומתעדכנים לבד כשמשנים ימים או שעות.": "Your phone's calendar opens with an offer to subscribe to the workout calendar. Confirm once — from then on your workouts appear in it, with an alert 15 minutes before, and update automatically when you change days or times.",
+ "פתיחת היומן": "Open calendar",
+ "לא נפתח? אפשר להוסיף ידנית: ביומן בוחרים \"הוספת יומן לפי כתובת\" ומדביקים את הכתובת.": "Didn't open? You can add it manually: in your calendar choose \"Add calendar by URL\" and paste the address.",
+ "העתקת הכתובת": "Copy address",
+ "הכתובת הועתקה": "Address copied"
 }

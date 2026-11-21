@@ -2,7 +2,7 @@
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
 import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
-import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue } from '../reminders.js';
+import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue, calendarFeed, isIOS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
 
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -100,7 +100,9 @@ export function scheduleSheet(rerender) {
       <input class="input num" type="time" data-stime="${i}" value="${workoutTime(st, i)}" ${on ? '' : 'disabled'} aria-label="Workout time on ${d}"></div>`; }).join(''); };
   sheet(html`<div class="h1" style="font-size:22px">Days and times</div><p class="sub">When do you train? Pick the days, and a time for each. Reminders follow this schedule.</p>
     <div data-srows>${rows()}</div>
-    <button class="btn primary block" style="margin-top:14px" data-scal>Add to phone calendar</button>
+    <button class="btn primary block" style="margin-top:14px" data-sfeed>Sync to phone calendar</button>
+    <p class="sub" style="text-align:center;margin:6px 0 0;font-size:12px">${reminders().calId ? 'Calendar connected — changes to days or times reach it automatically.' : 'Connect once, and from then on every change here reaches your calendar automatically.'}</p>
+    <button class="btn sm ghost block" style="margin-top:6px" data-scal>Or: add once as a file</button>
     ${reminders().enabled ? '<p class="sub" style="text-align:center;margin-top:10px">Reminders are on — they will arrive at these times.</p>'
     : needsInstall() || !pushSupported() ? '<p class="sub" style="text-align:center;margin-top:10px">While the app is open, a reminder appears at workout time. For reminders when it is closed too: install it on the Home Screen and turn them on in Settings, or add the workouts to your calendar.</p>'
     : '<button class="btn block" style="margin-top:8px" data-spush>Turn on reminders when the app is closed too</button>'}
@@ -109,12 +111,37 @@ export function scheduleSheet(rerender) {
       const paint = () => { sh.querySelector('[data-srows]').innerHTML = rows(); };
       on(sh, 'click', '[data-sday]', (e, b) => { const d = Number(b.dataset.sday); save((w) => { const i = w.days.indexOf(d); if (i >= 0) w.days.splice(i, 1); else w.days.push(d); }); paint(); });
       sh.addEventListener('change', (e) => { const t = e.target; if (t.dataset.stime === undefined || !t.value) return; save((w) => { w.times[Number(t.dataset.stime)] = t.value; }); });
+      on(sh, 'click', '[data-sfeed]', async (e, b) => {
+        if (!cur().workout?.days?.length) return toast('Pick at least one day first');
+        b.disabled = true;
+        try {
+          const p = get().profile, ns = get().plan?.week?.sessions?.[0];
+          const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
+          const web = url.replace(/^https?:/, 'webcal:');
+          // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
+          const go = isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`;
+          feedSheet(url, go);
+        } catch { toast('Could not connect the calendar — a network connection is needed', 4000); }
+        b.disabled = false;
+      });
       on(sh, 'click', '[data-scal]', () => { if (!cur().workout?.days?.length) return toast('Pick at least one day first'); downloadICS(); });
       on(sh, 'click', '[data-spush]', async (e, b) => { b.disabled = true; b.textContent = 'Turning on…';
         try { await enableReminders(); toast('Reminders are on'); b.remove(); } catch (err) { b.disabled = false; b.textContent = 'Turn on reminders when the app is closed too'; toast(err.message === 'denied' ? 'Notifications weren\'t allowed. You can allow them in the phone\'s Settings → Notifications.' : `Couldn't turn on: ${err.message}`, 4500); } });
       void close;
     },
     onClose: () => rerender?.(),   // בכל סגירה (כפתור, גרירה, לחיצה בחוץ) המסך שמתחת מתעדכן
+  });
+}
+
+// אחרי שהלוח נשמר בשרת: כפתור שפותח את היומן של הטלפון, והכתובת עצמה למי שרוצה להוסיף ידנית
+function feedSheet(url, go) {
+  sheet(html`<div class="h1" style="font-size:22px">Connect calendar</div>
+    <p class="sub">Your phone's calendar opens with an offer to subscribe to the workout calendar. Confirm once — from then on your workouts appear in it, with an alert 15 minutes before, and update automatically when you change days or times.</p>
+    <a class="btn primary block xl" style="margin-top:12px" href="${go}" target="_blank" rel="noopener" data-fgo>Open calendar</a>
+    <p class="sub" style="margin-top:12px;font-size:12px">Didn't open? You can add it manually: in your calendar choose "Add calendar by URL" and paste the address.</p>
+    <button class="btn sm block" data-fcopy>Copy address</button>
+    <button class="btn ghost block" style="margin-top:8px" data-close>Done</button>`, {
+    onMount(sh) { on(sh, 'click', '[data-fcopy]', () => { navigator.clipboard?.writeText(url).then(() => toast('Address copied'), () => toast(url, 6000)); }); },
   });
 }
 

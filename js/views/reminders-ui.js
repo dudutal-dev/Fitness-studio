@@ -2,7 +2,7 @@
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
 import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
-import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue } from '../reminders.js';
+import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue, calendarFeed, isIOS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
 
 const DAY_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
@@ -100,7 +100,9 @@ export function scheduleSheet(rerender) {
       <input class="input num" type="time" data-stime="${i}" value="${workoutTime(st, i)}" ${on ? '' : 'disabled'} aria-label="שעת האימון ביום ${d}"></div>`; }).join(''); };
   sheet(html`<div class="h1" style="font-size:22px">ימים ושעות</div><p class="sub">מתי מתאמנים? בוחרים ימים, ולכל יום שעה. לפי זה נשלחות התזכורות.</p>
     <div data-srows>${rows()}</div>
-    <button class="btn primary block" style="margin-top:14px" data-scal>הוספה ליומן של הטלפון</button>
+    <button class="btn primary block" style="margin-top:14px" data-sfeed>שידור ליומן של הטלפון</button>
+    <p class="sub" style="text-align:center;margin:6px 0 0;font-size:12px">${reminders().calId ? 'היומן מחובר — שינוי בימים או בשעות מגיע אליו לבד.' : 'מתחברים פעם אחת, ומעכשיו כל שינוי כאן מגיע ליומן לבד.'}</p>
+    <button class="btn sm ghost block" style="margin-top:6px" data-scal>או: הוספה חד־פעמית כקובץ</button>
     ${reminders().enabled ? '<p class="sub" style="text-align:center;margin-top:10px">התזכורות פעילות — יגיעו לפי השעות האלה.</p>'
     : needsInstall() || !pushSupported() ? '<p class="sub" style="text-align:center;margin-top:10px">כשהאפליקציה פתוחה תופיע תזכורת בשעת האימון. לתזכורות גם כשהיא סגורה: להתקין במסך הבית ולהפעיל בהגדרות, או להוסיף ליומן.</p>'
     : '<button class="btn block" style="margin-top:8px" data-spush>הפעלת תזכורות גם כשהאפליקציה סגורה</button>'}
@@ -109,12 +111,37 @@ export function scheduleSheet(rerender) {
       const paint = () => { sh.querySelector('[data-srows]').innerHTML = rows(); };
       on(sh, 'click', '[data-sday]', (e, b) => { const d = Number(b.dataset.sday); save((w) => { const i = w.days.indexOf(d); if (i >= 0) w.days.splice(i, 1); else w.days.push(d); }); paint(); });
       sh.addEventListener('change', (e) => { const t = e.target; if (t.dataset.stime === undefined || !t.value) return; save((w) => { w.times[Number(t.dataset.stime)] = t.value; }); });
+      on(sh, 'click', '[data-sfeed]', async (e, b) => {
+        if (!cur().workout?.days?.length) return toast('קודם לבחור לפחות יום אחד');
+        b.disabled = true;
+        try {
+          const p = get().profile, ns = get().plan?.week?.sessions?.[0];
+          const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
+          const web = url.replace(/^https?:/, 'webcal:');
+          // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
+          const go = isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`;
+          feedSheet(url, go);
+        } catch { toast('לא הצלחתי לחבר את היומן — צריך חיבור לרשת', 4000); }
+        b.disabled = false;
+      });
       on(sh, 'click', '[data-scal]', () => { if (!cur().workout?.days?.length) return toast('קודם לבחור לפחות יום אחד'); downloadICS(); });
       on(sh, 'click', '[data-spush]', async (e, b) => { b.disabled = true; b.textContent = 'מפעיל…';
         try { await enableReminders(); toast('התזכורות פעילות'); b.remove(); } catch (err) { b.disabled = false; b.textContent = 'הפעלת תזכורות גם כשהאפליקציה סגורה'; toast(err.message === 'denied' ? 'לא אושרו התראות. אפשר לאשר בהגדרות הטלפון ← התראות.' : `לא הצלחתי להפעיל: ${err.message}`, 4500); } });
       void close;
     },
     onClose: () => rerender?.(),   // בכל סגירה (כפתור, גרירה, לחיצה בחוץ) המסך שמתחת מתעדכן
+  });
+}
+
+// אחרי שהלוח נשמר בשרת: כפתור שפותח את היומן של הטלפון, והכתובת עצמה למי שרוצה להוסיף ידנית
+function feedSheet(url, go) {
+  sheet(html`<div class="h1" style="font-size:22px">חיבור ליומן</div>
+    <p class="sub">נפתח היומן של הטלפון עם הצעה להירשם ליומן האימונים. מאשרים פעם אחת — ומעכשיו האימונים מופיעים בו, עם התראה רבע שעה לפני, ומתעדכנים לבד כשמשנים ימים או שעות.</p>
+    <a class="btn primary block xl" style="margin-top:12px" href="${go}" target="_blank" rel="noopener" data-fgo>פתיחת היומן</a>
+    <p class="sub" style="margin-top:12px;font-size:12px">לא נפתח? אפשר להוסיף ידנית: ביומן בוחרים "הוספת יומן לפי כתובת" ומדביקים את הכתובת.</p>
+    <button class="btn sm block" data-fcopy>העתקת הכתובת</button>
+    <button class="btn ghost block" style="margin-top:8px" data-close>סיום</button>`, {
+    onMount(sh) { on(sh, 'click', '[data-fcopy]', () => { navigator.clipboard?.writeText(url).then(() => toast('הכתובת הועתקה'), () => toast(url, 6000)); }); },
   });
 }
 

@@ -173,3 +173,24 @@ test('licences: feature usage — names and counters only, per link and per app,
   assert.deepEqual((await call('admin', { pw, op: 'stats', app: 'lohem' }, t0)).stats.ev, {});
   await call('admin', { pw, op: 'stats-reset', app: 'studio' }, t0); assert.deepEqual((await call('admin', { pw, op: 'stats', app: 'studio' }, t0)).stats.ev, {});
 });
+
+test('calendar feed: the schedule is stored and served as a subscribable calendar that follows changes', async () => {
+  const env = makeEnv();
+  const call = async (path, body) => (await worker.fetch(new Request(`https://w.dev${path}`, { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify(body) }), env)).json();
+  const get = (id) => worker.fetch(new Request(`https://w.dev/cal/${id}.ics`), env);
+  const { id } = await call('/cal/set', { settings: { workout: { on: true, days: [0, 2, 4], time: '18:00', times: { 2: '07:15' } } }, title: '💪 אימון ב־MOVA — דנה', desc: 'יעל מחכה, באפליקציה', calName: 'MOVA', mins: 45 });
+  assert.match(id, /^[a-f0-9-]{36}$/);
+  let r = await get(id); assert.equal(r.status, 200); assert.match(r.headers.get('content-type'), /text\/calendar/);
+  let ics = await r.text();
+  assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 2);
+  assert.match(ics, /RRULE:FREQ=WEEKLY;BYDAY=SU,TH/); assert.match(ics, /RRULE:FREQ=WEEKLY;BYDAY=TU/); assert.match(ics, /T071500/); assert.match(ics, /T180000/);
+  assert.match(ics, /DURATION:PT45M/); assert.match(ics, /TRIGGER:-PT15M/); assert.match(ics, /SUMMARY:💪 אימון ב־MOVA — דנה/); assert.match(ics, /DESCRIPTION:יעל מחכה\\, באפליקציה/);
+  // שינוי בלוח מגיע לאותה כתובת
+  assert.equal((await call('/cal/set', { id, settings: { workout: { on: true, days: [5], time: '06:30' } }, title: 'x' })).id, id);
+  ics = await (await get(id)).text(); assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 1); assert.match(ics, /BYDAY=FR/); assert.match(ics, /T063000/);
+  // תזכורות כבויות — יומן ריק אבל תקין; כתובת לא קיימת — 404; שום דבר מעבר לימים, שעות וכותרת לא נשמר
+  await call('/cal/set', { id, settings: { workout: { on: false, days: [5], time: '06:30' } }, weight: 82, name: 'דנה כהן' });
+  ics = await (await get(id)).text(); assert.match(ics, /BEGIN:VCALENDAR/); assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 0);
+  assert.deepEqual(Object.keys(JSON.parse(env.kv.get('cal:' + id))).sort(), ['calName', 'desc', 'mins', 'settings', 'title']);
+  assert.equal((await get('00000000-0000-0000-0000-000000000000')).status, 404); assert.equal((await get('nope')).status, 404);
+});

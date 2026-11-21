@@ -66,7 +66,19 @@ let t;
 export function saveReminderSettings(settings) {
   set((s) => { s.reminders = { ...reminders(), settings }; return s; });
   clearTimeout(t);
-  t = setTimeout(() => syncReminders().catch(() => {}), 800);
+  t = setTimeout(() => { syncReminders().catch(() => {}); if (reminders().calId) calendarFeed().catch(() => {}); }, 800);   // גם היומן שבשידור מתעדכן
+}
+
+// ───── יומן אימונים בשידור ─────
+// הלוח (ימים ושעות בלבד) נשמר בשרת, והטלפון נרשם לכתובת שלו כיומן — כך כל שינוי כאן מגיע ליומן לבד, בלי להוסיף שוב.
+// מחזיר את כתובת היומן (https). opts: { name, coach, mins } — לכותרת האירוע ולאורכו.
+export async function calendarFeed(opts = {}) {
+  const r = reminders(), last = get().calOpts || {}, o = { ...last, ...opts };
+  const sample = buildICS({ workout: { on: true, days: [0], time: '18:00' } }, o);   // הכותרת והתיאור — באותו נוסח של הקובץ
+  const pick = (k) => (sample.match(new RegExp(`^${k}:(.*)$`, 'm')) || [])[1] || '';
+  const { id } = await post('/cal/set', { id: r.calId || undefined, settings: { workout: r.settings.workout }, title: pick('SUMMARY'), desc: pick('DESCRIPTION'), calName: pick('X-WR-CALNAME'), mins: o.mins || 60 });
+  set((s) => { s.reminders = { ...reminders(), calId: id }; s.calOpts = o; return s; });
+  return `${WORKER}/cal/${id}.ics`;
 }
 
 export async function syncReminders() {
