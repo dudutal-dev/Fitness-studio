@@ -16,6 +16,7 @@ const runMood = (kind, walk) => (kind === 'warm' ? 'warm' : kind === 'cool' ? 'c
 import { gpsTracker, simplifyPath } from '../devices/gps.js';
 import { routeMap } from '../ui/map.js';
 import { track } from '../usage.js';
+import { ctxStart, ctxEnd } from '../coach/context.js';
 import { renderRouteImage, saveRouteImage, shareRouteImage } from '../ui/route-image.js';
 import { keepAlive, releaseKeepAlive, setKeepAliveState } from '../coach/keepalive.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
@@ -272,6 +273,12 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     gps.stop();
     const hr = hrRec.stop();
     if (!testSec) { stop(); say(walkS ? 'walk_done' : 'run_done', { priority: true }); } else say('run_done');
+    // משפט אחד בהקשר בסיום: השבוע נסגר, פעילות עשירית, פעילות ארוכה (הריצה נשמרת רק אחרי הדירוג, ולכן plus: 1)
+    if ((walkS || runCoach) && !testSec) {
+      const st0 = get(), tot = st0.plan?.week?.sessions?.length || 0, did = st0.plan?.completedDays || [];
+      const weekDone = day != null && (isRun(st0.profile) || isWalk(st0.profile) || extra) && !did.includes(day) && tot >= 2 && did.length === tot - 1;
+      const ce = ctxEnd(coach, { weekDone, durSec: Math.round(elapsed / 1000), plannedMin: totalPlanned / 60, plus: 1 }); if (ce) say(ce);
+    }
     confetti(90);
     const dur = Math.round(elapsed / 1000);
     const measured = distM();
@@ -348,7 +355,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   });
 
   if (walkS) say('walk_hello', { priority: true });
-  else if (runCoach && run.type !== 'test') say(`hello_${coach}`, { priority: true });   // מאמני הריצה מברכים בפתיחה, ובשם
+  else if (runCoach && run.type !== 'test') say(`hello_${coach}`, { priority: true });
+  if ((walkS || runCoach) && run.type !== 'test') { const c0 = ctxStart(coach); if (c0) say(c0); }   // משפט אחד בהקשר, אחרי הברכה   // מאמני הריצה מברכים בפתיחה, ובשם
   keepAlive({ title: run.name, artist: COACHES[coach].name, artwork: COACHES[coach].face, togglePause: setPaused });   // ממשיך גם כשהמסך נעול
   enterSeg();
   timer = setInterval(tick, 250);

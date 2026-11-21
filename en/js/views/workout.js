@@ -1,5 +1,6 @@
 // מצב אימון חי: הדגמת וידאו של המאמן, ספירת חזרות בטמפו עם קול, מדידת מנוחות, רישום ביצועים
 // והתאמת משקל בזמן אמת (אוטו־רגולציה בין סטים).
+import { ctxStart, ctxMid, ctxEnd } from '../coach/context.js';
 import { track } from '../usage.js';
 import { keepAlive, releaseKeepAlive, setKeepAliveState } from '../coach/keepalive.js';
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, ib } from '../ui/dom.js';
@@ -422,7 +423,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   function setPaused(v) {
     if (!!pausedAt === v) return;
     if (v) { pausedAt = Date.now(); stop(); video.pause(); stopMusic(); }
-    else { pauseShift += Date.now() - pausedAt; pausedAt = 0; video.play().catch(() => {}); if (musicOn()) startMusic(musicMood()); }
+    else { if (Date.now() - pausedAt > 20000) { const cr = ctxMid('resume', coach); if (cr) say(cr); } pauseShift += Date.now() - pausedAt; pausedAt = 0; video.play().catch(() => {}); if (musicOn()) startMusic(musicMood()); }
     root.classList.toggle('is-paused', v); setKeepAliveState(v);
     $('#pauseHud').innerHTML = icon(v ? 'play' : 'pause', 'width="20" height="20"'); $('#pauseHud').setAttribute('aria-pressed', v);
     const main = $('[data-pause-main]'); if (main) main.innerHTML = v ? `${icon('play', 'width="22" height="22"')} Resume` : `${icon('pause', 'width="22" height="22"')} Pause`;
@@ -458,6 +459,10 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     }
     if (k >= steps.length - 1) return finish();
     k++;
+    // באמצע האימון: "חצי מאחורינו"; ובכניסה לתרגיל האחרון (לא מתיחות): "תרגיל אחרון"
+    { const mainIdx = items.map((x, j) => (['warmup', 'cooldown'].includes(x.role) ? -1 : j)).filter((j) => j >= 0), lastMain = mainIdx[mainIdx.length - 1];
+      const cm = steps[k].ii === lastMain && steps[k - 1].ii !== lastMain && mainIdx.length > 2 ? ctxMid('last_ex', coach) : k === Math.ceil(steps.length / 2) && steps.length >= 8 ? ctxMid('half', coach) : null;
+      if (cm) say(cm); }
     rest(it.rest);
   }
 
@@ -487,7 +492,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       say(`ex_${nIt.exId}`);
     } else if (autoNext) { showExercise(); paintTop(); if (prevRole === nIt.role) say('next_ex'); say(`ex_${nIt.exId}`); }
     else if (!autoNext && prevRole !== 'warmup') say('set_done');
-    if (secs >= 40 && !autoNext) say(Math.random() < 0.45 ? MOTIVATION_KEYS[Math.floor(Math.random() * MOTIVATION_KEYS.length)] : 'rest');
+    if (secs >= 40 && !autoNext) say(Math.random() < 0.25 ? MOTIVATION_KEYS[Math.floor(Math.random() * MOTIVATION_KEYS.length)] : 'rest');
     const p = $('.panel');
     p.innerHTML = html`<div class="counter">${ring(1, { size: 190, stroke: 14, big: fmtTime(secs), lbl: autoNext ? (nIt.role === 'hiit' && prevRole === 'hiit' ? 'rest' : nIt.role === 'mob' ? 'moving on' : 'get ready') : 'rest', color: 'var(--acc)' })}</div>
       <div class="row"><button class="btn sm" data-act="rest-minus">−15</button><span class="spacer"></span>
@@ -592,6 +597,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     say(prs.length ? 'pr' : 'workout_done', { priority: true });
     if (prs.length) say('workout_done');
     if (ladderChanges.some((c) => c.type === 'up')) say('rung_up'); else if (ladderChanges.some((c) => c.type === 'gated')) say('rung_wait');
+    { const ce = ctxEnd(coach, { partial, weekDone: !!weekMsg, durSec: dur, plannedMin: workout.minutes || 0 }); if (ce) say(ce); }   // סגירת שבוע, אימון עשירי, אימון ארוך…
     confetti(prs.length ? 140 : 80);
     try { wakeLock?.release(); } catch { /* */ }
     releaseKeepAlive();
@@ -708,6 +714,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   on(root, 'click', '[data-rpe]', (e, t) => {
     setLog().rpe = Number(t.dataset.rpe);
     vibrate(20);
+    { const r = setLog().rpe, cm = ctxMid(r >= 10 ? 'max' : r <= 6.5 ? 'easy' : '-', coach); if (cm) say(cm); }
     afterLog();
   });
 
@@ -733,7 +740,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
           L.sg = sg;
           L.sets.forEach((x) => { if (!x.done) { x.w = sg.w || 0; x.reps = sg.reps; } });
           lastExShown = -1;
-          closeSheet(); say(`ex_${id}`, { priority: true }); paint();
+          closeSheet(); say(`ex_${id}`, { priority: true }); { const cs = ctxMid('swap', coach); if (cs) say(cs); } paint();
         });
       },
     });
@@ -773,6 +780,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   }
   say(pilW ? 'pil_hello' : `hello_${coach}`, { priority: true });
   if (items[0].role === 'warmup') say('warm_intro');
+  { const c0 = ctxStart(coach); if (c0) say(c0); }   // משפט אחד בהקשר: אימון ראשון, חזרה אחרי הפסקה, בוקר מוקדם…
   if (flowW) say('mob_intro');
   // התרגיל הראשון: כשהוא תנועת חימום / מתיחה לפי זמן, המאמן מציג אותו רק כשלוחצים "התחל" — לא לפני, ולא פעמיים
   if (!deferFirst) say(`ex_${items[0].exId}`);

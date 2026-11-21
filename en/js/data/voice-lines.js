@@ -83,6 +83,27 @@ const lines = {
   // צ׳ק־אין
   checkin_low: 'Got it. Today we\'ll ease the load a little and keep the quality. That\'s part of the plan.',
   checkin_high: '[excited] Great energy! Today we go all in!',
+  // ───── משפטים בהקשר (js/coach/context.js): נאמרים רק כשהתנאי נכון, ולא יותר מפעם בשבועיים. ניטרליים למין המתאמן ─────
+  ctx_first: 'This is our first workout. We go slowly and learn the movements.',
+  ctx_back: 'Good to be back. We start easy — the body remembers.',
+  ctx_third: 'Third workout this week. That\'s what consistency looks like.',
+  ctx_weeklast: 'One more workout, and the week is done.',
+  ctx_early: 'A morning workout. The day is already off to a good start.',
+  ctx_late: 'A workout at the end of a long day. Well done for showing up.',
+  ctx_after_pr: 'Last time a record was broken. Today we hold that level.',
+  ctx_after_hard: 'Last time was hard. Today we work with a bit more control.',
+  ctx_easy: 'Too easy? We add on the next set.',
+  ctx_max: 'That was everything. Now breathe until the rest is over.',
+  ctx_half: 'Half the workout is behind us. The second half always goes faster.',
+  ctx_last_ex: 'Last exercise. Finish clean.',
+  ctx_resume: 'We\'re back. Picking up where we left off.',
+  ctx_swap: 'All good, we adapt. What matters is that the muscle works.',
+  ctx_week_done: 'The week is done. Tomorrow is rest — it\'s part of the training.',
+  ctx_long: 'That was a long workout. Drink water and eat something.',
+  ctx_n10: 'This is our tenth workout together.',
+  ctx_n50: 'Fifty workouts together. This is a way of life now.',
+  ctx_n100: '[excited] A hundred workouts together! Well done.',
+  ctx_short: 'A short workout counts too. See you next time.',
   // קליסתניקס (מאיה בלבד)
   skill_intro: 'We start with skill work, while the body is fresh. Quality before quantity.',
   rung_up: '[excited] You\'ve moved up the ladder! From the next workout — a harder variation.',
@@ -254,8 +275,32 @@ export const COACH_LINES = {
 };
 const coachTrack = (coach) => COACHES[coach]?.track || 'gym';
 // האם המאמן אומר את המשפט הזה בכלל (לא מייצרים ולא מורידים קליפים שלא יושמעו לעולם)
+// משפטים בהקשר: לכל מאמן נוסח שמתאים לאופי ולתחום שלו
+Object.assign(COACH_LINES.yael, {
+  ctx_first: 'This is our first class. There\'s no rush — just listen to your body.', ctx_back: 'Good to be back on the mat. We start gently.', ctx_third: 'Third class this week. The body already feels it.',
+  ctx_weeklast: 'One more class, and the week is complete.', ctx_early: 'A morning practice. A good way to open the day.', ctx_late: 'An evening practice. Letting go of the day that was.',
+  ctx_half: 'Half the class is behind us. We continue with the same breath.', ctx_last_ex: 'Last pose. Stay with the breath.', ctx_resume: 'Coming back. One breath, and we continue.',
+  ctx_week_done: 'The week is complete. Tomorrow we rest.', ctx_long: 'That was a long class. Drink water and rest a little.', ctx_n10: 'This is our tenth class together.', ctx_n50: 'Fifty classes together. This is a path now.', ctx_n100: 'A hundred classes together. Thank you for the journey.',
+  ctx_short: 'A short practice is still a practice. See you soon.',
+});
+Object.assign(COACH_LINES.mei, {
+  ctx_first: 'This is our first practice. Slowly, in small steps.', ctx_back: 'Good to be back. We start slowly, as always.', ctx_third: 'Third practice this week. This is how balance is built.',
+  ctx_weeklast: 'One more practice, and the week is complete.', ctx_early: 'A morning practice. The body wakes up slowly.', ctx_late: 'An evening practice. Calming the body for the night.',
+  ctx_half: 'Half the practice is behind us. We continue slowly.', ctx_last_ex: 'Last movement. Slowly, all the way through.', ctx_resume: 'Coming back. Slowly, and we continue.',
+  ctx_week_done: 'The week is complete. Tomorrow we rest.', ctx_long: 'That was a long practice. Drink water and sit for a moment.', ctx_n10: 'This is our tenth practice together.', ctx_n50: 'Fifty practices together. This is a good habit now.', ctx_n100: 'A hundred practices together. Well done for sticking with it.',
+  ctx_short: 'A short practice counts too. See you soon.',
+});
+Object.assign(COACH_LINES.tamar, {
+  ctx_first: 'This is our first session. We move slowly, and only as far as feels comfortable.', ctx_back: 'Good to be back. We start gently — the range comes back quickly.', ctx_half: 'Halfway there. We continue slowly, and breathe.',
+  ctx_last_ex: 'Last exercise. Slowly, with the breath.', ctx_resume: 'Coming back. A breath, and we continue.', ctx_week_done: 'The week is done. Tomorrow we let the body rest.', ctx_short: 'Even a few minutes are good for the body. See you soon.',
+});
+Object.assign(COACH_LINES.guy, { ctx_first: 'This is our first run. An easy pace, no rush.', ctx_back: 'Good to be running again. We start easy — the legs remember.', ctx_long: 'That was a long run. Drink water and eat something.' });
+// מי אומר איזה משפט־הקשר: דירוג סט והחלפת תרגיל — רק במסלולים שיש בהם סטים (חדר כושר וקליסתניקס); השאר — כולם
+const CTX_SETS = ['ctx_easy', 'ctx_max', 'ctx_swap'];
+
 export function coachSays(key, coach) {
   const track = coachTrack(coach), cali = track === 'cali';
+  if (key.startsWith('ctx_')) return !CTX_SETS.includes(key) || track === 'gym' || cali;
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
   if (key.startsWith('tc_')) return track === 'tai';
