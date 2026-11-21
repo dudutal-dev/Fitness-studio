@@ -1,7 +1,7 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-en-20261121.135851';
+const VERSION = 'studio-en-20261121.150906';
 const MEDIA = 'studio-en-media-20261121.072352';
 const MEDIA_CACHE = 'studio-en-media';
 const MEDIA_TAG = 'x-studio-en-media';
@@ -12,7 +12,7 @@ const CORE = [
   'js/engine/program.js', 'js/engine/progression.js', 'js/engine/running.js', 'js/engine/nutrition.js', 'js/engine/stats.js', 'js/engine/history-edit.js', 'js/engine/summary.js', 'js/engine/cali.js', 'js/engine/mob.js', 'js/engine/hiit.js', 'js/engine/pil.js', 'js/engine/yoga.js', 'js/engine/tai.js', 'js/engine/walking.js', 'js/backup.js', 'js/barcode.js',
   'js/views/onboarding.js', 'js/views/home.js', 'js/views/plan.js', 'js/views/workout.js', 'js/views/run.js',
   'js/views/progress.js', 'js/views/nutrition.js', 'js/views/nut-prefs.js', 'js/views/track-sheet.js', 'js/views/coach.js', 'js/views/garmin.js', 'js/views/guide.js', 'js/views/history.js', 'js/views/plan-intro.js', 'js/views/cali-ui.js', 'js/views/mob-ui.js',
-  'js/devices/fit.js', 'js/devices/importer.js', 'js/devices/health.js', 'js/devices/hr.js', 'js/devices/gps.js', 'js/devices/ui.js', 'js/ui/map.js',
+  'js/devices/fit.js', 'js/devices/importer.js', 'js/devices/health.js', 'js/devices/hr.js', 'js/devices/gps.js', 'js/devices/ui.js', 'js/ui/map.js', 'js/ui/route-image.js',
   '../assets/coaches/ori.webp', '../assets/coaches/noa.webp', '../assets/coaches/ori_face.webp', '../assets/coaches/noa_face.webp', '../assets/coaches/maya.webp', '../assets/coaches/maya_face.webp', '../assets/coaches/tamar.webp', '../assets/coaches/tamar_face.webp', '../assets/coaches/guy.webp', '../assets/coaches/guy_face.webp', '../assets/coaches/shira.webp', '../assets/coaches/shira_face.webp', '../assets/coaches/lia.webp', '../assets/coaches/lia_face.webp', '../assets/coaches/mei.webp', '../assets/coaches/mei_face.webp',
   '../assets/icons/icon-192.png', '../assets/icons/icon-512.png',
   '../assets/fonts/heebo-hebrew.woff2', '../assets/fonts/heebo-latin.woff2', '../assets/fonts/rubik-hebrew.woff2', '../assets/fonts/rubik-latin.woff2',

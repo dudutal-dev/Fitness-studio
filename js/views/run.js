@@ -15,6 +15,7 @@ import { musicOn, startMusic, stopMusic, setMusicMood } from '../coach/music.js'
 const runMood = (kind, walk) => (kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
 import { gpsTracker, simplifyPath } from '../devices/gps.js';
 import { routeMap } from '../ui/map.js';
+import { renderRouteImage, saveRouteImage, shareRouteImage } from '../ui/route-image.js';
 import { keepAlive, releaseKeepAlive, setKeepAliveState } from '../coach/keepalive.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
 import { hrPill, hrSummaryHtml } from '../devices/ui.js';
@@ -63,6 +64,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   // המפה: מוצגת במקום הסרטון ברגע שיש מיקום; הכפתור שבראש המסך מחליף בין מפה לסרטון, ולחיצה על המפה — בין מעקב לכל המסלול
   let map = null, mapOn = false, mapDrawn = 0, segPace = null, ended = false;
   const splits = [];   // זמן האימון (שניות) בסוף כל קילומטר
+  let routeBlob = null;   // תמונת המסלול — נוצרת בסיום ונשמרת עם האימון
+  const stamp = () => (stamp.at ||= new Date().toISOString());
   let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false;
   const hrRec = recorder(profile);
   let rscBase = null;
@@ -273,6 +276,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     ended = true; root.classList.remove('map-full', 'panel-min'); root.classList.add('run-ended');
     if (route.length > 1) { showMap(true); map.setMode('fit'); }
     else if (mapOn) layoutMap();
+    // תמונת המסלול: נוצרת ברקע; כשהיא מוכנה מופיע הכפתור, ובשמירה היא נשמרת בטלפון לפי תאריך האימון
+    if (route.length > 1) renderRouteImage(route, { title: run.name, caption: `${(measured / 1000).toFixed(2)} ק״מ · ${fmtTime(dur)} · ${fmtPace(dur / (measured / 1000))} לק״מ` })
+      .then((b) => { routeBlob = b; const btn = $('#routeImgBtn'); if (btn) btn.hidden = false; if (stamp.saved) saveRouteImage(stamp(), b); }).catch(() => {});
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">קצב ממוצע <b class="num">${fmtPace(dur / (measured / 1000))}</b> לק״מ${splits.map((t, k) => ` · ק״מ ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
     const distGuess = testSec ? 3 : measured >= 200 ? Math.round(measured / 10) / 100 : '';
     $('.panel').innerHTML = html`<div class="h1" style="text-align:center;margin-top:8px">${walkS ? 'הליכה הושלמה' : 'ריצה הושלמה'}</div>
@@ -283,7 +289,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <label class="field" style="margin-top:12px"><span>מרחק (ק״מ) ${measured >= 200 ? '— נמדד ב-GPS, אפשר לתקן' : '— לא חובה'}</span><input class="input num" id="dist" type="number" step="0.01" inputmode="decimal" value="${distGuess}" placeholder="למשל 5.2"></label>
       <div class="sub" style="margin-bottom:6px">כמה קשה היה?</div>
       <div class="rpe">${[[icon('effort1'), 'קל', 6], [icon('effort2'), 'טוב', 7.5], [icon('effort3'), 'קשה', 9], [icon('effort4'), 'מקסימום', 10]].map(([e, t, v]) => `<button data-rpe="${v}"><span>${e}</span>${t}</button>`).join('')}</div>
-      <button class="btn sm block" style="margin-top:12px" data-act="share-run">${walkS ? 'שיתוף ההליכה' : 'שיתוף הריצה'}</button>`;
+      <button class="btn sm block" style="margin-top:12px" data-act="share-run">${walkS ? 'שיתוף ההליכה' : 'שיתוף הריצה'}</button>
+      <button class="btn sm block" style="margin-top:8px" data-act="route-img" id="routeImgBtn" hidden>תמונת המסלול</button>`;
     // תמונת הסיכום לשיתוף: זמן, מרחק וקצב (לפי המרחק שבשדה)
     on($('.panel'), 'click', '[data-act="share-run"]', () => {
       const km = Number($('#dist').value) || 0, pace = km ? dur / km : 0, mmss = (x) => `${Math.floor(x / 60)}:${String(Math.round(x % 60)).padStart(2, '0')}`;
@@ -291,7 +298,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
-      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}) });
+      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}) });
+      stamp.saved = true; if (routeBlob) saveRouteImage(stamp(), routeBlob);
       close();
     });
   }
@@ -318,6 +326,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (a === 'map') { showMap(!mapOn); set((s2) => { s2.settings.runMap = mapOn; return s2; }); return; }
     // לוח הנתונים שמעל המפה: מקפלים אותו כדי לראות יותר מפה (נשארות שלוש הקוביות), ולחיצה נוספת מחזירה
     if (a === 'panel') { const min = root.classList.toggle('panel-min'); t.setAttribute('aria-expanded', !min); layoutMap(); return; }
+    if (a === 'route-img') { if (routeBlob) shareRouteImage(routeBlob, run.name); return; }
     if (a === 'zin' || a === 'zout') { map?.zoomBy(a === 'zin' ? 1 : -1); return; }
     if (a === 'mapmode') { if (!e.target.closest('a') && map) map.setMode(map.mode === 'fit' ? 'follow' : 'fit'); return; }
     if (a === 'pause') setPaused(!paused);

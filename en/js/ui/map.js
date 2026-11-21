@@ -25,7 +25,7 @@ export function fitView(path, w, h, pad = 28, maxZ = 17) {
 export function routeMap(host, { zoom = 16, anchor = 0.5, inset = 0 } = {}) {
   host.classList.add('rmap');
   host.innerHTML = `<div class="rmap-tiles"></div>
-    <svg class="rmap-line" aria-hidden="true"><polyline class="edge"/><polyline class="path"/><circle class="a" r="5"/><circle class="halo" r="13"/><circle class="b" r="7"/></svg>
+    <svg class="rmap-line" aria-hidden="true"><polyline class="edge"/><polyline class="path"/><circle class="a" r="7"/><circle class="halo" r="13"/><circle class="b" r="7"/></svg>
     <a class="rmap-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>`;
   const layer = host.querySelector('.rmap-tiles'), q = (s) => host.querySelector(s);
   const tiles = new Map();   // "z/x/y" → img, או זמן הכישלון האחרון (כדי לא לנסות שוב ושוב בלי רשת)

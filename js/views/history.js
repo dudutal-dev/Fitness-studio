@@ -5,6 +5,7 @@ import { EX } from '../data/exercises.js';
 import { updateSession, deleteSession, updateRun, deleteRun } from '../engine/history-edit.js';
 import { parse3k } from './onboarding.js';
 import { routeMap } from '../ui/map.js';
+import { renderRouteImage, loadRouteImage, deleteRouteImage, shareRouteImage } from '../ui/route-image.js';
 
 const toLocalInput = (iso) => { const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
 const fromLocalInput = (v, fallback) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? fallback : d.toISOString(); };
@@ -75,7 +76,7 @@ export function openRunEditor(index, onDone) {
   if (!orig) return;
   const find = (s) => s.runs.findIndex((r) => r.date === orig.date && r.name === orig.name);
   sheet(html`<div class="eyebrow">עריכת ריצה</div><div class="h1" style="font-size:22px">${esc(orig.name)}</div>
-    ${orig.route?.length > 1 ? `<div class="run-map hist" id="hmap"></div>${orig.distanceKm && orig.durationSec ? `<div class="sub run-splits">קצב ממוצע <b class="num">${fmtTime(orig.durationSec / orig.distanceKm)}</b> לק״מ${(orig.splits || []).map((t, k) => ` · ק״מ ${k + 1}: <b class="num">${fmtTime(t - (orig.splits[k - 1] || 0))}</b>`).join('')}</div>` : ''}` : ''}
+    ${orig.route?.length > 1 ? `<div class="run-map hist" id="hmap"></div><img class="route-img" id="himg" alt="" hidden><button class="btn sm block" data-rimg style="margin-bottom:8px">שיתוף תמונת המסלול</button>${orig.distanceKm && orig.durationSec ? `<div class="sub run-splits">קצב ממוצע <b class="num">${fmtTime(orig.durationSec / orig.distanceKm)}</b> לק״מ${(orig.splits || []).map((t, k) => ` · ק״מ ${k + 1}: <b class="num">${fmtTime(t - (orig.splits[k - 1] || 0))}</b>`).join('')}</div>` : ''}` : ''}
     <label class="field" style="margin-top:12px"><span>תאריך ושעה</span><input class="input" type="datetime-local" name="date" value="${toLocalInput(orig.date)}"></label>
     <div class="grid2">
       <label class="field"><span>זמן כולל (דק:שנ׳)</span><input class="input num" name="dur" value="${fmtTime(orig.durationSec || 0)}" inputmode="numeric"></label>
@@ -87,7 +88,16 @@ export function openRunEditor(index, onDone) {
     onMount(sh, close) {
       const val = (n) => sh.querySelector(`[name=${n}]`)?.value.trim();
       const hm = sh.querySelector('#hmap');   // המסלול שנשמר מה-GPS
-      if (hm) { const m = routeMap(hm); m.setMode('fit'); requestAnimationFrame(() => m.draw(orig.route)); }
+      if (hm) {
+        const m = routeMap(hm); m.setMode('fit'); requestAnimationFrame(() => m.draw(orig.route));
+        // התמונה שנשמרה בסוף האימון (מוצגת גם בלי רשת); אם אין — המפה החיה, והתמונה נוצרת כשמבקשים לשתף
+        let saved = null;
+        loadRouteImage(orig.date).then((b) => { if (!b || !sh.isConnected) return; saved = b; const im = sh.querySelector('#himg'); im.src = URL.createObjectURL(b); im.hidden = false; hm.hidden = true; });
+        sh.querySelector('[data-rimg]').addEventListener('click', async () => {
+          const km = orig.distanceKm, cap = km && orig.durationSec ? `${km} ק״מ · ${fmtTime(orig.durationSec)} · ${fmtTime(orig.durationSec / km)} לק״מ` : '';
+          shareRouteImage(saved || await renderRouteImage(orig.route, { title: orig.name, caption: cap }), orig.name);
+        });
+      }
       const parseDur = (v) => { const m = String(v || '').match(/^(?:(\d+):)?(\d{1,3}):(\d{2})$/); return m ? (Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3])) : null; };
       sh.querySelector('[data-save]').addEventListener('click', () => {
         const dur = parseDur(val('dur'));
@@ -104,7 +114,7 @@ export function openRunEditor(index, onDone) {
       });
       sh.querySelector('[data-del]').addEventListener('click', () => {
         close();
-        confirmDelete('למחוק את הריצה?', () => { set((s) => deleteRun(s, find(s))); toast('הריצה נמחקה'); onDone?.(); });
+        confirmDelete('למחוק את הריצה?', () => { set((s) => deleteRun(s, find(s))); deleteRouteImage(orig.date); toast('הריצה נמחקה'); onDone?.(); });
       });
     },
   });
