@@ -72,6 +72,7 @@ export function renderCoach(root) {
       ${toggleRow('captions', 'כתוביות באימון', 'מה שהמאמן אומר — שורה קצרה שנעלמת', st.captions !== false)}
       ${toggleRow('music', 'מוזיקת רקע', 'בכל האימונים — מוזיקה שמתאימה לסוג האימון, בשקט מתחת להנחיות', st.music === true)}
       ${toggleRow('introSound', 'צליל פתיחה', 'מנגינה קצרה כשהאפליקציה עולה', st.introSound !== false)}
+      ${toggleRow('usage', 'סטטיסטיקת שימוש', 'אילו מסכים ותחומים הופעלו — שמות בלבד — נשלחים כדי לשפר את האפליקציה. תוכן האימונים, המשקל והתזונה נשאר בטלפון', st.usage !== false)}
       <div style="margin-top:12px"><div class="row between"><b>עוצמה</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} בדיקת קול</button>

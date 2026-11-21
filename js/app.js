@@ -14,6 +14,7 @@ import { unlock, warmVoiceCache } from './coach/voice.js';
 import { openPlanIntro } from './views/plan-intro.js';
 import { initUpdater } from './updater.js';
 import { initLicense } from './lic.js';
+import { initUsage } from './usage.js';
 import { openGuide } from './views/guide.js';
 import { applyTheme } from './theme.js';
 
@@ -77,6 +78,7 @@ route();
 playIntro();
 
 initUpdater();
+initUsage();     // סטטיסטיקת שימוש: שמות רכיבים ומונים בלבד (אפשר לכבות בהגדרות)
 initLicense();   // קישור הפעלה אישי — חוסם רק כשהאכיפה מופעלת במסך הניהול
 // קובצי הקול של המאמן יורדים ברקע כמה שניות אחרי הפתיחה (ושוב אחרי החלפת מאמן)
 setTimeout(warmVoiceCache, 5000);

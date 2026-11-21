@@ -15,6 +15,7 @@ import { musicOn, startMusic, stopMusic, setMusicMood } from '../coach/music.js'
 const runMood = (kind, walk) => (kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
 import { gpsTracker, simplifyPath } from '../devices/gps.js';
 import { routeMap } from '../ui/map.js';
+import { track } from '../usage.js';
 import { renderRouteImage, saveRouteImage, shareRouteImage } from '../ui/route-image.js';
 import { keepAlive, releaseKeepAlive, setKeepAliveState } from '../coach/keepalive.js';
 import { recorder, current as hrNow, zoneOf, maxHrFor, hasRSC } from '../devices/hr.js';
@@ -33,6 +34,7 @@ export const freeRun = (walk = false) => ({ type: 'free', ...(walk ? { walk: tru
 
 export function startRun(run, { day = null, coach: forced = null, extra = false } = {}) {
   unlock();
+  track(`start:${runKind(run)}`);
   // טעינה מראש של כל מה שהמאמן אומר בריצה
   const s = get();
   const profile = s.profile;
@@ -352,7 +354,11 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
 }
 
 // שמירת ריצה (גם מייבוא Garmin): עדכון רמת ריצה במבדק, XP, שיאים
+// לסטטיסטיקת השימוש: רק סוג הפעילות
+const runKind = (r) => (r.type === 'free' ? (r.walk ? 'free-walk' : 'free-run') : r.walk ? 'walk' : 'run');
+
 export function saveRun(r) {
+  if (!r.source) track(`done:${runKind(r)}`);   // לא ריצות שיובאו משעון
   const st = get();
   const prev = st.runs.filter((x) => x.type === 'test' && x.timeSec).map((x) => x.timeSec);
   const isPR = r.timeSec && (!prev.length || r.timeSec < Math.min(...prev));

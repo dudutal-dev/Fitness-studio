@@ -142,3 +142,34 @@ test('licences: per-link switches (perms) reach the app, and only "off" switches
   // קישור של אפליקציה אחת לא מופעל באחרת
   assert.equal((await post(env, 'activate', { token: made.token, dev, app: 'studio' })).ok, false);
 });
+
+test('licences: feature usage — names and counters only, per link and per app, behind the admin password', async () => {
+  const { lic } = await import('../worker/lic.js');
+  const env = makeEnv(), json = (o) => o;
+  const call = (path, body, now) => lic(new Request(`https://w.dev/lic/${path}`, { method: 'POST', body: JSON.stringify(body) }), env, new URL(`https://w.dev/lic/${path}`), json, now);
+  const t0 = Date.UTC(2026, 10, 21, 10, 0), pw = 'correct horse';
+  await call('admin', { pw, op: 'claim' }, t0);
+  const made = await call('admin', { pw, op: 'create', app: 'studio', name: 'דנה', days: 365 }, t0), dev = 'abcdefgh12345';
+  await call('activate', { token: made.token, dev, app: 'studio' }, t0);
+  // משתמש עם קישור: נרשם אצלו וגם בסיכום של האפליקציה
+  assert.equal((await call('use', { app: 'studio', id: made.id, dev, ev: { 'start:yoga': 1, 'screen:nutrition': 3, 'feat:share': 1 } }, t0)).ok, true);
+  assert.equal((await call('use', { app: 'studio', id: made.id, dev, ev: { 'start:yoga': 2, 'done:yoga': 1 } }, t0 + DAY)).ok, true);
+  // בלי קישור (אפליקציה פתוחה לכולם): רק בסיכום הכללי
+  await call('use', { app: 'studio', ev: { 'start:walk': 1 } }, t0 + DAY);
+  // טלפון אחר עם מזהה הקישור לא נרשם אצל המשתמש
+  await call('use', { app: 'studio', id: made.id, dev: 'zzzzzzzz99999', ev: { 'start:gym': 5 } }, t0 + DAY);
+  // תוכן, מפתחות לא חוקיים וערכים מופרזים נזרקים
+  await call('use', { app: 'studio', id: made.id, dev, ev: { 'Weight 82kg': 1, 'x': 1, 'feat:map': 99999, 'feat:zero': 0, 'note': 'ate pizza' } }, t0 + DAY);
+  assert.equal((await call('use', { app: 'nope', ev: { 'start:yoga': 1 } }, t0)).ok, false);
+  assert.equal((await call('use', { app: 'studio', ev: {} }, t0)).ok, false);
+  const p = (await call('admin', { pw, op: 'list' }, t0 + 2 * DAY)).passes[0];
+  assert.deepEqual(p.ev, { 'start:yoga': 3, 'screen:nutrition': 3, 'feat:share': 1, 'done:yoga': 1, 'feat:map': 500 });
+  assert.equal(p.evAt, t0 + DAY);
+  assert.equal((await call('admin', { pw: 'wrong pass', op: 'stats', app: 'studio' }, t0)).ok, false);
+  const st = (await call('admin', { pw, op: 'stats', app: 'studio' }, t0 + 2 * DAY)).stats;
+  assert.deepEqual(st.ev, { 'start:yoga': 3, 'screen:nutrition': 3, 'feat:share': 1, 'done:yoga': 1, 'start:walk': 1, 'start:gym': 5, 'feat:map': 500 });
+  assert.deepEqual(Object.keys(st.days), ['2026-11-21', '2026-11-22']); assert.equal(st.days['2026-11-21']['start:yoga'], 1); assert.equal(st.days['2026-11-22']['start:walk'], 1);
+  // אפליקציות אחרות לא מושפעות, ואפשר לאפס
+  assert.deepEqual((await call('admin', { pw, op: 'stats', app: 'lohem' }, t0)).stats.ev, {});
+  await call('admin', { pw, op: 'stats-reset', app: 'studio' }, t0); assert.deepEqual((await call('admin', { pw, op: 'stats', app: 'studio' }, t0)).stats.ev, {});
+});

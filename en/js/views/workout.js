@@ -1,5 +1,6 @@
 // מצב אימון חי: הדגמת וידאו של המאמן, ספירת חזרות בטמפו עם קול, מדידת מנוחות, רישום ביצועים
 // והתאמת משקל בזמן אמת (אוטו־רגולציה בין סטים).
+import { track } from '../usage.js';
 import { keepAlive, releaseKeepAlive, setKeepAliveState } from '../coach/keepalive.js';
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, ib } from '../ui/dom.js';
 import { ring, setRing } from '../ui/charts.js';
@@ -33,6 +34,8 @@ const RPE = [{ v: 6.5, e: icon('effort1'), t: 'Easy' }, { v: 8, e: icon('effort2
 export function startWorkout(workout, { readiness = null, sized = false } = {}) {
   // מוביליטי: קודם בוחרים כמה זמן יש (10 / 20 / 30 דקות), והאימון נבנה לפי זה
   if (workout.track === 'mob' && !sized) { unlock(); return mobMinutesSheet(workout, (w) => startWorkout(w, { readiness, sized: true })); }
+  const useKind = workout.track || (workout.field ? 'field' : 'gym');   // לסטטיסטיקת השימוש: רק שם התחום
+  track(`start:${useKind}`);
   unlock();
   const s = get();
   const profile = s.profile;
@@ -536,6 +539,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   // ───── סיום ─────
   function finish(partial = false) {
     clearInterval(timer); timer = null;
+    if (!partial) track(`done:${useKind}`);
     mode = 'summary';
     const st = get();
     const dur = Math.round((vnow() - t0) / 1000);

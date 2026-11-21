@@ -72,6 +72,7 @@ export function renderCoach(root) {
       ${toggleRow('captions', 'Captions during workouts', 'What the coach says — a short line that fades out', st.captions !== false)}
       ${toggleRow('music', 'Background music', 'In every workout — music that fits the workout type, quietly under the cues', st.music === true)}
       ${toggleRow('introSound', 'Opening sound', 'A short tune when the app loads', st.introSound !== false)}
+      ${toggleRow('usage', 'Usage statistics', 'Which screens and disciplines were used — names only — is sent to help improve the app. Your workouts, weight and nutrition stay on your phone', st.usage !== false)}
       <div style="margin-top:12px"><div class="row between"><b>Volume</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} Test voice</button>
