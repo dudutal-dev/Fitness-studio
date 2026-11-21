@@ -1,8 +1,8 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-en-20261121.201903';
-const MEDIA = 'studio-en-media-20261121.201903';
+const VERSION = 'studio-en-20261121.202849';
+const MEDIA = 'studio-en-media-20261121.202849';
 const MEDIA_CACHE = 'studio-en-media';
 const MEDIA_TAG = 'x-studio-en-media';
 const CORE = [
@@ -42,6 +42,11 @@ async function putMedia(req, res) {
 async function rangeFromCache(req) {
   const hit = await caches.open(MEDIA_CACHE).then((c) => c.match(req.url)).catch(() => null);
   if (!hit) return fetch(req);
+  // גרסת מדיה חדשה (סרטון שהוחלף): הסרטון השמור מתרענן ברקע, והבקשה הזאת הולכת לרשת — כדי שהסרטון החדש ייראה מיד; בלי רשת — השמור
+  if (hit.headers.get(MEDIA_TAG) !== MEDIA) {
+    fetch(req.url, { cache: 'no-cache' }).then((res) => putMedia(new Request(req.url), res)).catch(() => {});
+    try { const live = await fetch(req); if (live.ok || live.status === 206) return live; } catch { /* אין רשת */ }
+  }
   const buf = await hit.arrayBuffer(), size = buf.byteLength, m = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
   let start = m && m[1] ? +m[1] : m && m[2] ? Math.max(0, size - +m[2]) : 0, end = m && m[1] && m[2] ? Math.min(+m[2], size - 1) : size - 1;
   if (!(start <= end) || start >= size) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } });

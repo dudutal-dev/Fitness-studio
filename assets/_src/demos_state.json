@@ -1167,10 +1167,6 @@
   "img": "g3RFHMh0yVXZ8Zej736n",
   "vid": "ndOC3nsvPq921lAwcVb6"
  },
- "lia/p_leg_circles": {
-  "img": "t9RgHwriI1H43ra0KLS7",
-  "vid": "8vv4cC3q9sQIoo6paSuG"
- },
  "lia/p_swan": {
   "img": "Fg042q7NuyCl7bpfGL8F",
   "vid": "Xsj97K8R2maYmA6qfzi7"
@@ -1322,5 +1318,9 @@
  "shira/outdoor_walk": {
   "img": "EdA7WtJoUULqIjmpjukO",
   "vid": "o84qrzKIcsfPqR6AJhKx"
+ },
+ "lia/p_leg_circles": {
+  "img": "B7IPz9J2NBKIZW0WkAcb",
+  "vid": "RFEq6uaD9fEXuYrA9xhW"
  }
 }

@@ -1279,3 +1279,5 @@ button.mi .tag { margin-inline-end: 4px; }
 .live.is-paused .counter { opacity: 0.45; }
 .live.is-paused #pauseHud { background: var(--pri); color: var(--on-pri); }
 .about p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.55; color: var(--mute); } .about p b { color: var(--text); } .about p:last-child { margin-bottom: 0; }
+/* התגיות שמעל שם התרגיל: לא מתכווצות (הטקסט גלש מהן ועלה על השכנות במצב שוכב) — ואם אין מקום, יורדות שורה */
+.live .title .row { flex-wrap: wrap; row-gap: 5px; } .live .title .row > .tag { flex: 0 0 auto; white-space: nowrap; }
