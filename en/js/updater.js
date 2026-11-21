@@ -1,5 +1,5 @@
-// עדכון אוטומטי: בודק אם יש גרסה חדשה (בפתיחה, בחזרה לאפליקציה, וכל 15 דק׳) ומרענן לבד —
-// אף פעם לא באמצע אימון או ריצה.
+// עדכון אוטומטי ברקע: בודק אם יש גרסה חדשה — בפתיחה, בכל חזרה לאפליקציה (גם כשהיא רק עלתה מהרקע), כשהרשת חוזרת,
+// וכל 5 דקות כשהיא פתוחה — ומרענן לבד, בלי שהמשתמש צריך לסגור ולפתוח. אף פעם לא באמצע אימון או ריצה.
 import { APP_VERSION } from './version.js';
 import { toast } from './ui/dom.js';
 
@@ -21,19 +21,22 @@ function applyWhenIdle(v) {
   tryIt();
 }
 
+let lastCheck = 0;
 export async function checkForUpdate() {
-  if (!navigator.onLine) return;
+  if (!navigator.onLine || Date.now() - lastCheck < 20000) return;   // לא יותר מפעם ב-20 שניות
+  lastCheck = Date.now();
   try {
     reg?.update().catch(() => {});
     const r = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
     if (!r.ok) return;
     const { v } = await r.json();
     if (v && v !== APP_VERSION) {
-      // הגנה מלולאה: אם כבר ניסינו לעבור לגרסה הזו ולא הצליח, לא מנסים שוב באותה הפעלה
-      let tried = null;
-      try { tried = sessionStorage.getItem(`${KEY}_try`); } catch { /* */ }
-      if (tried === v) return;
-      try { sessionStorage.setItem(`${KEY}_try`, v); } catch { /* */ }
+      // הגנה מלולאה: אם כבר ניסינו לעבור לגרסה הזו ולא הצליח (השרת עוד לא סיים להתעדכן), מנסים שוב רק אחרי 3 דקות
+      let tried = '';
+      try { tried = sessionStorage.getItem(`${KEY}_try`) || ''; } catch { /* */ }
+      const [tv, at] = tried.split('|');
+      if (tv === v && Date.now() - Number(at) < 3 * 60 * 1000) return;
+      try { sessionStorage.setItem(`${KEY}_try`, `${v}|${Date.now()}`); } catch { /* */ }
       applyWhenIdle(v);
     }
   } catch { /* אופליין / שגיאת רשת */ }
@@ -56,7 +59,10 @@ export function initUpdater() {
     });
   }
   setTimeout(checkForUpdate, 2500);
-  setInterval(checkForUpdate, 15 * 60 * 1000);
+  setInterval(checkForUpdate, 5 * 60 * 1000);
+  // חזרה לאפליקציה בכל צורה: מהרקע, ממסך נעול, או מדף שנשמר בזיכרון (באייפון האפליקציה המותקנת כמעט אף פעם לא נטענת מחדש לבד)
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && checkForUpdate());
+  addEventListener('pageshow', checkForUpdate);
+  addEventListener('focus', checkForUpdate);
   addEventListener('online', checkForUpdate);
 }
