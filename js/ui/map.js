@@ -60,6 +60,8 @@ export function routeMap(host, { zoom = 16, anchor = 0.5, inset = 0 } = {}) {
   return {
     draw,
     setMode(m) { mode = m; draw(); },
+    layout(o) { anchor = o.anchor ?? anchor; inset = o.inset ?? inset; draw(); },
+    zoomBy(d) { zoom = Math.max(12, Math.min(18, zoom + d)); mode = 'follow'; draw(); },
     get mode() { return mode; },
     destroy() { host.innerHTML = ''; host.classList.remove('rmap'); tiles.clear(); },
   };

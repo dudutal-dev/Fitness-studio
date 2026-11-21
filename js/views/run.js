@@ -51,7 +51,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const gps = gpsTracker();
   const gpsOn = gps.start();
   // המפה: מוצגת במקום הסרטון ברגע שיש מיקום; הכפתור שבראש המסך מחליף בין מפה לסרטון, ולחיצה על המפה — בין מעקב לכל המסלול
-  let map = null, mapOn = false, mapDrawn = 0, segPace = null;
+  let map = null, mapOn = false, mapDrawn = 0, segPace = null, ended = false;
   const splits = [];   // זמן האימון (שניות) בסוף כל קילומטר
   let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false;
   const hrRec = recorder(profile);
@@ -66,6 +66,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     <div class="stage run-stage" style="flex:0 0 38%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
       <video muted playsinline loop autoplay src="${demoVideo(coach, demo)}"></video>
       <div class="run-map" id="rmap" data-act="mapmode" hidden></div>
+      <div class="map-zoom"><button data-act="zin" aria-label="הגדלת המפה">+</button><button data-act="zout" aria-label="הקטנת המפה">−</button></div>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>
         <button class="icon-btn off" data-act="map" id="mapBtn" aria-label="מפה" aria-pressed="false" hidden>${icon('compass', 'width="20" height="20"')}</button>
         <button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>
@@ -106,7 +107,17 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     mapOn = v; $('#rmap').hidden = !v;
     $('video').style.visibility = $('.poster').style.visibility = v ? 'hidden' : '';
     $('#mapBtn').classList.toggle('off', !v); $('#mapBtn').setAttribute('aria-pressed', v);
-    if (v) { map ||= routeMap($('#rmap'), { anchor: 0.42, inset: 130 }); map.draw(gps.path, gps.here); }
+    // בזמן האימון המפה על כל המסך והפקדים מעליה; בסיכום היא חוזרת לחלק העליון
+    root.classList.toggle('map-full', v && !ended);
+    if (v) { map ||= routeMap($('#rmap')); layoutMap(); map.draw(gps.path, gps.here); }
+  }
+  // המיקום (או המסלול כולו) ממורכז באזור הפנוי: בין הכפתורים שלמעלה ללוח שלמטה
+  function layoutMap() {
+    if (!map) return;
+    const h = root.clientHeight;
+    if (!root.classList.contains('map-full')) return map.layout({ anchor: 0.56, inset: 90 });
+    const top = $('.hud-top').getBoundingClientRect().bottom + 54, bot = $('.panel').getBoundingClientRect().top;
+    map.layout({ anchor: (top + bot) / 2 / h, inset: h - (bot - top) });
   }
 
   function enterSeg() {
@@ -153,7 +164,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     $('#cpace').className = `num${pc && segPace ? (off ? ' pace-off' : ' pace-ok') : ''}`;
     // מפה: נפתחת לבד כשמתקבל מיקום ראשון (אלא אם כובתה), ומתעדכנת פעם בשנייה
     if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false) showMap(true); }
-    if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; map.draw(gps.path, gps.here); }
+    if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); }
     if (Math.floor(d / 1000) > splits.length) splits.push(Math.round(elapsed / 1000));
     if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳` : 'מחפש GPS…'; }
     if (c.hr) {
@@ -224,7 +235,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const measured = distM();
     const route = measured >= 200 ? simplifyPath(gps.path) : [];
     $('#mapBtn').hidden = true;
+    ended = true; root.classList.remove('map-full'); root.classList.add('run-ended');
     if (route.length > 1) { showMap(true); map.setMode('fit'); }
+    else if (mapOn) layoutMap();
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">קצב ממוצע <b class="num">${fmtPace(dur / (measured / 1000))}</b> לק״מ${splits.map((t, k) => ` · ק״מ ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
     const distGuess = testSec ? 3 : measured >= 200 ? Math.round(measured / 10) / 100 : '';
     $('.panel').innerHTML = html`<div class="h1" style="text-align:center;margin-top:8px">${walkS ? 'הליכה הושלמה' : 'ריצה הושלמה'}</div>
@@ -267,6 +280,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       return;
     }
     if (a === 'map') { showMap(!mapOn); set((s2) => { s2.settings.runMap = mapOn; return s2; }); return; }
+    if (a === 'zin' || a === 'zout') { map?.zoomBy(a === 'zin' ? 1 : -1); return; }
     if (a === 'mapmode') { if (!e.target.closest('a') && map) map.setMode(map.mode === 'fit' ? 'follow' : 'fit'); return; }
     if (a === 'pause') {
       paused = !paused;
