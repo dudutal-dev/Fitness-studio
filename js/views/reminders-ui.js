@@ -2,8 +2,9 @@
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
 import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
-import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue, calendarFeed, isIOS } from '../reminders.js';
+import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, calendarFeed, isIOS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
+import { plannedToday, toMin } from '../engine/schedule.js';
 
 const DAY_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
 const DAY_FULL = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -111,19 +112,7 @@ export function scheduleSheet(rerender) {
       const paint = () => { sh.querySelector('[data-srows]').innerHTML = rows(); };
       on(sh, 'click', '[data-sday]', (e, b) => { const d = Number(b.dataset.sday); save((w) => { const i = w.days.indexOf(d); if (i >= 0) w.days.splice(i, 1); else w.days.push(d); }); paint(); });
       sh.addEventListener('change', (e) => { const t = e.target; if (t.dataset.stime === undefined || !t.value) return; save((w) => { w.times[Number(t.dataset.stime)] = t.value; }); });
-      on(sh, 'click', '[data-sfeed]', async (e, b) => {
-        if (!cur().workout?.days?.length) return toast('קודם לבחור לפחות יום אחד');
-        b.disabled = true;
-        try {
-          const p = get().profile, ns = get().plan?.week?.sessions?.[0];
-          const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
-          const web = url.replace(/^https?:/, 'webcal:');
-          // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
-          const go = isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`;
-          feedSheet(url, go);
-        } catch { toast('לא הצלחתי לחבר את היומן — צריך חיבור לרשת', 4000); }
-        b.disabled = false;
-      });
+      on(sh, 'click', '[data-sfeed]', (e, b) => openFeed(b));
       on(sh, 'click', '[data-scal]', () => { if (!cur().workout?.days?.length) return toast('קודם לבחור לפחות יום אחד'); downloadICS(); });
       on(sh, 'click', '[data-spush]', async (e, b) => { b.disabled = true; b.textContent = 'מפעיל…';
         try { await enableReminders(); toast('התזכורות פעילות'); b.remove(); } catch (err) { b.disabled = false; b.textContent = 'הפעלת תזכורות גם כשהאפליקציה סגורה'; toast(err.message === 'denied' ? 'לא אושרו התראות. אפשר לאשר בהגדרות הטלפון ← התראות.' : `לא הצלחתי להפעיל: ${err.message}`, 4500); } });
@@ -131,6 +120,20 @@ export function scheduleSheet(rerender) {
     },
     onClose: () => rerender?.(),   // בכל סגירה (כפתור, גרירה, לחיצה בחוץ) המסך שמתחת מתעדכן
   });
+}
+
+// שידור ליומן של הטלפון: שומר את הלוח בשרת ופותח את חלונית החיבור (מהמסך "ימים ושעות" ומיומן האימונים)
+export async function openFeed(b) {
+  if (!reminders().settings.workout?.days?.length) return toast('קודם לבחור לפחות יום אחד');
+  if (b) b.disabled = true;
+  try {
+    const p = get().profile, ns = get().plan?.week?.sessions?.[0];
+    const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
+    const web = url.replace(/^https?:/, 'webcal:');
+    // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
+    feedSheet(url, isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`);
+  } catch { toast('לא הצלחתי לחבר את היומן — צריך חיבור לרשת', 4000); }
+  if (b) b.disabled = false;
 }
 
 // אחרי שהלוח נשמר בשרת: כפתור שפותח את היומן של הטלפון, והכתובת עצמה למי שרוצה להוסיף ידנית
@@ -150,14 +153,15 @@ function feedSheet(url, go) {
 const SHOWN = 'remShown';
 export function checkWorkoutDue(start) {
   const s = get(), st = reminders().settings, now = new Date(), today = now.toDateString();
-  if (!s.profile?.name || !workoutDue(st, now) || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
+  const pt = s.profile?.name && s.plan ? plannedToday(s.plan, st, now) : null, late = pt ? now.getHours() * 60 + now.getMinutes() - toMin(pt.time) : -1;
+  if (!pt || late < 0 || late >= 30 || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
   try { const v = JSON.parse(localStorage.getItem(SHOWN) || 'null'); if (v && v.day === today && (v.done || Date.now() < v.until)) return false; } catch { /* */ }
   const trained = [...(s.sessions || []), ...(s.runs || [])].some((x) => new Date(x.date).toDateString() === today);
   if (trained) return false;
   const mark = (done, mins = 0) => { try { localStorage.setItem(SHOWN, JSON.stringify({ day: today, done, until: Date.now() + mins * 60000 })); } catch { /* */ } };
   mark(false, 9999);
-  const coach = COACHES[s.profile.coach] || {}, ns = (s.plan?.week?.sessions || []).find((x) => !(s.plan.completedDays || []).includes(x.day));
-  sheet(html`<div class="due"><img src="${coach.face || ''}" alt=""><div><div class="eyebrow">${workoutTime(st, now.getDay())} · תזכורת</div><div class="h1" style="font-size:22px">הגיע הזמן לאימון</div>
+  const coach = COACHES[s.profile.coach] || {}, ns = pt.session;
+  sheet(html`<div class="due"><img src="${coach.face || ''}" alt=""><div><div class="eyebrow">${pt.time} · תזכורת</div><div class="h1" style="font-size:22px">הגיע הזמן לאימון</div>
       <div class="sub">${ns ? `היום: ${ns.name}` : 'האימון של היום מחכה.'}</div></div></div>
     <button class="btn primary block xl" style="margin-top:14px" data-due="go">מתחילים</button>
     <div class="row" style="gap:8px;margin-top:8px"><button class="btn" style="flex:1" data-due="later">בעוד רבע שעה</button><button class="btn ghost" style="flex:1" data-due="no">לא היום</button></div>`, {

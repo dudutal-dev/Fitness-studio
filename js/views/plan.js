@@ -10,6 +10,7 @@ import { fmtPace } from '../engine/running.js';
 import { startWorkout, infoSheet } from './workout.js';
 import { startRun } from './run.js';
 import { begin, estMinutes } from './home.js';
+import { calendarCardHtml, bindCalendar } from './calendar-ui.js';
 import { warmupFor, cooldownFor, blockedSet } from '../engine/program.js';
 import { isCali, isMix, hasCali, sessionCoach, exCoach, mixCaliCount } from '../engine/cali.js';
 import { laddersSection, bindLadders } from './cali-ui.js';
@@ -48,6 +49,8 @@ export function renderPlan(root) {
       <div class="cycle-bar">${(single ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${single ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${single ? 'בלוק של 4 שבועות' : esc(ph.name)}</span></div>`)}</div>
       <div class="sub t-foot">${esc(plan.week.phase.desc)} ${walk ? 'קצב טוב הוא קצב שאפשר לדבר בו, אבל לא לשיר.' : tai ? 'ברך מעל כף הרגל, כיפוף קל בלבד. אם משהו כואב — מזדקפים ונחים.' : yoga ? 'מחזיקים כל תנוחה כמה נשימות. אם הנשימה נעצרת — יוצאים מעט מהתנוחה.' : pil ? 'כל תרגיל כדקה, בתנועה איטית. אם הצוואר מתאמץ — מניחים את הראש.' : hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
     </div>
+
+    ${calendarCardHtml()}
 
     <div class="h2">השבוע<span class="more" data-act="regen">בנה מחדש</span></div>
     ${plan.week.sessions.map((x) => html`<details class="card day ${doneDays.has(x.day) ? 'done' : ''}">
@@ -89,6 +92,7 @@ export function renderPlan(root) {
   on(root, 'click', '[data-run]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.run)); startRun(ses.run, { day: ses.day, ...(ses.extra ? { coach: ses.coach, extra: true } : {}) }); });
   on(root, 'click', '[data-act="mob-test"]', () => mobTestSheet(() => renderPlan(root)));
   on(root, 'click', '[data-act="quick-mob"]', () => quickMobSheet((w) => startWorkout(w)));
+  bindCalendar(root, () => renderPlan(root));
   on(root, 'click', '[data-act="regen"]', () => { set((s2) => regenerateWeek(s2)); toast('השבוע נבנה מחדש'); renderPlan(root); });
   on(root, 'click', '[data-lvl]', (e, t) => {
     set((s2) => { s2.profile.level = Math.min(5, Math.max(1, s2.profile.level + Number(t.dataset.lvl))); return regenerateWeek(s2); });

@@ -5,7 +5,7 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, mainCtx } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, orderMeals, mealWindow, mainCtx } from '../engine/nutrition.js';
 import { FOOD } from '../data/foods.js';
 import { openNutritionTab } from './nutrition.js';
 import { buildFieldWorkout, extraCoach } from '../engine/program.js';
@@ -22,13 +22,17 @@ import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
 import { isWalk } from '../engine/walking.js';
-import { reminderPromptHtml, bindReminderPrompt, scheduleRowHtml, bindSchedule } from './reminders-ui.js';
+import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
+import { homeNextHtml, bindCalendar } from './calendar-ui.js';
+import { nextPlanned, trainedToday } from '../engine/schedule.js';
+import { reminders } from '../reminders.js';
 import { trackSheet, trackLabel } from './track-sheet.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
 
 export function nextSession(s) {
-  const done = new Set(s.plan.completedDays);
-  return s.plan.week.sessions.find((x) => !done.has(x.day)) || null;
+  // האימון הפתוח הקרוב ביותר ביומן (אימון שבוטל לשבוע הזה לא נספר; אימון שהוזז מחכה למועד שלו)
+  const now = new Date();
+  return nextPlanned(s.plan, reminders().settings, now, trainedToday(s, now))?.session || null;
 }
 
 export function estMinutes(w) {
@@ -81,7 +85,10 @@ export function renderHome(root) {
     const plan = mealPlan(p, { ctx: mainCtx(p), seed: new Date().getDate(), t, swaps: ms.swaps, dishes: ms.dishes });
     const h = new Date().getHours();
     const order = h < 10 ? ['breakfast', 'snack1', 'lunch'] : h < 12 ? ['snack1', 'lunch'] : h < 15 ? ['lunch', 'post', 'dinner'] : h < 18 ? ['post', 'dinner'] : ['dinner'];
-    const meal = order.map((id) => plan.meals.find((m) => m.id === id)).find(Boolean) || plan.meals[plan.meals.length - 1];
+    // כשנקבעו ימי אימון הארוחות מסודרות לפי שעת האימון של היום (orderMeals), ו"הארוחה הבאה" היא הראשונה שעוד לא עברה
+    const mw = mealWindow(s); orderMeals(plan, mw);
+    const nowMin = h * 60 + new Date().getMinutes();
+    const meal = (mw ? plan.meals.find((m) => m.at + 90 > nowMin) : order.map((id) => plan.meals.find((m) => m.id === id)).find(Boolean)) || plan.meals[plan.meals.length - 1];
     const bar = (name, v, of, color) => `<div class="nh-m"><span><i>${name}</i><em><b class="num">${Math.round(v)}</b><small>/${of}</small></em></span><div class="bar"><i style="width:${pct(v, of)}%;background:${color}"></i></div></div>`;
     return html`<button class="card nut-home" data-act="nut">
       <div class="nh-top">${ring(Math.min(1, eaten.kcal / Math.max(1, t.kcal)), { size: 58, stroke: 6, big: pct(eaten.kcal, t.kcal) + '%' })}
@@ -145,7 +152,7 @@ export function renderHome(root) {
 
     <div class="free-row"><button class="btn sm" data-act="free-walk">${icon('leaf', 'width="18" height="18"')} הליכה חופשית</button><button class="btn sm" data-act="free-run">${icon('run', 'width="18" height="18"')} ריצה חופשית</button></div>
 
-    ${scheduleRowHtml()}
+    ${homeNextHtml()}
 
     <div class="card coach-hero">
       <div class="holo"><img src="${coach.face}" alt="${coach.name}"></div>
@@ -196,7 +203,7 @@ export function renderHome(root) {
     if (a === 'quick-mob') quickMobSheet((w) => startWorkout(w));
     if (a === 'mob-test') mobTestSheet(() => renderHome(root));
   };
-  bindSchedule(root, () => renderHome(root));
+  bindCalendar(root, () => renderHome(root));
   on(root, 'click', '[data-act]', (e, el) => act(el.dataset.act, el));
 }
 

@@ -2,8 +2,9 @@
 import { html, on, toast, sheet, ib } from '../ui/dom.js';
 import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
-import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, workoutDue, calendarFeed, isIOS } from '../reminders.js';
+import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, calendarFeed, isIOS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
+import { plannedToday, toMin } from '../engine/schedule.js';
 
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const DAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -111,19 +112,7 @@ export function scheduleSheet(rerender) {
       const paint = () => { sh.querySelector('[data-srows]').innerHTML = rows(); };
       on(sh, 'click', '[data-sday]', (e, b) => { const d = Number(b.dataset.sday); save((w) => { const i = w.days.indexOf(d); if (i >= 0) w.days.splice(i, 1); else w.days.push(d); }); paint(); });
       sh.addEventListener('change', (e) => { const t = e.target; if (t.dataset.stime === undefined || !t.value) return; save((w) => { w.times[Number(t.dataset.stime)] = t.value; }); });
-      on(sh, 'click', '[data-sfeed]', async (e, b) => {
-        if (!cur().workout?.days?.length) return toast('Pick at least one day first');
-        b.disabled = true;
-        try {
-          const p = get().profile, ns = get().plan?.week?.sessions?.[0];
-          const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
-          const web = url.replace(/^https?:/, 'webcal:');
-          // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
-          const go = isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`;
-          feedSheet(url, go);
-        } catch { toast('Could not connect the calendar — a network connection is needed', 4000); }
-        b.disabled = false;
-      });
+      on(sh, 'click', '[data-sfeed]', (e, b) => openFeed(b));
       on(sh, 'click', '[data-scal]', () => { if (!cur().workout?.days?.length) return toast('Pick at least one day first'); downloadICS(); });
       on(sh, 'click', '[data-spush]', async (e, b) => { b.disabled = true; b.textContent = 'Turning on…';
         try { await enableReminders(); toast('Reminders are on'); b.remove(); } catch (err) { b.disabled = false; b.textContent = 'Turn on reminders when the app is closed too'; toast(err.message === 'denied' ? 'Notifications weren\'t allowed. You can allow them in the phone\'s Settings → Notifications.' : `Couldn't turn on: ${err.message}`, 4500); } });
@@ -131,6 +120,20 @@ export function scheduleSheet(rerender) {
     },
     onClose: () => rerender?.(),   // בכל סגירה (כפתור, גרירה, לחיצה בחוץ) המסך שמתחת מתעדכן
   });
+}
+
+// שידור ליומן של הטלפון: שומר את הלוח בשרת ופותח את חלונית החיבור (מהמסך "ימים ושעות" ומיומן האימונים)
+export async function openFeed(b) {
+  if (!reminders().settings.workout?.days?.length) return toast('Pick at least one day first');
+  if (b) b.disabled = true;
+  try {
+    const p = get().profile, ns = get().plan?.week?.sessions?.[0];
+    const url = await calendarFeed({ name: p.name, coach: COACHES[p.coach]?.name, mins: Math.min(120, Math.max(20, Math.round((ns?.minutes || 60) / 5) * 5)) });
+    const web = url.replace(/^https?:/, 'webcal:');
+    // אייפון ומק: כתובת webcal פותחת את "הרשמה ליומן". אנדרואיד: יומן Google מוסיף את הכתובת כיומן נוסף
+    feedSheet(url, isIOS() || /Macintosh/.test(navigator.userAgent) ? web : `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(web)}`);
+  } catch { toast('Could not connect the calendar — a network connection is needed', 4000); }
+  if (b) b.disabled = false;
 }
 
 // אחרי שהלוח נשמר בשרת: כפתור שפותח את היומן של הטלפון, והכתובת עצמה למי שרוצה להוסיף ידנית
@@ -150,14 +153,15 @@ function feedSheet(url, go) {
 const SHOWN = 'remShown';
 export function checkWorkoutDue(start) {
   const s = get(), st = reminders().settings, now = new Date(), today = now.toDateString();
-  if (!s.profile?.name || !workoutDue(st, now) || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
+  const pt = s.profile?.name && s.plan ? plannedToday(s.plan, st, now) : null, late = pt ? now.getHours() * 60 + now.getMinutes() - toMin(pt.time) : -1;
+  if (!pt || late < 0 || late >= 30 || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
   try { const v = JSON.parse(localStorage.getItem(SHOWN) || 'null'); if (v && v.day === today && (v.done || Date.now() < v.until)) return false; } catch { /* */ }
   const trained = [...(s.sessions || []), ...(s.runs || [])].some((x) => new Date(x.date).toDateString() === today);
   if (trained) return false;
   const mark = (done, mins = 0) => { try { localStorage.setItem(SHOWN, JSON.stringify({ day: today, done, until: Date.now() + mins * 60000 })); } catch { /* */ } };
   mark(false, 9999);
-  const coach = COACHES[s.profile.coach] || {}, ns = (s.plan?.week?.sessions || []).find((x) => !(s.plan.completedDays || []).includes(x.day));
-  sheet(html`<div class="due"><img src="${coach.face || ''}" alt=""><div><div class="eyebrow">${workoutTime(st, now.getDay())} · reminder</div><div class="h1" style="font-size:22px">Time to work out</div>
+  const coach = COACHES[s.profile.coach] || {}, ns = pt.session;
+  sheet(html`<div class="due"><img src="${coach.face || ''}" alt=""><div><div class="eyebrow">${pt.time} · reminder</div><div class="h1" style="font-size:22px">Time to work out</div>
       <div class="sub">${ns ? `Today: ${ns.name}` : 'Today\'s workout is waiting.'}</div></div></div>
     <button class="btn primary block xl" style="margin-top:14px" data-due="go">Let's start</button>
     <div class="row" style="gap:8px;margin-top:8px"><button class="btn" style="flex:1" data-due="later">In 15 minutes</button><button class="btn ghost" style="flex:1" data-due="no">Not today</button></div>`, {

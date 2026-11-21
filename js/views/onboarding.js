@@ -1,6 +1,7 @@
 // אונבורדינג: 9 שלבים — מסלול, מאמן (וציוד בקליסתניקס), פרטים, מטרה, מבדק רמה, לו״ז, פציעות, תזונה, בניית תוכנית.
 import { OTHER, setLang } from '../lang.js';
 import { html, esc, on, $, toast, icon } from '../ui/dom.js';
+import { defaultReminderSettings } from '../reminders.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
 import { GOALS, INJURIES, estimateLevel, LEVEL_NAMES, goalsFor, goalForTrack } from '../engine/program.js';
 import { newCali, caliLevel, mixCaliCount, recommendTrack } from '../engine/cali.js';
@@ -15,6 +16,9 @@ import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { set, createPlan, today, lohemData, importFromLohem } from '../store.js';
 import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
+
+const WD_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const WD_SPREAD = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] };
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
 const GATE_TILES = {
   gym: ['חדר כושר', 'עם אורי ונועה', ['ori', 'noa']], cali: ['קליסתניקס', 'עם מאיה', ['maya']], run: ['ריצה', 'עם גיא ושירה', ['guy', 'shira']],
@@ -260,6 +264,9 @@ export function renderOnboarding(root, done) {
     // 6 — לו"ז
     () => html`<div class="eyebrow">שלב 6 · זמנים</div><div class="q">כמה ${d.sex === 'f' ? 'את יכולה' : 'אתה יכול'} להתאמן?</div>
       <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${(cls() ? [2, 3, 4, 5] : [3, 4, 5, 6]).map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
+      <label class="field"><span>באילו ימים?</span><div class="chips wd-chips">${WD_NAMES.map((n, i) => `<button type="button" class="chip ${wdays().includes(i) ? 'on' : ''}" data-wd="${i}">${n}</button>`).join('')}</div></label>
+      <label class="field"><span>באיזו שעה בדרך כלל?</span><input class="input num" type="time" name="schedTime" value="${d.schedTime || '18:00'}" style="max-width:150px"></label>
+      <div class="sub" style="font-size:12px;margin:-4px 0 10px">לפי זה נבנה יומן האימונים. אחר כך אפשר לשנות, לקבוע שעה אחרת לכל יום, להזיז אימון או לבטל.</div>
       ${mix() && !undecided() ? `<label class="field"><span>כמה מהם קליסתניקס? (השאר בחדר הכושר)</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${recMix() === v ? ' ★' : ''}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">★ המלצת המערכת לפי המטרה שלך. אפשר לבחור אחרת.</div></label>` : ''}
       ${mob() ? `<label class="field"><span>אורך אימון רגיל (דקות)</span><div class="seg" data-seg="mobMin">${[10, 20, 30].map((v) => `<button data-v="${v}" class="${d.mobMin == v ? 'on' : ''}">${v}</button>`).join('')}</div>
@@ -322,6 +329,8 @@ export function renderOnboarding(root, done) {
     : '<li>מנתח רמת כושר ויעדים</li><li>מתאים תרגילים למכשירים ולפציעות</li><li>בונה מחזור אימונים של 12 שבועות</li><li>משלב תוכנית ריצה לשיפור 3 ק״מ</li><li>מחשב יעדי תזונה ותפריט</li>'}</ul></div>`,
   ];
 
+  // ימי האימון: מה שסומן, כל עוד מספרם תואם ל"אימונים בשבוע"; אחרת פיזור ברירת מחדל
+  const wdays = () => (d.schedDays && d.schedDays.length === Number(d.days) ? d.schedDays : WD_SPREAD[d.days] || [0, 2, 4]);
   function readInputs() {
     root.querySelectorAll('input[name]').forEach((i) => {
       d[i.name] = i.type === 'number' ? Number(i.value) : i.value.trim();
@@ -423,6 +432,14 @@ export function renderOnboarding(root, done) {
     if (t.closest('[data-seg]').dataset.seg === 'hiitLowStr') d.hiitLow = v === 'yes';
     paint();
   });
+  on(root, 'click', '[data-wd]', (e, t) => {
+    readInputs();
+    const i = Number(t.dataset.wd), cur = wdays(), next = (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]).sort();
+    const opts = [...root.querySelectorAll('[data-seg="days"] button')].map((b) => Number(b.dataset.v));
+    if (!opts.includes(next.length)) { toast(`אפשר לבחור בין ${Math.min(...opts)} ל-${Math.max(...opts)} ימים`); return; }
+    d.schedDays = next; d.days = next.length; d.daysTouched = true;
+    paint();
+  });
   on(root, 'click', '[data-inj]', (e, t) => { toggle(d.injuries, t.dataset.inj); paint(); });
   on(root, 'click', '[data-runbase] button', (e, t) => { readInputs(); d.runBase = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-pillevel] button', (e, t) => { d.pilLevel = Number(t.dataset.v); paint(); });
@@ -457,6 +474,7 @@ export function renderOnboarding(root, done) {
       set((s) => {
         s.profile = profile;
         s.plan = createPlan(profile);
+        s.reminders = { enabled: false, id: null, ...(s.reminders || {}), settings: { ...defaultReminderSettings(profile), ...(s.reminders?.settings || {}), workout: { on: true, days: [...wdays()], time: d.schedTime || '18:00' } } };
         s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
         s.events = [{ type: 'coach', text: walk() ? `תוכנית ההליכה מוכנה! ${d.days} הליכות בשבוע, ${d.walkMin} דקות להליכה רגילה.` : tai() ? `תוכנית הטאי צ'י מוכנה! ${d.days} שיעורים בשבוע, ${d.taiMin} דקות כל אחד.` : yoga() ? `תוכנית היוגה מוכנה! ${d.days} שיעורים בשבוע, ${d.yogaMin} דקות כל אחד.` : pil() ? `תוכנית הפילאטיס מוכנה! ${d.days} שיעורים בשבוע, ${d.pilMin} דקות כל אחד.` : hiit() ? `תוכנית ה-HIIT מוכנה! ${d.hiitMin} דקות לאימון, ${d.days} פעמים בשבוע.` : run() ? `תוכנית הריצה מוכנה! היעד: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'מתחילים בריצה־הליכה.' : 'מתחילים בריצות רצופות.'}` : mob() ? `התוכנית מוכנה! ${GOALS[d.goal].name}.${testDone() ? ` ציון טווחים: ${mobScore(mobState)} מתוך 100.` : ' מבחן הטווחים מחכה במסך התוכנית.'}` : mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];

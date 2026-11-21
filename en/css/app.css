@@ -1290,3 +1290,14 @@ button.mi .tag { margin-inline-end: 4px; }
 .sched-tog { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: right; background: none; min-height: 42px; } .sched-tog b { white-space: nowrap; } .sched-tog .sw { flex: none; } .sched-day:not(.on) .sched-tog b { color: var(--mute); font-weight: 600; }
 .sched-day input[type="time"] { flex: none; width: 150px; max-width: 46%; height: 40px; text-align: center; padding-inline: 8px; } .sched-day input:disabled { opacity: 0.35; }
 .due { display: flex; align-items: center; gap: 14px; } .due img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid var(--acc); flex: none; }
+
+/* יומן האימונים: האימון הבא בבית, הרשימה בלשונית התוכנית, הזזה וביטול */
+.sched-line .txt strong { color: var(--ink, inherit); font-weight: 700; }
+.cal-card { padding: 6px 14px 12px; }
+.cal-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cal-row .grow { flex: 1; min-width: 0; } .cal-row .grow b { display: block; font-size: 14px; line-height: 1.3; } .cal-row .sub { font-size: 12px; }
+.cal-when { flex: none; width: 74px; text-align: center; line-height: 1.25; } .cal-when b { display: block; font-size: 13px; color: var(--acc-ink); } .cal-when span { font-size: 13px; color: var(--mute); }
+.cal-row .btn.sm { flex: none; padding-inline: 10px; } .cal-row.off .grow b { color: var(--mute); text-decoration: line-through; } .cal-row.off .cal-when b { color: var(--mute); }
+.cal-foot { gap: 8px; margin-top: 12px; flex-wrap: wrap; } .cal-foot .btn { flex: 1 1 auto; white-space: nowrap; }
+.wd-chips { flex-wrap: nowrap; gap: 6px; } .wd-chips .chip { flex: 1; min-width: 0; padding-inline: 0; text-align: center; justify-content: center; }
+.meal-at { font-weight: 500; color: var(--mute); font-size: 12px; } .meal-note { margin: -2px 0 10px; }

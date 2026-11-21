@@ -5,7 +5,7 @@ import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
 import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList, activityFor } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
-import { mealPlan, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
+import { mealPlan, orderMeals, mealWindow, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 // טיפים למי שאוכל בחדר אוכל ובשטח (העדפות ← "בשירות"): במקום הטיפ על ימים עמוסים — שלושה טיפים של שירות
 const SERVICE_TIPS = [
@@ -70,7 +70,7 @@ export function renderNutrition(root) {
   // החלפות שנעשו בתפריט של היום נשמרות ברשומה היומית, כל עוד לא ביקשו "תפריט אחר" ולא שינו מקום
   ctx ||= mainCtx(p);
   const ms = dd.menu && dd.menu.seed === seed && dd.menu.ctx === ctx ? dd.menu : { seed, ctx, swaps: {}, dishes: {} };
-  const plan = mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s), swaps: ms.swaps, dishes: ms.dishes });
+  const mw = mealWindow(s), plan = orderMeals(mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s), swaps: ms.swaps, dishes: ms.dishes }), mw);   // הארוחות מסודרות לפי שעת האימון של היום
   const t = plan.targets;
   const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
@@ -142,10 +142,11 @@ export function renderNutrition(root) {
     <div class="seg">${ctxs.map(([k, v]) => `<button data-ctx="${k}" class="${ctx === k ? 'on' : ''}">${v}</button>`)}</div>
     <div class="row between menu-sum"><div class="sub t-foot">התפריט: <b class="num">${nf(plan.total.kcal)}</b> קק״ל · <b class="num">${plan.total.p}</b> ג׳ חלבון<br>יעד: <span class="num">${nf(t.kcal)}</span> קק״ל · <span class="num">${t.protein}</span> ג׳ חלבון</div>
       <button class="btn sm" data-act="shuffle">${icon('swap', 'width="16" height="16"')} תפריט אחר</button></div>
+    ${mw && plan.meals.some((m) => m.id === 'post') ? `<div class="sub t-foot meal-note">${mw === 'rest' ? 'היום אין אימון ביומן — במקום "אחרי אימון" יש ארוחת ביניים.' : mw.done ? 'הארוחות מסודרות לפי האימון שעשית היום.' : `האימון היום ב-${mw.time} — הארוחות מסודרות סביבו.`}</div>` : ''}
     <div class="sub t-foot swap-hint">לחיצה על מנה או על מאכל מציעה חלופות, והכמויות מתעדכנות ליעד.</div>
     ${plan.short ? '<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים כדי להגיע ליעד. כדאי להשלים ממה שיש בהישג יד, או לנסות "תפריט אחר".</div>' : ''}
     ${plan.meals.map((m, mi) => html`<div class="card tight meal">
-      <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}</b><span class="num sub t-foot">${m.total.kcal} קק״ל · ${m.total.p} ג׳ חלבון</span></div>
+      <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}${m.hint ? ` <small class="meal-at num">בסביבות ${m.hint}</small>` : ''}</b><span class="num sub t-foot">${m.total.kcal} קק״ל · ${m.total.p} ג׳ חלבון</span></div>
         <button class="eat-btn" data-eat-meal="${mi}" aria-label="אכלתי את ${esc(m.name)}">${icon('check')} אכלתי</button></div>
       <button class="dish-line" data-dish="${mi}">${m.dish ? `<b>${esc(m.dish.name)}</b>` : '<b class="sub" style="font-weight:600">הרכב לפי המאכלים</b>'}<span>${icon('swap')} מנה אחרת</span></button>
       ${m.items.map((it) => { const f = FOOD[it.id]; return `<button class="mi" data-swap="${mi}|${it.id}"><span>${it.extra ? '<span class="tag">תוספת</span>' : ''}${esc(f.name)}</span><small>${qtyLabel(it.qty)}${esc(f.portion)}</small><i>${icon('swap')}</i></button>`; })}

@@ -1,6 +1,7 @@
 // אונבורדינג: 9 שלבים — מסלול, מאמן (וציוד בקליסתניקס), פרטים, מטרה, מבדק רמה, לו״ז, פציעות, תזונה, בניית תוכנית.
 import { OTHER, setLang } from '../lang.js';
 import { html, esc, on, $, toast, icon } from '../ui/dom.js';
+import { defaultReminderSettings } from '../reminders.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
 import { GOALS, INJURIES, estimateLevel, LEVEL_NAMES, goalsFor, goalForTrack } from '../engine/program.js';
 import { newCali, caliLevel, mixCaliCount, recommendTrack } from '../engine/cali.js';
@@ -15,6 +16,9 @@ import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
 import { set, createPlan, today, lohemData, importFromLohem } from '../store.js';
 import { BRAND } from '../brand.js';
 import { say, unlock, stop } from '../coach/voice.js';
+
+const WD_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const WD_SPREAD = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] };
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
 const GATE_TILES = {
   gym: ['Gym', 'with Ori and Noa', ['ori', 'noa']], cali: ['Calisthenics', 'with Maya', ['maya']], run: ['Running', 'with Guy and Shira', ['guy', 'shira']],
@@ -260,6 +264,9 @@ export function renderOnboarding(root, done) {
     // 6 — לו"ז
     () => html`<div class="eyebrow">Step 6 · Schedule</div><div class="q">How much ${d.sex === 'f' ? 'can you' : 'can you'} train?</div>
       <label class="field"><span>Workouts a week</span><div class="seg" data-seg="days">${(cls() ? [2, 3, 4, 5] : [3, 4, 5, 6]).map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
+      <label class="field"><span>Which days?</span><div class="chips wd-chips">${WD_NAMES.map((n, i) => `<button type="button" class="chip ${wdays().includes(i) ? 'on' : ''}" data-wd="${i}">${n}</button>`).join('')}</div></label>
+      <label class="field"><span>What time, usually?</span><input class="input num" type="time" name="schedTime" value="${d.schedTime || '18:00'}" style="max-width:150px"></label>
+      <div class="sub" style="font-size:12px;margin:-4px 0 10px">The workout calendar is built from this. Later you can change it, set a different time for each day, move a workout or cancel one.</div>
       ${mix() && !undecided() ? `<label class="field"><span>How many of them calisthenics? (The rest in the gym)</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${recMix() === v ? ' ★' : ''}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">★ System recommendation for your goal. You can choose otherwise.</div></label>` : ''}
       ${mob() ? `<label class="field"><span>Usual workout length (minutes)</span><div class="seg" data-seg="mobMin">${[10, 20, 30].map((v) => `<button data-v="${v}" class="${d.mobMin == v ? 'on' : ''}">${v}</button>`).join('')}</div>
@@ -322,6 +329,8 @@ export function renderOnboarding(root, done) {
     : '<li>Analyzing fitness level and goals</li><li>Adapting exercises to machines and injuries</li><li>Building a 12-week training cycle</li><li>Adding a running plan to improve your 3 km</li><li>Calculating nutrition targets and menu</li>'}</ul></div>`,
   ];
 
+  // ימי האימון: מה שסומן, כל עוד מספרם תואם ל"אימונים בשבוע"; אחרת פיזור ברירת מחדל
+  const wdays = () => (d.schedDays && d.schedDays.length === Number(d.days) ? d.schedDays : WD_SPREAD[d.days] || [0, 2, 4]);
   function readInputs() {
     root.querySelectorAll('input[name]').forEach((i) => {
       d[i.name] = i.type === 'number' ? Number(i.value) : i.value.trim();
@@ -423,6 +432,14 @@ export function renderOnboarding(root, done) {
     if (t.closest('[data-seg]').dataset.seg === 'hiitLowStr') d.hiitLow = v === 'yes';
     paint();
   });
+  on(root, 'click', '[data-wd]', (e, t) => {
+    readInputs();
+    const i = Number(t.dataset.wd), cur = wdays(), next = (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]).sort();
+    const opts = [...root.querySelectorAll('[data-seg="days"] button')].map((b) => Number(b.dataset.v));
+    if (!opts.includes(next.length)) { toast(`You can pick between ${Math.min(...opts)} and${Math.max(...opts)} days`); return; }
+    d.schedDays = next; d.days = next.length; d.daysTouched = true;
+    paint();
+  });
   on(root, 'click', '[data-inj]', (e, t) => { toggle(d.injuries, t.dataset.inj); paint(); });
   on(root, 'click', '[data-runbase] button', (e, t) => { readInputs(); d.runBase = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-pillevel] button', (e, t) => { d.pilLevel = Number(t.dataset.v); paint(); });
@@ -457,6 +474,7 @@ export function renderOnboarding(root, done) {
       set((s) => {
         s.profile = profile;
         s.plan = createPlan(profile);
+        s.reminders = { enabled: false, id: null, ...(s.reminders || {}), settings: { ...defaultReminderSettings(profile), ...(s.reminders?.settings || {}), workout: { on: true, days: [...wdays()], time: d.schedTime || '18:00' } } };
         s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
         s.events = [{ type: 'coach', text: walk() ? `Your walking plan is ready! ${d.days} walks a week, ${d.walkMin} minutes for a usual walk.` : tai() ? `Your tai chi plan is ready! ${d.days} classes a week, ${d.taiMin} min each.` : yoga() ? `Your yoga plan is ready! ${d.days} classes a week, ${d.yogaMin} min each.` : pil() ? `Your Pilates plan is ready! ${d.days} classes a week, ${d.pilMin} min each.` : hiit() ? `Your HIIT plan is ready! ${d.hiitMin} min per workout, ${d.days} times a week.` : run() ? `Your running plan is ready! Goal: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'Starting with run-walk.' : 'Starting with continuous runs.'}` : mob() ? `Your plan is ready! ${GOALS[d.goal].name}.${testDone() ? ` Range-of-motion score: ${mobScore(mobState)} out of 100.` : ' The range-of-motion test is waiting on the Plan screen.'}` : mix() ? `Your combined plan is ready! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} a week.` : caliState ? `Your plan is ready! ${GOALS[d.goal].name}. A starting step is set on each ladder — you can view and change it on the Plan screen.` : `Your plan is ready! Level ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];

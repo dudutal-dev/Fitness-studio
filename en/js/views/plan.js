@@ -10,6 +10,7 @@ import { fmtPace } from '../engine/running.js';
 import { startWorkout, infoSheet } from './workout.js';
 import { startRun } from './run.js';
 import { begin, estMinutes } from './home.js';
+import { calendarCardHtml, bindCalendar } from './calendar-ui.js';
 import { warmupFor, cooldownFor, blockedSet } from '../engine/program.js';
 import { isCali, isMix, hasCali, sessionCoach, exCoach, mixCaliCount } from '../engine/cali.js';
 import { laddersSection, bindLadders } from './cali-ui.js';
@@ -48,6 +49,8 @@ export function renderPlan(root) {
       <div class="cycle-bar">${(single ? [blocks[0]] : blocks).map((ph, bi) => html`<div class="cb ${bi === curInCycle ? 'on' : ''}"><div class="dots">${[0, 1, 2, 3].map((w) => `<i class="${single ? (w < plan.weekInBlock ? 'f' : w === plan.weekInBlock ? 'c' : '') : bi < curInCycle || (bi === curInCycle && w < plan.weekInBlock) ? 'f' : bi === curInCycle && w === plan.weekInBlock ? 'c' : ''}"></i>`)}</div><span>${single ? '4-week block' : esc(ph.name)}</span></div>`)}</div>
       <div class="sub t-foot">${esc(plan.week.phase.desc)} ${walk ? 'A good pace is one where you can talk, but not sing.' : tai ? 'Knee over the foot, only a slight bend. If something hurts — stand up straight and rest.' : yoga ? 'Hold each pose for a few breaths. If your breath stops — ease out of the pose a little.' : pil ? 'About a minute per exercise, moving slowly. If your neck strains — rest your head down.' : hiit ? (plan.weekInBlock === 3 ? 'This week: recovery — one round fewer in every workout.' : 'During work — nearly everything you\'ve got. During rest — breathe.') : run ? (plan.weekInBlock === 3 ? 'This week: recovery, and a 3 km test to update your paces.' : 'On easy runs — a pace you can talk at.') : mob ? (plan.weekInBlock === 3 ? 'This week: a range-of-motion retest, to see what has improved.' : 'A comfortable stretch only — no pain and no bouncing.') : plan.weekInBlock === 3 ? `This week: deload — less volume, the body recovers and comes back stronger.${cali ? '' : ' + 3 km test.'}` : cali ? 'Stop a rep or two before failure.' : `Target effort: RPE ${plan.week.week.rpe}.`}</div>
     </div>
+
+    ${calendarCardHtml()}
 
     <div class="h2">This week<span class="more" data-act="regen">Rebuild</span></div>
     ${plan.week.sessions.map((x) => html`<details class="card day ${doneDays.has(x.day) ? 'done' : ''}">
@@ -89,6 +92,7 @@ export function renderPlan(root) {
   on(root, 'click', '[data-run]', (e, t) => { const ses = plan.week.sessions.find((x) => x.day === Number(t.dataset.run)); startRun(ses.run, { day: ses.day, ...(ses.extra ? { coach: ses.coach, extra: true } : {}) }); });
   on(root, 'click', '[data-act="mob-test"]', () => mobTestSheet(() => renderPlan(root)));
   on(root, 'click', '[data-act="quick-mob"]', () => quickMobSheet((w) => startWorkout(w)));
+  bindCalendar(root, () => renderPlan(root));
   on(root, 'click', '[data-act="regen"]', () => { set((s2) => regenerateWeek(s2)); toast('The week was rebuilt'); renderPlan(root); });
   on(root, 'click', '[data-lvl]', (e, t) => {
     set((s2) => { s2.profile.level = Math.min(5, Math.max(1, s2.profile.level + Number(t.dataset.lvl))); return regenerateWeek(s2); });

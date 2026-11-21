@@ -210,5 +210,10 @@
  "שמור והוסף ליומן": "Save and add to log",
  "צריך לפחות שם וקלוריות": "A name and calories are required",
  "נשמר ונרשם": "saved and logged",
- "מקור:": "Source:"
+ "מקור:": "Source:",
+ "היום אין אימון ביומן — במקום \"אחרי אימון\" יש ארוחת ביניים.": "No workout in the calendar today — a snack replaces \"After workout\".",
+ "הארוחות מסודרות לפי האימון שעשית היום.": "Meals are ordered around the workout you did today.",
+ "האימון היום ב-": "Today's workout is at ",
+ "— הארוחות מסודרות סביבו.": " — meals are ordered around it.",
+ "בסביבות": "around"
 }

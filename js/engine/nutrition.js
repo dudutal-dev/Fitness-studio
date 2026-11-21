@@ -1,5 +1,6 @@
 // מנוע תזונה: יעדים קלוריים ומאקרו, ובניית תפריט יומי שמכבד את מה שהמשתמש לא אוכל.
 import { FOODS, FOOD } from '../data/foods.js';
+import { hasSchedule, plannedToday, closedDays, toMin, fromMin } from './schedule.js';
 import { DISHES, DISH } from '../data/dishes.js';
 
 // ───── יעדים — כל רכיב מבוסס מקור (ראו docs/NUTRITION_SOURCES.md) ─────
@@ -188,6 +189,25 @@ export function mealsFor(profile) {
   const use = MEALS.filter((m) => ids.includes(m.id)), ks = use.reduce((a, m) => a + m.share, 0), ps = use.reduce((a, m) => a + m.pShare, 0);
   return use.map((m) => ({ ...m, share: m.share / ks, pShare: m.pShare / ps }));
 }
+// סדר הארוחות לפי שעת האימון של היום (בקשת בעל המוצר, 21.11.2026). w: { start: דקות מחצות, mins: אורך האימון } — "אחרי אימון" זזה
+// לחצי שעה אחרי סוף האימון, והארוחות מסודרות לפי השעה; w === 'rest' — יום בלי אימון, והיא הופכת לארוחת ביניים; null — בלי שינוי.
+const MEAL_AT = { breakfast: 450, snack1: 630, lunch: 810, post: 990, dinner: 1200 };
+export function orderMeals(plan, w) {
+  if (!w) return plan;
+  const at = (m) => (m.id === 'post' && w !== 'rest' ? Math.min(1410, w.start + w.mins + 30) : MEAL_AT[m.id] ?? 720);
+  plan.meals = plan.meals.map((m, i) => ({ ...m, at: at(m), i0: i, ...(m.id === 'post' ? (w === 'rest' ? { name: 'ביניים', icon: 'apple' } : { hint: fromMin(at(m)) }) : {}) })).sort((a, b) => a.at - b.at || a.i0 - b.i0);
+  return plan;
+}
+// מה לסדר לפיו היום: האימון שביומן להיום (שעה ואורך), 'rest' ביום בלי אימון, או null כשלא נקבעו ימים או שכבר התאמנו
+export function mealWindow(state, now = new Date()) {
+  const st = state.reminders?.settings;
+  if (!state.plan || !hasSchedule(st)) return null;
+  const done = [...(state.sessions || []), ...(state.runs || [])].find((x) => new Date(x.date).toDateString() === now.toDateString());
+  if (done) { const d = new Date(done.date); return { start: Math.max(0, d.getHours() * 60 + d.getMinutes() - 30), mins: 0, done: true }; }   // אחרי אימון שבוצע: "אחרי אימון" צמודה לשעה שבה הסתיים
+  const pt = plannedToday(state.plan, st, now);
+  return pt ? { start: toMin(pt.time), mins: pt.session.minutes || 60, time: pt.time } : 'rest';
+}
+
 // לא נכנסים לתפריט אוטומטי (ההנחיות של משרד הבריאות ממליצות להגביל חטיפים, משקאות ממותקים ובשר מעובד)
 const NOT_IN_PLAN = new Set(['bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink',
   'chocolate_spread', 'halva', 'hot_dog', 'salami', 'fries', 'mayo', 'butter', 'jam', 'honey', 'popcorn', 'dairy_pudding', 'chocolate_milk']);
@@ -427,7 +447,13 @@ export function dayType(state, now = Date.now(), manual = null) {
     return { type: top.type, name: top.x.name || '', done: true };
   }
   if (manual === 'rest') return { type: 'rest', manual: true };
-  const doneDays = new Set(state.plan?.completedDays || []);
+  // קבעו ימי אימון: היום נחשב יום אימון רק אם יש בו אימון ביומן (כולל אימון שהוזז להיום); אחרת — מנוחה
+  const st = state.reminders?.settings;
+  if (state.plan && hasSchedule(st)) {
+    const pt = plannedToday(state.plan, st, new Date(now));
+    return pt ? { type: loadOf(pt.session), name: pt.session.name, planned: true, time: pt.time } : { type: 'rest', sched: true };
+  }
+  const doneDays = closedDays(state.plan);
   const next = (state.plan?.week?.sessions || []).find((x) => !doneDays.has(x.day));
   return next ? { type: loadOf(next), name: next.name, planned: true } : { type: 'rest' };
 }
