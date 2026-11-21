@@ -77,8 +77,10 @@
   .app-h img { width: 36px; height: 36px; border-radius: 11px; flex: none; }
   .app-h b { font-size: 15.500px; line-height: 1.15; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .app-h small { font-size: 12px; color: var(--muted); display: block; }
-  .app-f { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  @media (max-width: 560px) { .apps { grid-template-columns: 1fr; } .app { grid-template-columns: 1fr auto; align-items: center; } }
+  .app-f { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  /* בטלפון: כרטיס לכל אפליקציה ברוחב מלא — שם ומונים למעלה, והמתג, המצב והסטטיסטיקה בשורה משלהם מתחת (אחרת הם דוחקים את השם החוצה) */
+  @media (max-width: 560px) { .apps { grid-template-columns: 1fr; } .app-h small { white-space: nowrap; } }
+  .app-f .chip { flex: none; } .app-f .pill { flex: none; } .app-f .tog { margin-inline-start: auto; flex: none; }
   .tog { flex: none; width: 50px; height: 30px; border-radius: 999px; border: 0; background: var(--line); position: relative; transition: background .2s; }
   .tog::after { content: ''; position: absolute; top: 3px; inset-inline-start: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .3); transition: transform .2s; }
   .prow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 2px; border-top: 1px solid var(--line); font-weight: 600; font-size: 15.5px; }
@@ -554,7 +556,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261121.191908';
+const ADMIN_V = '20261121.192131';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
