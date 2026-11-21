@@ -11,6 +11,8 @@ import { renderNutrition } from './views/nutrition.js';
 import { renderCoach } from './views/coach.js';
 import { startWorkout } from './views/workout.js';
 import { unlock, warmVoiceCache } from './coach/voice.js';
+import { warmMedia, planMedia } from './media-warm.js';
+import { sessionCoach } from './engine/cali.js';
 import { openPlanIntro } from './views/plan-intro.js';
 import { initUpdater } from './updater.js';
 import { initLicense } from './lic.js';
@@ -83,3 +85,7 @@ initLicense();   // קישור הפעלה אישי — חוסם רק כשהאכ�
 // קובצי הקול של המאמן יורדים ברקע כמה שניות אחרי הפתיחה (ושוב אחרי החלפת מאמן)
 setTimeout(warmVoiceCache, 5000);
 addEventListener('hashchange', () => setTimeout(warmVoiceCache, 3000));
+// התמונות והסרטונים של המאמנים יורדים לטלפון ברקע (אחרי הקול), כדי שהאימון יעבוד מיד וגם בלי קליטה
+const warmDemos = () => warmMedia(planMedia(get(), sessionCoach)).catch(() => {});
+setTimeout(warmDemos, 12000);
+addEventListener('hashchange', () => setTimeout(warmDemos, 8000));

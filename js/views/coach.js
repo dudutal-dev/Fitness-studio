@@ -1,4 +1,6 @@
 // מסך המאמן והפרופיל: החלפת מאמן, הגדרות קול, עריכת פרופיל ויעדים, גיבוי ושחזור.
+import { planMedia, mediaStatus, downloadMedia } from '../media-warm.js';
+import { sessionCoach } from '../engine/cali.js';
 import { LANG, setLang } from '../lang.js';
 import { html, esc, on, sheet, toast, icon } from '../ui/dom.js';
 import { get, set, regenerateWeek, exportData, importData, resetAll } from '../store.js';
@@ -76,7 +78,8 @@ export function renderCoach(root) {
       <div style="margin-top:12px"><div class="row between"><b>עוצמה</b><span class="num sub">${Math.round(st.volume * 100)}%</span></div>
         <input type="range" min="0.2" max="1" step="0.05" value="${st.volume}" data-vol></div>
       <button class="btn sm teal block" style="margin-top:12px" data-test>${icon('play', 'width="16" height="16"')} בדיקת קול</button>
-      <div class="voice-dl" data-voice-dl><div class="grow"><b>קובצי הקול במכשיר</b><div class="sub" data-vdl-status>בודק…</div><div class="bar" style="margin-top:6px"><i data-vdl-bar style="width:0%"></i></div></div>
+      <div class="voice-dl" data-voice-dl><div class="grow"><b>קובצי הקול במכשיר</b><div class="sub" data-vdl-status>בודק…</div><div class="bar" style="margin-top:6px"><i data-vdl-bar style="width:0%"></i></div>
+        <div class="sub" data-mdl-status style="margin-top:8px">תמונות וסרטונים: בודק…</div><div class="bar" style="margin-top:6px"><i data-mdl-bar style="width:0%"></i></div></div>
         <button class="btn sm" data-vdl>${icon('download')} הורד</button></div>
     </div>`)}
     ${sec('watch', 'שעון, Garmin ו-Apple Health', 'דופק חי וייבוא פעילויות ושקילות', watchCard())}
@@ -144,6 +147,17 @@ export function renderCoach(root) {
     root.querySelector('[data-vdl-bar]').style.width = `${total ? Math.round((have / total) * 100) : 0}%`;
     const btn = root.querySelector('[data-vdl]'); btn.disabled = busy; btn.style.display = full && !busy ? 'none' : '';
   };
+  // התמונות וסרטוני ההדגמה: אותו דבר — מה שחסר יורד עכשיו, עם התקדמות
+  const mplan = planMedia(get(), sessionCoach);
+  const mdl = (have, total, busy) => {
+    const st = root.querySelector('[data-mdl-status]'); if (!st) return;
+    st.textContent = busy ? `תמונות וסרטונים: מוריד… ${have} מתוך ${total}` : have >= total && total > 0 ? `כל ${total} התמונות והסרטונים שמורים במכשיר` : `תמונות וסרטונים: ${have} מתוך ${total} שמורים`;
+    root.querySelector('[data-mdl-bar]').style.width = `${total ? Math.round((have / total) * 100) : 0}%`;
+  };
+  mediaStatus(mplan).then(async (m) => {
+    mdl(m.have, m.total, false);
+    if (m.have < m.total && navigator.onLine) { await downloadMedia(mplan, (d, n) => mdl(d, n, true)); const m2 = await mediaStatus(mplan); mdl(m2.have, m2.total, false); }
+  });
   // חסרים קבצים (למשל אחרי החלפת מאמן)? מורידים מיד ומציגים התקדמות
   voiceCacheStatus().then(async (s2) => {
     vdl(s2.have, s2.total, false);
