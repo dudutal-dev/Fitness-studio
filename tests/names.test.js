@@ -15,6 +15,10 @@ test('התאמה: לפי המילה הראשונה בשם ולפי המין', ()
   assert.equal(nameEntry({ name: 'טל', sex: 'm' }).slug, 'tal');
   assert.equal(nameEntry({ name: 'יפעת', sex: 'm' }), null);
   assert.equal(nameEntry({ name: 'מיכל', sex: 'f' }), null);
+  // באותיות לטיניות, ובלי תלות באותיות גדולות
+  assert.equal(nameEntry({ name: 'Dudu', sex: 'm' }).slug, 'dudu');
+  assert.equal(nameEntry({ name: 'yifat cohen', sex: 'f' }).slug, 'yifat');
+  assert.equal(nameEntry({ name: '', sex: 'm' }), null);
 });
 test('לכל שם יש הקלטות אצל כל מאמן', () => {
   for (const coach of readdirSync(new URL('../assets/voice/', import.meta.url))) {
