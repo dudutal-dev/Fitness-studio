@@ -232,7 +232,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         ${intraMsg ? `<div class="sub" style="margin:6px 0 10px;color:var(--pri-ink);font-weight:700">${icon('bolt')} ${esc(intraMsg)}</div>` : ''}
         <div class="target">
           ${e.type === 'weight' || e.load ? html`<div><div class="sub" style="font-size:12px;margin-bottom:4px">משקל</div>
-            <div class="stepper"><button data-w="-">−</button><div class="val"><span>${sl.w}</span><small>ק״ג</small></div><button data-w="+">+</button></div></div>` : ''}
+            <div class="stepper"><button data-w="-">−</button><div class="val" data-act="wedit" role="button" aria-label="הקלדת משקל"><span data-wshow>${sl.w}</span><small>ק״ג</small></div><button data-w="+">+</button></div></div>` : ''}
           <div><div class="sub" style="font-size:12px;margin-bottom:4px">${timed ? 'זמן' : 'חזרות יעד'}</div>
             <div class="stepper"><button data-r="-">−</button><div class="val"><span>${sl.reps}</span><small>${timed ? 'שנ׳' : e.unilateral ? 'לכל צד' : ''}</small></div><button data-r="+">+</button></div></div>
         </div>
@@ -249,7 +249,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     } else if (mode === 'active') {
       p.innerHTML = html`<div class="counter cnt-set">${ring(0, { size: 190, stroke: 14, big: timed ? sl.reps : '0', lbl: timed ? 'שניות' : `מתוך ${sl.reps}` })}
         <div class="phase-lbl" id="ph">היכון…</div>
-        ${!timed && it.role !== 'hiit' ? `<div class="set-ctx">${sl.w ? `<b class="num">${sl.w}</b> ק״ג · ` : ''}סט <b class="num">${cur().si + 1}</b> מתוך <b class="num">${log[cur().ii].sets.length}</b></div>` : ''}</div>
+        ${!timed && it.role !== 'hiit' ? `<div class="set-ctx">${e.type === 'weight' || e.load ? `<button class="w-edit" data-act="wedit" aria-label="שינוי המשקל"><b class="num" data-wshow>${sl.w}</b> ק״ג ${icon('edit', 'width="14" height="14"')}</button> · ` : ''}סט <b class="num">${cur().si + 1}</b> מתוך <b class="num">${log[cur().ii].sets.length}</b></div>` : ''}</div>
         ${timed && AUTO.has(it.role) ? `<button class="btn block xl" data-act="pause" data-pause-main>${icon('pause', 'width="22" height="22"')} השהה</button>
         <button class="btn sm ghost block" style="margin-top:8px" data-act="finish-set">${icon('skip', 'width="16" height="16"')} דלג לתרגיל הבא</button>`
     : `<button class="btn block xl" data-act="finish-set">${timed ? 'עצור' : 'סיימתי את הסט'}</button>`}
@@ -257,7 +257,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     } else if (mode === 'log') {
       p.innerHTML = html`<div class="h2" style="margin:6px 0 10px">איך היה?</div>
         <div class="target">
-          ${e.type === 'weight' || e.load ? html`<div><div class="stepper"><button data-w="-">−</button><div class="val"><span>${sl.w}</span><small>ק״ג</small></div><button data-w="+">+</button></div></div>` : ''}
+          ${e.type === 'weight' || e.load ? html`<div><div class="stepper"><button data-w="-">−</button><div class="val" data-act="wedit" role="button" aria-label="הקלדת משקל"><span data-wshow>${sl.w}</span><small>ק״ג</small></div><button data-w="+">+</button></div></div>` : ''}
           <div><div class="stepper"><button data-r="-">−</button><div class="val"><span>${sl.reps}</span><small>${timed ? 'שנ׳' : 'חזרות'}</small></div><button data-r="+">+</button></div></div>
         </div>
         <div class="rpe">${RPE.map((r) => `<button data-rpe="${r.v}" class="${sl.rpe === r.v ? 'on' : ''}"><span>${r.e}</span>${r.t}</button>`)}</div>`;
@@ -508,7 +508,8 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         <button class="btn sm teal" data-act="rest-skip">${icon('skip', 'width="16" height="16"')} דלג</button><span class="spacer"></span>
         <button class="btn sm" data-act="rest-plus">+30</button></div>
       <div class="next-up"><img src="${demoPoster(coach, nIt.exId)}" alt=""><div><div class="sub" style="font-size:12px">${newEx ? 'תרגיל הבא' : 'הסט הבא'}</div>
-        <b>${esc(nEx.name)}</b> · <span class="num">${log[nxt.ii].sets[nxt.si].w ? `${log[nxt.ii].sets[nxt.si].w} ק״ג × ` : ''}${log[nxt.ii].sets[nxt.si].reps}</span></div></div>`;
+        <b>${esc(nEx.name)}</b> · <span class="num">${log[nxt.ii].sets[nxt.si].w ? `<span data-wshow>${log[nxt.ii].sets[nxt.si].w}</span> ק״ג × ` : ''}${log[nxt.ii].sets[nxt.si].reps}</span></div></div>
+      ${!autoNext && (nEx.type === 'weight' || nEx.load) ? `<div class="rest-w"><span class="sub">${newEx ? 'משקל לתרגיל הבא' : 'משקל לסט הבא'}</span><div class="stepper"><button data-w="-">−</button><div class="val" data-act="wedit" role="button" aria-label="הקלדת משקל"><span data-wshow>${log[nxt.ii].sets[nxt.si].w}</span><small>ק״ג</small></div><button data-w="+">+</button></div></div>` : ''}`;
     let end = vnow() + secs * 1000;
     let lastSec = -1;
     let total = secs;
@@ -706,15 +707,35 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     if (a === 'close') close();
     if (a === 'run-now') { close(); startRun(workout.run, { day: workout.day }); }
   });
-  on(root, 'click', '[data-w]', (e, t) => {
-    const sl = setLog(), ex1 = ex();
-    const step = ex1.inc >= 5 ? 2.5 : ex1.inc >= 2 ? 1 : 0.5;
-    sl.w = Math.max(0, Math.round((sl.w + (t.dataset.w === '+' ? step : -step)) * 10) / 10);
-    // עדכון גם לסטים הבאים של אותו תרגיל
+  // שינוי המשקל של הסט הנוכחי (או הבא, בזמן מנוחה) — לפני הסט, באמצעו, במנוחה ובסיכום הסט. מתעדכנים גם הסטים הבאים של אותו תרגיל
+  const setW = (v) => {
+    const sl = setLog();
+    sl.w = Math.max(0, Math.round(v * 10) / 10);
     log[cur().ii].sets.forEach((x, i) => { if (i > cur().si && !x.done) x.w = sl.w; });
-    t.parentElement.querySelector('.val span').textContent = sl.w;
-    clearTimeout(kgTimer); if (mode === 'ready') kgTimer = setTimeout(() => { if (mode === 'ready') sayKg(setLog().w); }, 1200);
+    root.querySelectorAll('[data-wshow]').forEach((n) => { n.textContent = sl.w; });
+    // המאמן אומר את המשקל החדש אחרי שמפסיקים ללחוץ (לא בסיכום הסט — שם מתקנים מה שכבר בוצע)
+    clearTimeout(kgTimer); if (mode !== 'log') kgTimer = setTimeout(() => { if (mode !== 'log' && mode !== 'summary') sayKg(setLog().w); }, 1200);
+  };
+  on(root, 'click', '[data-w]', (e, t) => {
+    const ex1 = ex(), step = ex1.inc >= 5 ? 2.5 : ex1.inc >= 2 ? 1 : 0.5;
+    setW(setLog().w + (t.dataset.w === '+' ? step : -step));
   });
+  // הקלדת משקל מדויק (לחיצה על המספר, או על המשקל באמצע הסט)
+  function weightSheet() {
+    const it1 = item(), n = log[cur().ii].sets.length;
+    sheet(html`<div class="h1" style="font-size:22px">שינוי משקל</div><p class="sub">${esc(EX[it1.exId].name)} · סט ${cur().si + 1} מתוך ${n}. הסטים הבאים של התרגיל יתעדכנו גם הם.</p>
+      <label class="field"><span>משקל בק״ג</span><input class="input num" type="number" inputmode="decimal" step="0.5" min="0" max="400" data-wval value="${setLog().w}" style="font-size:22px;text-align:center"></label>
+      <button class="btn primary block" style="margin-top:12px" data-wsave>שמירה</button>
+      <button class="btn ghost block" style="margin-top:8px" data-close>ביטול</button>`, {
+      onMount(sh, close) {
+        const inp = sh.querySelector('[data-wval]'); setTimeout(() => { inp.focus(); inp.select?.(); }, 250);
+        const save = () => { const v = Number(String(inp.value).replace(',', '.')); if (!Number.isFinite(v) || v < 0 || v > 400) return toast('משקל לא תקין'); setW(Math.round(v * 2) / 2); close(); };
+        on(sh, 'click', '[data-wsave]', save);
+        inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') save(); });
+      },
+    });
+  }
+  on(root, 'click', '[data-act="wedit"]', () => weightSheet());
   on(root, 'click', '[data-r]', (e, t) => {
     const sl = setLog();
     const step = item().unit === 'sec' && sl.reps >= 20 ? 5 : 1;

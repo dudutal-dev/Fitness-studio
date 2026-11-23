@@ -159,5 +159,16 @@
  "השהיה והמשך": "Pause and resume",
  "השהה": "Pause",
  "דלג לתרגיל הבא": "Skip to the next exercise",
- "המשך": "Resume"
+ "המשך": "Resume",
+ "הקלדת משקל": "Type a weight",
+ "שינוי המשקל": "Change the weight",
+ "משקל לתרגיל הבא": "Weight for the next exercise",
+ "משקל לסט הבא": "Weight for the next set",
+ "שינוי משקל": "Change weight",
+ "· סט": "· Set",
+ ". הסטים הבאים של התרגיל יתעדכנו גם הם.": ". The following sets of this exercise are updated too.",
+ "משקל בק״ג": "Weight in kg",
+ "שמירה": "Save",
+ "ביטול": "Cancel",
+ "משקל לא תקין": "Invalid weight"
 }

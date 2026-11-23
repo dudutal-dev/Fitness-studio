@@ -1301,3 +1301,8 @@ button.mi .tag { margin-inline-end: 4px; }
 .cal-foot { gap: 8px; margin-top: 12px; flex-wrap: wrap; } .cal-foot .btn { flex: 1 1 auto; white-space: nowrap; }
 .wd-chips { flex-wrap: nowrap; gap: 6px; } .wd-chips .chip { flex: 1; min-width: 0; padding-inline: 0; text-align: center; justify-content: center; }
 .meal-at { font-weight: 500; color: var(--mute); font-size: 12px; } .meal-note { margin: -2px 0 10px; }
+
+/* שינוי משקל בכל שלב באימון: במנוחה (לסט הבא), באמצע הסט, והקלדה מדויקת בלחיצה על המספר */
+.rest-w { display: flex; align-items: center; gap: 10px; margin-top: 8px; } .rest-w .sub { flex: 1; min-width: 0; font-size: 13px; } .rest-w .stepper { flex: 0 0 190px; max-width: 60%; }
+.stepper .val[data-act="wedit"] { cursor: pointer; text-decoration: underline dotted; text-decoration-color: var(--mute); text-underline-offset: 5px; }
+.w-edit { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--panel2); color: inherit; font: inherit; } .w-edit svg { opacity: 0.7; }
