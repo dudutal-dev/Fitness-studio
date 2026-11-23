@@ -23,5 +23,6 @@
  "המשך": "Continue",
  "קישור הפעלה": "Activation link",
  "עבור": "for",
- "· בתוקף עד": "· valid until"
+ "· בתוקף עד": "· valid until",
+ "אין חיבור לשרת ההפעלה. בודקים שיש אינטרנט, ושחוסם תוכן או סינון לא חוסמים את האפליקציה. הבדיקה חוזרת לבד.": "Can't reach the activation server. Check that you're online and that a content blocker or filter isn't blocking the app. It retries on its own."
 }

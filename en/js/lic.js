@@ -2,6 +2,8 @@
 // (Fitness-studio/admin/) ונבדקים מול השרת (worker/lic.js). באפליקציה עצמה אין שום כניסה לניהול.
 // השרת מחליט אם האפליקציה דורשת קישור בכלל ("אכיפה"). כשהאכיפה כבויה — שום דבר כאן לא חוסם.
 // בלי אינטרנט: קישור שאושר ב-21 הימים האחרונים ממשיך לעבוד, כדי שאפשר יהיה להתאמן גם בלי קליטה.
+// בלי תשובה מהשרת (23.11.2026): אם אין תשובה שנשמרה ב-21 הימים האחרונים — האפליקציה נעולה עד שהשרת עונה. כך טלפון שלא מגיע לשרת
+// (חוסם תוכן, סינון, רשת ארגונית) לא מקבל אפליקציה פתוחה בלי קישור. מי שכבר הופעל לא מושפע.
 import { APP_ID, APP_IN } from './app-id.js';
 import { WORKER, isIOS, isStandalone } from './reminders.js';
 import { installSteps } from './install.js';
@@ -14,7 +16,8 @@ const TOKEN = /P\.[a-z0-9]{6,12}\.[A-Za-z0-9_-]{22}/;
 
 let dev = get(KD);
 if (!dev) { dev = Math.random().toString(36).slice(2, 10).padEnd(8, 'x') + Date.now().toString(36); put(KD, dev); }
-let L = get(K), cfg = get(KC) || { enforce: false }, why = '', gateEl = null;
+let L = get(K), cfg = get(KC) || { enforce: false }, why = '', gateEl = null, retry = null;
+const cfgFresh = () => typeof cfg.t === 'number' && Date.now() - cfg.t < GRACE;   // תשובת השרת האחרונה עדיין בתוקף
 const kParam = (() => { const m = TOKEN.exec(new URLSearchParams(location.search).get('k') || ''); return m ? m[0] : ''; })();
 const valid = () => !!L && L.exp > Date.now() && Date.now() - (L.t || 0) < GRACE;
 // אייפון, בדפדפן, עם קישור הפעלה: מסירים את ה-manifest, כדי ש"הוסף למסך הבית" ישמור את הכתובת הנוכחית — עם הקישור בתוכה.
@@ -28,6 +31,7 @@ const WHY = {
   used: 'This link has already been activated on another phone. Each link works on one phone.',
   revoked: 'The link was cancelled.', expired: 'The link has expired.', gone: 'The link was moved to another phone.',
   bad: 'The link is not valid. Try copying it again in full.', net: 'No network connection. A connection is needed only for the first activation.',
+  srv: 'Can\'t reach the activation server. Check that you\'re online and that a content blocker or filter isn\'t blocking the app. It retries on its own.',
 };
 
 function gate() {   // מסך הנעילה: מופיע רק כשהאכיפה פועלת ואין קישור בתוקף
@@ -100,14 +104,21 @@ export const onLicenseChange = (f) => (listeners.add(f), () => listeners.delete(
 
 export async function initLicense() {
   gate();
-  try { const c = await api(`cfg?app=${APP_ID}`); if (typeof c.enforce === 'boolean') { cfg = { enforce: c.enforce }; put(KC, cfg); } } catch { /* אין רשת: לפי ההגדרה האחרונה שנשמרה */ }
+  let answered = false;
+  try { const c = await api(`cfg?app=${APP_ID}`); if (typeof c.enforce === 'boolean') { cfg = { enforce: c.enforce, t: Date.now() }; put(KC, cfg); answered = true; if (why === 'srv') why = ''; } } catch { /* אין תשובה */ }
+  clearTimeout(retry);
+  if (!answered && !cfgFresh()) {
+    // השרת לא ענה, ואין תשובה שמורה בתוקף: נעולים עד שיענה (לא נשמר — התשובה הבאה מהשרת קובעת), ומנסים שוב לבד
+    cfg = { enforce: true }; if (!valid() && !why) why = 'srv';
+    if (!valid()) retry = setTimeout(initLicense, 8000);
+  }
   const browserOnIos = isIOS() && !isStandalone();
   // אפליקציה מותקנת שנפתחת עם הקישור שבכתובת שלה: מפעילים רק כשאין קישור בתוקף (ולא דורסים קישור חדש יותר שהודבק)
   if (kParam && (!L || L.token !== kParam) && !(isStandalone() && valid())) {
     // באייפון מפעילים רק מהאפליקציה שבמסך הבית, כדי שההפעלה האחת לא תתבזבז על הדפדפן. הקישור מחכה לה בשרת רבע שעה.
     if (browserOnIos) api('hand-put', { app: APP_ID, fp: fp(), k: kParam }).catch(() => {});
     else { await activate(kParam); try { history.replaceState(null, '', location.pathname + location.hash); } catch { /* */ } return; }
-  } else if (cfg.enforce && !valid() && isIOS() && isStandalone()) {
+  } else if (answered && cfg.enforce && !valid() && isIOS() && isStandalone()) {
     // האפליקציה שבמסך הבית נפתחה בלי קישור: בודקים אם מחכה לה אחד מהדפדפן — בכל פתיחה נעולה (בפתיחות הראשונות כמה ניסיונות)
     const asked = get(KH) || 0;
     {
@@ -122,6 +133,7 @@ export async function initLicense() {
   gate();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && L && Date.now() - (L.t || 0) > RECHECK) check(); });
+if (typeof window !== 'undefined') window.addEventListener('online', () => { if (why === 'srv') initLicense(); });
 
 // ───── מה שמוצג בהגדרות ─────
 export const licenseText = () => (valid() ? `Activation link${L.name ? ` for ${L.name}` : ''} · valid until ${new Date(L.exp).toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })}` : '');
