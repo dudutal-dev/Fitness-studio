@@ -25,6 +25,8 @@ const lines = {
   two_more: 'Two more! Don\'t give up!', last_rep: '[excited] Last rep!',
   go: 'Three, two, one... let\'s go!',
   set_done: 'Very nice! Set done.',
+  // שינוי משקל בין סטים של אותו תרגיל; אחריו נאמר המשקל עצמו (../assets/voice/<מאמן>/kg/…, ראו js/data/weights.js). רק מאמני חדר הכושר
+  w_up: 'Going up in weight.', w_down: 'Dropping the weight.',
   rest: 'Rest. Drink some water and breathe deep.',
   rest_30: 'Thirty seconds left.', rest_10: 'Ten seconds left, get ready.',
   next_ex: 'Next exercise.',
@@ -302,6 +304,7 @@ export function coachSays(key, coach) {
   const track = coachTrack(coach), cali = track === 'cali';
   if (key.startsWith('ctx_')) return !CTX_SETS.includes(key) || track === 'gym' || cali;
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
+  if (key === 'w_up' || key === 'w_down') return track === 'gym';
   if (key.startsWith('hello_')) return key === `hello_${coach}`;
   if (key.startsWith('tc_')) return track === 'tai';
   if (WALK_ONLY.includes(key)) return all.includes('walk');

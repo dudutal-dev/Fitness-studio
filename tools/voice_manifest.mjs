@@ -1,6 +1,8 @@
 // רשימת כל קבצי הקול: { "<coach>/<key>" | "<coach>/names/<slug>/<key>": { text, spoken } }
 import { VOICE_LINES, SPOKEN, FEMALE, NAME_LINES, COACH_LINES, coachSays, femaleLine, nameTpl } from '../js/data/voice-lines.js';
 import { NAMES } from '../js/data/names.js';
+import { WEIGHT_VALUES, WEIGHT_COACHES, weightFile } from '../js/data/weights.js';
+import { heKg } from './he_kg.mjs';
 
 export const VOICES = { ori: 'PBHwEnXdzx0yfhIO2UCH' /* Dorian */, noa: 's0T0DT6EAPeX57MQpn3I' /* Danit */, maya: 'tPkZ8BPQfux4koA8Wyli' /* קול שעוצב למאיה */, tamar: 'cgSgspJ2msm6clMCkdW9' /* Jessica */,
   guy: 'SSaO8heNHx6ee5ZRpZ1X' /* Gad Tamir */, shira: 'RrrmZPMES7HQ6Dm2L7GF' /* קול שעוצב לשירה */, lia: 'OehHK6Bc1muk8t8UAZmT' /* קול שעוצב לליה, 20.11.2026: רגוע יותר ("ליה 7"); הקודם: 1rNBx0CqYBvQubC1R0kV */, yael: 'lxMfkT0dhgEot7mUeEV9' /* קול שעוצב ליעל */,
@@ -29,6 +31,8 @@ export function manifest() {
       if (!own(k) || !femaleLine(k, coach)) continue;
       out[`${coach}/${k}__f`] = { text, spoken: SPOKEN[`${k}__f`] ?? text };
     }
+    // המשקלים שמאמני חדר הכושר אומרים: קליפ לכל ערך (js/data/weights.js)
+    if (WEIGHT_COACHES.includes(coach)) for (const w of WEIGHT_VALUES) out[`${coach}/kg/${weightFile(w)}`] = { text: `${w} ק״ג`, spoken: heKg(w) };
     for (const n of NAMES) {
       const sx = n.sex === 'f' ? 'f' : 'm';
       for (const [k, v] of Object.entries(NAME_LINES)) {

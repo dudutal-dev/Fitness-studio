@@ -4,6 +4,8 @@
 export const VOICES_EN = { ori: 'IuLnYv01kSbKZlZIGAC5', noa: '8CYlJulGrRsjrdWfnLCc', maya: 'EUiiDSZNR3WS64UTAJee', tamar: 'zflek5p75cEyvmhCtddx', guy: 'PoB1yI9fx8l77NGGLgwK',
   shira: 'E4ECevXo2L90KlHN98Nl', lia: 'Z06gPXJ4hPCDhJXAWdp2', yael: 'Knx0MUxBCg7ispHA4gjU', mei: '0psODMu7JXRtdGVBpykA' };
 
+import { WEIGHT_VALUES, WEIGHT_COACHES, weightFile } from '../js/data/weights.js';
+import { enKg } from './he_kg.mjs';
 export async function manifestEn() {
   const { VOICE_LINES, SPOKEN, FEMALE, NAME_LINES, COACH_LINES, coachSays, femaleLine, nameTpl } = await import('../en/js/data/voice-lines.js');
   const { NAMES } = await import('../en/js/data/names.js');
@@ -17,6 +19,7 @@ export async function manifestEn() {
     }
     // באנגלית אין הבדל בין פנייה לזכר ולנקבה, אבל האפליקציה מבקשת את הקובץ __f למתאמנת — אותו טקסט בדיוק
     for (const [k, text] of Object.entries(FEMALE)) { if (own(k) && femaleLine(k, coach)) out[`${coach}/${k}__f`] = { text: SPOKEN[`${k}__f`] ?? text, spoken: SPOKEN[`${k}__f`] ?? text }; }
+    if (WEIGHT_COACHES.includes(coach)) for (const w of WEIGHT_VALUES) out[`${coach}/kg/${weightFile(w)}`] = { text: `${w} kg`, spoken: enKg(w) };
     for (const n of NAMES) { const sx = n.sex === 'f' ? 'f' : 'm';
       for (const [k, v] of Object.entries(NAME_LINES)) { if (!nameTpl(v, coach)) continue; const t = nameTpl(v, coach)[sx].replaceAll('{name}', n.spoken || n.name); out[`${coach}/names/${n.slug}/${k}`] = { text: t, spoken: t }; } }
   }
