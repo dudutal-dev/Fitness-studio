@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { WEIGHT_VALUES, WEIGHT_COACHES, weightClip, weightChange, weightFile } from '../js/data/weights.js';
+import { WEIGHT_VALUES, WEIGHT_COACHES, weightClip, weightChange, topWeight, isRecordWeight, weightFile } from '../js/data/weights.js';
 import { heKg, enKg } from '../tools/he_kg.mjs';
 import { EXERCISES } from '../js/data/exercises.js';
 import { roundLoad } from '../js/engine/progression.js';
@@ -43,4 +43,14 @@ test('המספר במילים, בזכר ("קילו")', () => {
 test('לכל משקל ברשימה יש הקלטה אצל כל מאמן של חדר הכושר', () => {
   for (const c of WEIGHT_COACHES) for (const w of WEIGHT_VALUES) assert.ok(existsSync(new URL(`../assets/voice/${c}/kg/${weightFile(w)}.mp3`, import.meta.url)), `${c} ${w}`);
   for (const c of WEIGHT_COACHES) for (const k of ['w_up', 'w_down']) assert.ok(existsSync(new URL(`../assets/voice/${c}/${k}.mp3`, import.meta.url)), `${c} ${k}`);
+});
+
+test('משקל שיא: גבוה מכל מה שבוצע בתרגיל; בלי היסטוריה אין שיא; סט שלא בוצע לא נספר', () => {
+  const h = [{ sets: [{ w: 40, reps: 8, done: true }, { w: 42.5, reps: 6, done: true }] }, { sets: [{ w: 45, reps: 0, done: true }, { w: 50, reps: 5, done: false }] }];
+  assert.equal(topWeight(h), 42.5);
+  assert.equal(isRecordWeight(45, h), true);
+  assert.equal(isRecordWeight(42.5, h), false);
+  assert.equal(isRecordWeight(60, []), false);
+  assert.equal(isRecordWeight(60, undefined), false);
+  for (const c of WEIGHT_COACHES) for (const k of ['w_record', 'w_record_done']) assert.ok(existsSync(new URL(`../assets/voice/${c}/${k}.mp3`, import.meta.url)), `${c} ${k}`);
 });

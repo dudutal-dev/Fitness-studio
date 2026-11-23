@@ -17,3 +17,8 @@ export const weightFile = (w) => String(w).replace('.', '_');
 export const weightClip = (w, coach) => (HAS.has(Number(w)) && WEIGHT_COACHES.includes(coach) ? `kg/${weightFile(Number(w))}` : null);
 // מה לומר כשהמשקל של הסט הבא שונה מהקודם: 'w_up' / 'w_down', או null כשאין שינוי (או שאין משקל קודם)
 export const weightChange = (w, prev) => (prev > 0 && w > 0 && w !== prev ? (w > prev ? 'w_up' : 'w_down') : null);
+
+// משקל שיא (בקשת בעל המוצר, 23.11.2026): המשקל הכבד ביותר שבוצע עד היום בתרגיל, מתוך ההיסטוריה שבטלפון.
+export const topWeight = (history) => Math.max(0, ...(history || []).flatMap((h) => (h.sets || []).filter((x) => x.done && x.reps > 0).map((x) => x.w || 0)));
+// סט במשקל גבוה מכל מה שבוצע בתרגיל. בלי היסטוריה (פעם ראשונה בתרגיל) — אין שיא
+export const isRecordWeight = (w, history) => { const top = topWeight(history); return top > 0 && w > top; };
