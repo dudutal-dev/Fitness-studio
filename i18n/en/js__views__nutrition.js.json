@@ -215,5 +215,15 @@
  "הארוחות מסודרות לפי האימון שעשית היום.": "Meals are ordered around the workout you did today.",
  "האימון היום ב-": "Today's workout is at ",
  "— הארוחות מסודרות סביבו.": " — meals are ordered around it.",
- "בסביבות": "around"
+ "בסביבות": "around",
+ "יישמר אצלך ויופיע בחיפוש בפעם הבאה. מוסיפים את המרכיבים והקלוריות מחושבות לבד, או מעתיקים ערכים מהתווית שעל האריזה.": "It's saved for you and shows up in search next time. Add the ingredients and the calories are worked out for you, or copy the values from the label on the pack.",
+ "ממה המנה מורכבת?": "What's in it?",
+ "חיפוש מרכיב: אורז, עוף, שמן זית…": "Search an ingredient: rice, chicken, olive oil…",
+ "בלי מרכיבים אפשר להקליד את הערכים למנה:": "With no ingredients, you can type the values per serving:",
+ "\" aria-label=\"פחות\">−": "\" aria-label=\"Less\">−",
+ "\" aria-label=\"עוד\">+": "\" aria-label=\"More\">+",
+ "מחושב מהמרכיבים:": "Worked out from the ingredients:",
+ "ג׳ חלבון למנה": "g protein per serving",
+ "צריך לתת למנה שם": "Give it a name",
+ "מוסיפים מרכיב אחד לפחות, או מקלידים קלוריות": "Add at least one ingredient, or type the calories"
 }

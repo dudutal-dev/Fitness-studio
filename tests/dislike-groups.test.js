@@ -2,20 +2,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FOOD, FOODS, DISLIKE_TAGS } from '../js/data/foods.js';
-import { mealPlan, targets, inDislikeGroup, DISLIKE_GROUPS, allowed } from '../js/engine/nutrition.js';
+import { mealPlan, targets, inDislikeGroup, DISLIKE_GROUPS, allowed, partsTotals } from '../js/engine/nutrition.js';
 
 const P = (o = {}) => ({ name: 'דנה', sex: 'f', age: 32, heightCm: 168, weightKg: 64, days: 4, sessionMin: 60, goal: 'tone', level: 2, track: 'gym', nutrition: true, dislikes: [], dislikedFoods: [], ...o });
 const by = (name) => FOODS.find((f) => f.name === name);
 
 test('שלוש הקבוצות מופיעות ברשימת "לא אוכל", וכל מזהה שבהן קיים במאגר', () => {
-  for (const g of ['wheat', 'processed', 'sugar']) {
+  for (const g of ['wheat', 'processed', 'sugar', 'seed_oils']) {
     assert.ok(DISLIKE_TAGS[g], g);
     for (const id of DISLIKE_GROUPS[g].ids) assert.ok(FOOD[id], `${g}: ${id}`);
   }
 });
 test('מה נכנס לכל קבוצה ומה לא', () => {
-  const yes = { wheat: ['פסטה', 'פיתה', 'קוסקוס', 'שניצל עוף', 'בורקס גבינה'], processed: ['נקניקייה', 'במבה', 'משקה קל קולה', 'מעדן חלב שוקולד'], sugar: ['דבש', 'ריבה', 'שוקולד חלב', 'גלידה', 'משקה קל קולה'] };
-  const no = { wheat: ['אורז לבן', 'שיבולת שועל (יבשה)', 'קינואה', 'תפוחי אדמה מבושלים', 'פריכיות אורז'], processed: ['חזה עוף צלוי', 'טונה במים', 'קוטג׳ 5%', 'נקטרינה', 'אורז לבן'], sugar: ['בננה', 'תמרים יבשים', 'מיץ תפוזים סחוט', 'נקטרינה', 'יוגורט 3%'] };
+  const yes = { wheat: ['פסטה', 'פיתה', 'קוסקוס', 'שניצל עוף', 'בורקס גבינה'], processed: ['נקניקייה', 'במבה', 'משקה קל קולה', 'מעדן חלב שוקולד'], sugar: ['דבש', 'ריבה', 'שוקולד חלב', 'גלידה', 'משקה קל קולה'], seed_oils: ['שמן קנולה', 'מרגרינה', 'מיונז', 'צ׳יפס מטוגן', 'שניצל עוף', 'טונה בשמן'] };
+  const no = { wheat: ['אורז לבן', 'שיבולת שועל (יבשה)', 'קינואה', 'תפוחי אדמה מבושלים', 'פריכיות אורז'], processed: ['חזה עוף צלוי', 'טונה במים', 'קוטג׳ 5%', 'נקטרינה', 'אורז לבן'], sugar: ['בננה', 'תמרים יבשים', 'מיץ תפוזים סחוט', 'נקטרינה', 'יוגורט 3%'], seed_oils: ['שמן זית', 'סלט טחינה', 'אבוקדו', 'שקדים', 'גרעיני חמניות (קלופים)', 'חביתה (בשמן זית)', 'טונה במים'] };
   for (const g of Object.keys(yes)) {
     for (const n of yes[g]) assert.equal(inDislikeGroup(by(n), g), true, `${g}: ${n}`);
     for (const n of no[g]) assert.equal(inDislikeGroup(by(n), g), false, `${g}: ${n}`);
@@ -24,11 +24,20 @@ test('מה נכנס לכל קבוצה ומה לא', () => {
   assert.equal(allowed(by('פסטה'), ['sugar']), true);
 });
 test('התפריט נבנה בלי מאכלי הקבוצה — כל קבוצה לבד, ושלושתן יחד — ועדיין קרוב ליעד', () => {
-  for (const dislikes of [['wheat'], ['processed'], ['sugar'], ['wheat', 'processed', 'sugar']]) for (const ctx of ['home', 'base', 'field']) for (let seed = 1; seed <= 12; seed++) {
+  for (const dislikes of [['wheat'], ['processed'], ['sugar'], ['seed_oils'], ['wheat', 'processed', 'sugar', 'seed_oils']]) for (const ctx of ['home', 'base', 'field']) for (let seed = 1; seed <= 12; seed++) {
     const p = P({ dislikes }), t = targets(p), plan = mealPlan(p, { ctx, seed });
     const items = plan.meals.flatMap((m) => m.items);
     assert.ok(items.length >= 6, `${dislikes} ${ctx} ${seed}: ${items.length} items`);
     for (const it of items) for (const g of dislikes) assert.equal(inDislikeGroup(FOOD[it.id], g), false, `${g}: ${FOOD[it.id].name} (${ctx}, ${seed})`);
     assert.ok(Math.abs(plan.total.kcal - t.kcal) / t.kcal < 0.2, `${dislikes} ${ctx} ${seed}: ${plan.total.kcal} / ${t.kcal}`);
   }
+});
+test('מנה ממרכיבים: הערכים הם סכום המרכיבים לפי הכמות', () => {
+  const rice = FOOD.rice, ch = FOOD.chicken_breast, oil = FOOD.olive_oil;
+  const tot = partsTotals([{ id: 'rice', qty: 1.5 }, { id: 'chicken_breast', qty: 1 }, { id: 'olive_oil', qty: 0.5 }, { id: 'no_such', qty: 2 }]);
+  assert.equal(tot.kcal, Math.round(rice.kcal * 1.5 + ch.kcal + oil.kcal * 0.5));
+  assert.equal(tot.p, Math.round((rice.p * 1.5 + ch.p + oil.p * 0.5) * 10) / 10);
+  assert.deepEqual(partsTotals([]), { kcal: 0, p: 0, c: 0, f: 0, fib: 0 });
+  // מרכיב שהוא מזון אישי
+  assert.equal(partsTotals([{ id: 'c_1', qty: 2 }], [{ id: 'c_1', kcal: 100, p: 5, c: 10, f: 2, fib: 1 }]).kcal, 200);
 });

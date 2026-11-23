@@ -128,6 +128,7 @@ export function trendAdvice(weights = [], profile = {}, now = Date.now()) {
 // תגיות קיימות, מאכלים בשמם (מאכלי התפריט נבדקו אחד-אחד), ותבנית על השם — לשאר המאגר (חיפוש, יומן, החלפות).
 // חיטה: לחם, פסטה ומה שעשוי מקמח או מצופה בו (לא שיבולת שועל ולא תירס). מעובד: נקניקים, חטיפים, ממתקים, משקאות ממותקים, מעדנים,
 // תחליפי בשר ואבקות. סוכר: סוכר מוסף — ממתקים, מאפים מתוקים, משקאות ממותקים, דבש וריבה; פרי שלם ופרי יבש נשארים.
+// שמני זרעים (קנולה, חמניות, סויה, תירס): השמנים עצמם, מרגרינה ומיונז, ומה שמטוגן או נאפה בהם בדרך כלל; שמן זית, טחינה, אבוקדו, אגוזים וגרעינים נשארים.
 export const DISLIKE_GROUPS = {
   wheat: { tags: ['bread', 'pasta'],
     ids: ['couscous', 'bulgur', 'schnitzel', 'chicken_wings', 'pancakes', 'fish_patties', 'chicken_meatballs', 'beef_meatballs', 'kebab', 'falafel', 'cookies', 'wafers', 'bissli', 'granola_bar',
@@ -138,13 +139,17 @@ export const DISLIKE_GROUPS = {
       'chocolate_spread', 'bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'granola_bar', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink', 'halva', 'jam',
       'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'veg_hot_dogs', 'soy_protein', 'pea_protein', 'soy_flakes'],
     re: /נקניק|קבנוס|פסטרמה|סלמי|מעושן|משומר|שימורים|קפוא|תעשייתי|נאגטס|מן הצומח|שניצל תירס|חטיף|ביסלי|במבה|תפוצ׳יפס|דוריטוס|צ׳יטוס|אפרופו|ופל|וופל|עוגיות|עוגייה|קרקר|בייגלה|שקדי מרק|שוקולד|ממרח|מרגרינה|מיונז|קטשופ|גלידה|ארטיק|שלגון|קרטיב|מעדן|מילקי|(^|\s)סקי |קרם בוואריה|אייס קפה|שוקו|משקה קל|משקה אנרגיה|איזוטוני|קולה|מוגז|נקטר(?!ינ)|תרכיז|מנה חמה|אינסטנט|אבקת|קורנפלקס|צ׳יריוס|כריות עם|פיטנס|ברנפלקס|וויטביקס|מותכת|טוסטי|אצבעות מוצרלה|קרואסון|רוגלך|מאפינס|סוכרי|מסטיק|מרשמלו|טופי|קרמבו|פיצה|בורקס|מלאווח|ג׳חנון|יוגורט פירות|יוגורט מולר|יוגורט לשתייה|חלבה|ריבה/ },
+  seed_oils: { tags: [],
+    ids: ['fries', 'chips', 'tuna_oil', 'tuna_salad', 'egg_salad', 'tofu', 'schnitzel', 'chicken_wings', 'falafel', 'mayo', 'bamba', 'bissli', 'wafers', 'cookies', 'veg_schnitzel',
+      'canola_oil', 'sunflower_oil', 'margarine', 'mayo_light', 'lentils_onion'],
+    re: /שמן קנולה|שמן חמניות|שמן סויה|שמן תירס|מרגרינה|מיונז|מטוגנ|מטוגן|טיגון|צ׳יפס|בשמן(?! זית)|שניצל|נאגטס|פלאפל|לביבות|סופגני|בבלילה|במבה|ביסלי|דוריטוס|צ׳יטוס|אפרופו|בורקס|מלאווח|ג׳חנון|עוגיות|ופל|וופל/ },
   sugar: { tags: [],
     ids: ['dairy_pudding', 'chocolate_milk', 'cornflakes', 'pancakes', 'chocolate_spread', 'honey', 'jam', 'halva', 'chocolate', 'wafers', 'cookies', 'granola_bar', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink'],
     re: /סוכר|שוקולד|שוקו|ריבה|דבש|סילאן|סירופ|מייפל|ממרח תמרים|חלבה|ממתק|סוכרי|מסטיק|מרשמלו|טופי|קרמבו|עוגת|עוגה|עוגיות|עוגייה|ופל|וופל|מאפינס|רוגלך|קרואסון שוקולד|לחמנייה מתוקה|גביניה|גלידה|ארטיק|שלגון|קרטיב|מעדן|מילקי|(^|\s)סקי |מלבי|קרם בוואריה|סחלב|אייס קפה|משקה קל|משקה אנרגיה|איזוטוני|קולה|מוגז|נקטר(?!ינ)|תרכיז|לימונדה|תה קר|יוגורט פירות|יוגורט מולר|יוגורט לשתייה|חלבון עם פרי|גרנולה|מוזלי|קורנפלקס|צ׳יריוס|כריות עם|פיטנס|ברנפלקס|חטיף|לפתן|אפרסקים משומרים|אננס משומר|רסק תפוחים|חמוציות מיובשות|קטשופ|צ׳ילי מתוק|טריאקי/ },
 };
 // מאכלים שהתבנית תופסת בטעות
-const GROUP_KEEP = { wheat: /^אורז|תירס|כוסמת|קינואה/, processed: /בלי מיונז|שעועית/, sugar: /בלי סוכר|ללא סוכר|דיאט/ };
-const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_schnitzel', 'oatmeal_milk', 'oatmeal_water', 'oats', 'cornflakes', 'cornflakes_dry'], processed: ['tuna_can', 'tuna_oil', 'corn_canned', 'beans_tomato_canned', 'sardines_oil', 'mackerel_can'], sugar: [] };
+const GROUP_KEEP = { wheat: /^אורז|תירס|כוסמת|קינואה/, processed: /בלי מיונז|שעועית/, sugar: /בלי סוכר|ללא סוכר|דיאט/, seed_oils: /שמן זית|ללא שמן|בלי מיונז|אפוי|באוויר/ };
+const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_schnitzel', 'oatmeal_milk', 'oatmeal_water', 'oats', 'cornflakes', 'cornflakes_dry'], processed: ['tuna_can', 'tuna_oil', 'corn_canned', 'beans_tomato_canned', 'sardines_oil', 'mackerel_can'], sugar: [], seed_oils: ['sunflower_seeds', 'egg_omelette', 'israeli_salad', 'baked_fries'] };
 export function inDislikeGroup(food, g) {
   const d = DISLIKE_GROUPS[g]; if (!d || !food) return false;
   if (GROUP_OK[g].includes(food.id)) return false;
@@ -416,6 +421,12 @@ export function qtyLabel(q) {
 
 // ───── יומן אכילה ─────
 // daily.foods: [{ id, qty, at }] ; מזונות אישיים: profile.customFoods
+// מנה אישית שנבנתה ממרכיבים (בקשת בעל המוצר, 23.11.2026): הערכים הם סכום המרכיבים לפי הכמות — parts: [{ id, qty }]
+export function partsTotals(parts = [], customFoods = []) {
+  const s = { kcal: 0, p: 0, c: 0, f: 0, fib: 0 };
+  for (const it of parts) { const x = foodLookup(it.id, customFoods); if (!x) continue; for (const k of Object.keys(s)) s[k] += (Number(x[k]) || 0) * (it.qty || 0); }
+  return { kcal: Math.round(s.kcal), p: Math.round(s.p * 10) / 10, c: Math.round(s.c * 10) / 10, f: Math.round(s.f * 10) / 10, fib: Math.round(s.fib * 10) / 10 };
+}
 export function foodLookup(id, customFoods = []) {
   return FOOD[id] || customFoods.find((f) => f.id === id) || null;
 }

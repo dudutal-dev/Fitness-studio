@@ -5,7 +5,7 @@ export const DISLIKE_TAGS = {
   legumes: 'קטניות', nuts: 'אגוזים', chicken: 'עוף', red_meat: 'בשר אדום', rice: 'אורז', pasta: 'פסטה', oats: 'שיבולת שועל',
   hummus: 'חומוס', tahini: 'טחינה', avocado: 'אבוקדו', bread: 'לחם', spicy: 'חריף', peanut: 'חמאת בוטנים',
   // קבוצות רחבות (23.11.2026): לא תגית במאגר — הרשימה שלהן ב-DISLIKE_GROUPS שב-engine/nutrition.js
-  wheat: 'חיטה', processed: 'אוכל מעובד', sugar: 'סוכר',
+  wheat: 'חיטה', processed: 'אוכל מעובד', sugar: 'סוכר', seed_oils: 'שמני זרעים',
 };
 
 // ערכי המזון נוצרו אוטומטית ע״י tools/build_foods.py ממאגר התזונה הלאומי של משרד הבריאות (data.gov.il).

@@ -5,7 +5,7 @@ import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
 import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList, activityFor } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
-import { mealPlan, orderMeals, mealWindow, qtyLabel, dayTotals, foodLookup, searchFoods, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
+import { mealPlan, orderMeals, mealWindow, qtyLabel, dayTotals, foodLookup, searchFoods, partsTotals, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 // טיפים למי שאוכל בחדר אוכל ובשטח (העדפות ← "בשירות"): במקום הטיפ על ימים עמוסים — שלושה טיפים של שירות
 const SERVICE_TIPS = [
@@ -409,12 +409,21 @@ function scanSheet(slot, onDone) {
 }
 
 // prefill: מחרוזת (שם) או אובייקט ממאגר הברקודים { name, portion, kcal, p, c, f, fib, barcode }
+// מנה ממרכיבים (בקשת בעל המוצר, 23.11.2026): מחפשים מרכיבים מהמאגר, קובעים כמות לכל אחד, והקלוריות והערכים מחושבים לבד (partsTotals).
+// בלי מרכיבים — מקלידים ערכים מהתווית, כמו קודם.
 function customFoodSheet(slot, onDone, prefill = '') {
   const pre = typeof prefill === 'string' ? { name: prefill } : prefill || {};
   const val = (v) => (v == null ? '' : esc(v));
+  const custom = () => get().profile.customFoods || [];
+  let parts = [], pq = '';
   sheet(html`<div class="eyebrow">${pre.barcode ? `ברקוד ${esc(pre.barcode)}` : 'מזון אישי'}</div><div class="h1" style="font-size:22px">${pre.found ? 'לבדוק ולשמור' : 'הוספת מזון חדש'}</div>
-    <p class="sub">${pre.found ? 'הערכים הגיעו ממאגר פתוח שמשתמשים ממלאים — כדאי להשוות לתווית.' : 'יישמר אצלך ויופיע בחיפוש בפעם הבאה. אפשר להעתיק ערכים מהתווית שעל האריזה.'}</p>
+    <p class="sub">${pre.found ? 'הערכים הגיעו ממאגר פתוח שמשתמשים ממלאים — כדאי להשוות לתווית.' : 'יישמר אצלך ויופיע בחיפוש בפעם הבאה. מוסיפים את המרכיבים והקלוריות מחושבות לבד, או מעתיקים ערכים מהתווית שעל האריזה.'}</p>
     <label class="field"><span>שם</span><input class="input" name="name" value="${val(pre.name)}"></label>
+    ${pre.found ? '' : `<div class="h2" style="margin-top:12px">ממה המנה מורכבת?</div>
+    <div data-parts></div>
+    <input class="input" data-pq placeholder="חיפוש מרכיב: אורז, עוף, שמן זית…" autocomplete="off" style="height:44px">
+    <div class="food-res part-res" data-pres hidden></div>`}
+    <div class="sub t-foot" data-pnote style="margin:10px 0 6px">${pre.found ? '' : 'בלי מרכיבים אפשר להקליד את הערכים למנה:'}</div>
     <label class="field"><span>מנה (למשל: יחידה, 100 ג׳)</span><input class="input" name="portion" value="${val(pre.portion || 'מנה')}"></label>
     <div class="grid2">
       <label class="field"><span>קלוריות</span><input class="input num" name="kcal" type="number" inputmode="numeric" value="${val(pre.kcal)}"></label>
@@ -424,11 +433,37 @@ function customFoodSheet(slot, onDone, prefill = '') {
     </div>
     <button class="btn primary block xl" data-save>שמור והוסף ליומן</button>`, {
     onMount(sh, close) {
+      const inp = (n) => sh.querySelector(`[name=${n}]`);
+      // המרכיבים שנבחרו, וערכי המנה שמחושבים מהם (השדות ננעלים כל עוד יש מרכיבים)
+      const paintParts = () => {
+        const box = sh.querySelector('[data-parts]'); if (!box) return;
+        box.innerHTML = parts.map((it, i) => { const x = foodLookup(it.id, custom()); return `<div class="part-row"><span><b>${esc(x.name)}</b><small>${qtyLabel(it.qty)}${esc(x.portion)} · ${Math.round(x.kcal * it.qty)} קק״ל</small></span>
+          <button type="button" data-pm="${i}" aria-label="פחות">−</button><b class="num">${it.qty}</b><button type="button" data-pp="${i}" aria-label="עוד">+</button></div>`; }).join('');
+        const has = parts.length > 0, tot = partsTotals(parts, custom());
+        for (const k of ['kcal', 'p', 'c', 'f']) { const el = inp(k); if (has) el.value = tot[k]; el.readOnly = has; el.classList.toggle('auto', has); }
+        sh.querySelector('[data-pnote]').textContent = has ? `מחושב מהמרכיבים: ${tot.kcal} קק״ל · ${tot.p} ג׳ חלבון למנה` : 'בלי מרכיבים אפשר להקליד את הערכים למנה:';
+      };
+      const paintRes = () => {
+        const box = sh.querySelector('[data-pres]'); if (!box) return;
+        const res = pq.trim().length < 2 ? [] : searchFoods(pq, custom(), { limit: 6 });
+        box.hidden = !res.length;
+        box.innerHTML = res.map((x) => `<button type="button" class="food-row" data-padd="${x.id}"><span><b>${esc(x.name)}</b><small>${esc(x.portion)}</small></span><span class="num"><b>${Math.round(x.kcal)}</b><small>קק״ל</small></span></button>`).join('');
+      };
+      sh.querySelector('[data-pq]')?.addEventListener('input', (e) => { pq = e.target.value; paintRes(); });
+      on(sh, 'click', '[data-padd]', (e, b) => {
+        const had = parts.find((x) => x.id === b.dataset.padd);
+        if (had) had.qty += 1; else parts.push({ id: b.dataset.padd, qty: 1 });
+        pq = ''; sh.querySelector('[data-pq]').value = ''; paintRes(); paintParts();
+      });
+      on(sh, 'click', '[data-pp]', (e, b) => { parts[Number(b.dataset.pp)].qty += 0.5; paintParts(); });
+      on(sh, 'click', '[data-pm]', (e, b) => { const i = Number(b.dataset.pm); parts[i].qty -= 0.5; if (parts[i].qty <= 0) parts.splice(i, 1); paintParts(); });
       sh.querySelector('[data-save]').addEventListener('click', () => {
-        const v = (n) => sh.querySelector(`[name=${n}]`).value.trim();
-        const name = v('name'), kcal = Number(v('kcal'));
-        if (!name || !kcal) { toast('צריך לפחות שם וקלוריות'); return; }
-        const food = { id: `c_${Date.now()}`, name, portion: v('portion') || 'מנה', kcal, p: Number(v('p')) || 0, c: Number(v('c')) || 0, f: Number(v('f')) || 0, fib: Number(pre.fib) || 0, cat: 'custom', tags: [], ctx: ['base', 'home', 'field'], custom: true, ...(pre.barcode ? { barcode: pre.barcode } : {}) };
+        const v = (n) => inp(n).value.trim();
+        const name = v('name'), tot = parts.length ? partsTotals(parts, custom()) : null, kcal = tot ? tot.kcal : Number(v('kcal'));
+        if (!name) { toast('צריך לתת למנה שם'); return; }
+        if (!kcal) { toast('מוסיפים מרכיב אחד לפחות, או מקלידים קלוריות'); return; }
+        const food = { id: `c_${Date.now()}`, name, portion: v('portion') || 'מנה', kcal, p: tot ? tot.p : Number(v('p')) || 0, c: tot ? tot.c : Number(v('c')) || 0, f: tot ? tot.f : Number(v('f')) || 0, fib: tot ? tot.fib : Number(pre.fib) || 0,
+          cat: 'custom', tags: [], ctx: ['base', 'home', 'field'], custom: true, ...(pre.barcode ? { barcode: pre.barcode } : {}), ...(tot ? { parts: parts.map((x) => ({ id: x.id, qty: x.qty })) } : {}) };
         set((s2) => { (s2.profile.customFoods ||= []).push(food); return s2; });
         setDaily({ foods: [...(daily().foods || []), { id: food.id, qty: 1, slot, at: Date.now() }] });
         toast(`✓ ${name} נשמר ונרשם`);
