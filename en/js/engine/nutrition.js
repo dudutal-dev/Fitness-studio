@@ -124,8 +124,36 @@ export function trendAdvice(weights = [], profile = {}, now = Date.now()) {
   return { kgWeek: Math.round(slope * 7 * 100) / 100, pctWeek: Math.round(pctWeek * 100) / 100, range: [lo, hi], step, onTrack: pctWeek >= lo && pctWeek <= hi };
 }
 
+// "לא אוכל" רחב (בקשת בעל המוצר, 23.11.2026): חיטה, אוכל מעובד, סוכר. אין להן תגית במאגר, ולכן כל קבוצה מוגדרת כאן:
+// תגיות קיימות, מאכלים בשמם (מאכלי התפריט נבדקו אחד-אחד), ותבנית על השם — לשאר המאגר (חיפוש, יומן, החלפות).
+// חיטה: לחם, פסטה ומה שעשוי מקמח או מצופה בו (לא שיבולת שועל ולא תירס). מעובד: נקניקים, חטיפים, ממתקים, משקאות ממותקים, מעדנים,
+// תחליפי בשר ואבקות. סוכר: סוכר מוסף — ממתקים, מאפים מתוקים, משקאות ממותקים, דבש וריבה; פרי שלם ופרי יבש נשארים.
+export const DISLIKE_GROUPS = {
+  wheat: { tags: ['bread', 'pasta'],
+    ids: ['couscous', 'bulgur', 'schnitzel', 'chicken_wings', 'pancakes', 'fish_patties', 'chicken_meatballs', 'beef_meatballs', 'kebab', 'falafel', 'cookies', 'wafers', 'bissli', 'granola_bar',
+      'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground'],
+    re: /שניצל|נאגטס|מצופה \(קפוא\)|קבוקים|בבלילה|סופגני|קוסקוס|בורגול|פתיתים|אטריות|נודלס|ניוקי|קוגל אטריות|סולת|מצה|קרקר|לחמית|בייגל|שקדי מרק|קרואסון|רוגלך|עוגת|עוגה|עוגיות|עוגייה|מאפינס|מאפה|גביניה|וופל|ופל|בלינצ׳ס|בורקס|פיצה|^טוסט|כריך|בפיתה|בלחמנייה|ג׳חנון|מלאווח|קובנה|לחוח|טורטייה|לאפה|קציצות|ברנפלקס|וויטביקס|כריות עם|פיטנס|צ׳יריוס|סיגר|סמבוסק|קרוטונים|פירורי לחם|סנדוויץ׳/ },
+  processed: { tags: [],
+    ids: ['hot_dog', 'loof', 'jerky', 'turkey_slices', 'pastrami_beef', 'salami', 'chicken_wings', 'tuna_salad', 'egg_salad', 'dairy_pudding', 'chocolate_milk', 'protein_shake', 'whey_milk', 'cornflakes', 'mayo',
+      'chocolate_spread', 'bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'granola_bar', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink', 'halva', 'jam',
+      'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'veg_hot_dogs', 'soy_protein', 'pea_protein', 'soy_flakes'],
+    re: /נקניק|קבנוס|פסטרמה|סלמי|מעושן|משומר|שימורים|קפוא|תעשייתי|נאגטס|מן הצומח|שניצל תירס|חטיף|ביסלי|במבה|תפוצ׳יפס|דוריטוס|צ׳יטוס|אפרופו|ופל|וופל|עוגיות|עוגייה|קרקר|בייגלה|שקדי מרק|שוקולד|ממרח|מרגרינה|מיונז|קטשופ|גלידה|ארטיק|שלגון|קרטיב|מעדן|מילקי|(^|\s)סקי |קרם בוואריה|אייס קפה|שוקו|משקה קל|משקה אנרגיה|איזוטוני|קולה|מוגז|נקטר(?!ינ)|תרכיז|מנה חמה|אינסטנט|אבקת|קורנפלקס|צ׳יריוס|כריות עם|פיטנס|ברנפלקס|וויטביקס|מותכת|טוסטי|אצבעות מוצרלה|קרואסון|רוגלך|מאפינס|סוכרי|מסטיק|מרשמלו|טופי|קרמבו|פיצה|בורקס|מלאווח|ג׳חנון|יוגורט פירות|יוגורט מולר|יוגורט לשתייה|חלבה|ריבה/ },
+  sugar: { tags: [],
+    ids: ['dairy_pudding', 'chocolate_milk', 'cornflakes', 'pancakes', 'chocolate_spread', 'honey', 'jam', 'halva', 'chocolate', 'wafers', 'cookies', 'granola_bar', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink'],
+    re: /סוכר|שוקולד|שוקו|ריבה|דבש|סילאן|סירופ|מייפל|ממרח תמרים|חלבה|ממתק|סוכרי|מסטיק|מרשמלו|טופי|קרמבו|עוגת|עוגה|עוגיות|עוגייה|ופל|וופל|מאפינס|רוגלך|קרואסון שוקולד|לחמנייה מתוקה|גביניה|גלידה|ארטיק|שלגון|קרטיב|מעדן|מילקי|(^|\s)סקי |מלבי|קרם בוואריה|סחלב|אייס קפה|משקה קל|משקה אנרגיה|איזוטוני|קולה|מוגז|נקטר(?!ינ)|תרכיז|לימונדה|תה קר|יוגורט פירות|יוגורט מולר|יוגורט לשתייה|חלבון עם פרי|גרנולה|מוזלי|קורנפלקס|צ׳יריוס|כריות עם|פיטנס|ברנפלקס|חטיף|לפתן|אפרסקים משומרים|אננס משומר|רסק תפוחים|חמוציות מיובשות|קטשופ|צ׳ילי מתוק|טריאקי/ },
+};
+// מאכלים שהתבנית תופסת בטעות
+const GROUP_KEEP = { wheat: /^אורז|תירס|כוסמת|קינואה/, processed: /בלי מיונז|שעועית/, sugar: /בלי סוכר|ללא סוכר|דיאט/ };
+const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_schnitzel', 'oatmeal_milk', 'oatmeal_water', 'oats', 'cornflakes', 'cornflakes_dry'], processed: ['tuna_can', 'tuna_oil', 'corn_canned', 'beans_tomato_canned', 'sardines_oil', 'mackerel_can'], sugar: [] };
+export function inDislikeGroup(food, g) {
+  const d = DISLIKE_GROUPS[g]; if (!d || !food) return false;
+  if (GROUP_OK[g].includes(food.id)) return false;
+  if (d.ids.includes(food.id) || (food.tags || []).some((t) => d.tags.includes(t))) return true;
+  return d.re.test(food.name) && !GROUP_KEEP[g].test(food.name);
+}
 export function allowed(food, dislikes = [], dislikedFoods = []) {
   if (dislikedFoods.includes(food.id)) return false;
+  if (dislikes.some((g) => DISLIKE_GROUPS[g] && inDislikeGroup(food, g))) return false;
   return !food.tags.some((t) => dislikes.includes(t));
 }
 
