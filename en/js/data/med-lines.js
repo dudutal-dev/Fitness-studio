@@ -1,0 +1,75 @@
+// מדיטציה בתנועה עם אור (בקשת בעל המוצר, 24.11.2026; רק ב-MOVA): ששת המסעות והטקסטים שאור אומרת.
+// לכל מסע: open (בחימום) · p1–p4 (בפתיחת כל אחד מארבעת חלקי ההליכה) · close (בהליכה הרגועה שבסוף).
+// הכללים: דיבור קצר על רעיון אחד ואחריו שתיקה ארוכה עם המוזיקה; הכול בלשון ניטרלית ("הולכים", "נושמים") — בלי גרסאות נקבה ובלי שמות;
+// מדיטציה בעיניים פקוחות — הולכים בחוץ, והמבט נשאר על הדרך. משפט חדש: מוסיפים כאן, ואז צינור הקולות.
+export const MED_JOURNEYS = {
+  release: { name: 'Release', icon: 'leaf', desc: 'What\'s heavy drops away with every exhale and every step' },
+  heal: { name: 'Healing', icon: 'heart', desc: 'Gentle attention to the body, one place at a time' },
+  connect: { name: 'Connection', icon: 'sparkle', desc: 'To the ground, to what\'s around you, and to the people who matter' },
+  reset: { name: 'Reset', icon: 'target', desc: 'A quiet head, and one intention for the rest of the day' },
+  thanks: { name: 'Gratitude', icon: 'star', desc: 'Three good things, one in each part of the way' },
+  presence: { name: 'Presence', icon: 'flame', desc: 'The senses, one by one — being here' },
+};
+export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];
+
+const L = {
+  // כללי
+  med_hello: 'Hello. I\'m Or. ... On this walk there is nowhere to get to. ... Eyes open, a soft gaze, and your attention on the path. ... I\'ll say a little, and leave plenty of silence. ... Let\'s begin to walk.',
+  med_done: 'The walk is over. ... Stand still for a moment, and take one deep breath. ... Whatever you found on the way stays with you.',
+  med_a1: 'Come back to your steps. ... One foot, and then the other.',
+  med_a2: 'If your thoughts wandered off, that\'s fine. ... Come back gently to the breath.',
+  med_a3: 'Soft shoulders. ... A loose jaw. ... Keep going.',
+  med_a4: 'One deep breath in. ... And a long breath out.',
+
+  // שחרור
+  med_release_open: 'This walk is about release. ... Start slowly, at an easy pace. ... Notice what your body is holding right now. The shoulders, the jaw, the belly. ... Don\'t change anything. Just notice.',
+  med_release_p1: 'With every exhale, something small drops away. ... Breathe in through the nose. ... And a long breath out through the mouth. ... Your shoulders drop away from your ears. ... Your arms swing freely. ... Every step leaves something behind.',
+  med_release_p2: 'There is one thing you\'ve been carrying since this morning. ... A thought, a conversation, a worry. ... Give it a name, silently. ... Now imagine it resting in the palm of your hand. ... And on the next step, the hand opens.',
+  med_release_p3: 'Nothing needs solving right now. ... The path isn\'t asking for answers. ... It only asks for the next step. ... Whatever is out of your hands can stay here, on the trail.',
+  med_release_p4: 'Notice how much lighter the body feels now. ... The breath is wider. ... The step is softer. ... This is what happens when you stop holding on.',
+  med_release_close: 'Slow down. ... A deep breath in, and one last long breath out. ... What was released is released. ... Head home with empty hands.',
+
+  // ריפוי
+  med_heal_open: 'This walk is about healing. ... Start slowly. ... This body carries us every day, and asks for nothing. ... On this walk, we listen to it.',
+  med_heal_p1: 'Begin with the soles of your feet. ... Feel them meet the ground. Heel, sole, toes. ... Then move up slowly. The ankles. The knees. The thighs. ... Each place gets one moment of attention.',
+  med_heal_p2: 'There is one place in the body asking for more. ... Somewhere tired, or sore, or tight. ... Don\'t fight it. ... Breathe into it, as if the breath reaches exactly there. ... And on the exhale, it softens a little.',
+  med_heal_p3: 'Now the heart. ... One hand can rest on your chest for a few steps. ... There are things waiting to heal there too. ... No rush. ... Healing happens at walking pace, not at running pace.',
+  med_heal_p4: 'The body knows how to heal. ... It is doing it now, as you walk. ... Every step moves blood, every breath brings air. ... You can trust it.',
+  med_heal_close: 'Slow down. ... One kind word to your body, silently. ... Thank you for carrying me today. ... Go gently into the rest of the day.',
+
+  // חיבור
+  med_connect_open: 'This walk is about connection. ... Start slowly. ... Feel the ground beneath your feet. ... It holds every step, without conditions.',
+  med_connect_p1: 'Lift your gaze a little. ... The sky, the trees, the houses, the people. ... All of it is alive around you right now. ... There is nothing to do. ... Just walk within it, as part of it.',
+  med_connect_p2: 'Think of one person it feels good to be with. ... See their face. ... For a few steps, walk as if they were here, step beside step. ... And send them, silently, one kind sentence.',
+  med_connect_p3: 'And now, someone you have grown distant from. ... No judging, no fixing. ... Just wish them well, silently. ... That is enough. ... Something inside settles when you do.',
+  med_connect_p4: 'And finally, a connection inward. ... The one who is walking here now. ... With everything that happened today, and everything still to come. ... The one walking here deserves one kind sentence too.',
+  med_connect_close: 'Slow down. ... The ground, the world around, the people, and the heart. ... All of it is connected, even when we don\'t notice. ... Head home a little less alone.',
+
+  // איפוס
+  med_reset_open: 'This walk is about a reset. ... Start slowly. ... The head is full. That\'s fine. ... On this walk we let it empty out, little by little.',
+  med_reset_p1: 'Count your steps, up to ten. ... One, two, three. ... When you reach ten, start again. ... And if you lose count on the way, start again from one. ... No frustration. ... That is the whole practice.',
+  med_reset_p2: 'Now the breath and the steps together. ... Breathe in for four steps. ... Breathe out for six. ... The exhale is longer than the inhale. ... That\'s how the body learns it can settle.',
+  med_reset_p3: 'Thoughts pass like cars on a road. ... You see them, and you don\'t get in. ... Every thought that arrives, passes. ... And only the step remains.',
+  med_reset_p4: 'The head is quieter now. ... In this quiet, choose one thing. ... One intention for the rest of the day. ... A single word, or a short sentence. ... Say it silently three times.',
+  med_reset_close: 'Slow down. ... A deep breath. ... The intention you chose carries on from here. ... Begin the rest of the day afresh.',
+
+  // הודיה
+  med_thanks_open: 'This walk is about gratitude. ... Start slowly. ... We\'re not looking for big things. ... The small things are what hold the day together.',
+  med_thanks_p1: 'The first thing: something in the body that works. ... Legs that walk. Eyes that see. A heart that beats without being asked. ... Choose one, and say thank you for it, silently.',
+  med_thanks_p2: 'The second thing: one person. ... Someone who did some good, today or long ago. ... Remember one moment with them. ... And let the thanks spread through your chest, like warmth.',
+  med_thanks_p3: 'The third thing: something simple from today. ... A cup of coffee, the light, a kind word, a quiet moment. ... Something that almost slipped by unnoticed. ... Notice it now.',
+  med_thanks_p4: 'Three good things are walking here now. ... The body, the person, and the moment. ... When you look for good, you find it. ... And when you find it, the step gets lighter.',
+  med_thanks_close: 'Slow down. ... One last thank you, for this walk. ... For this time. ... Head home with a full heart.',
+
+  // נוכחות
+  med_presence_open: 'This walk is about presence. ... Start slowly. ... Most of the day we are somewhere else: in what was, or in what will be. ... On this walk, we come back here.',
+  med_presence_p1: 'Begin with touch. ... Feet on the ground. Clothes on the skin. Air on the face. ... Warm or cool. ... The body feels this moment before the head thinks about it.',
+  med_presence_p2: 'Now sight. ... A soft, wide gaze. ... One colour that stands out. ... One shape you hadn\'t seen before. ... Light and shadow on the path. ... Just see, without naming.',
+  med_presence_p3: 'And now hearing. ... The farthest sound you can hear. ... Then the nearest. ... Your steps. Your breath. ... Every sound is happening now, in this moment only.',
+  med_presence_p4: 'And now everything together. ... Touch, sight, sound, and breath. ... This is the only moment that truly exists. ... And you are already in it. ... There is nothing to add.',
+  med_presence_close: 'Slow down. ... One breath, with your full attention. ... This presence is always available. ... A single step is enough to come back to it.',
+};
+export const MED_LINES = L;
+export const MED_ANCHORS = ['med_a1', 'med_a2', 'med_a3', 'med_a4'];
+// המשפט של כל מקטע במסע: i = מספר המקטע (0 = חימום, 1–4 = חלקי ההליכה, 5 = סיום)
+export const medLine = (journey, i) => `med_${journey}_${['open', 'p1', 'p2', 'p3', 'p4', 'close'][i]}`;

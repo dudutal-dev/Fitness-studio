@@ -1315,3 +1315,17 @@ button.mi .tag { margin-inline-end: 4px; }
 .part-row .num { min-width: 28px; text-align: center; }
 .part-res { max-height: 30vh; margin-top: 8px; }
 .input.auto { background: var(--panel2); opacity: .85; }
+
+/* מדיטציה בתנועה עם אור: הכרטיס בבית, חלונית הבחירה (איור לכל מסע) ומסך ההליכה */
+.med-card { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin: 8px 0 2px; border-radius: 18px; text-align: right; color: #fff;
+  background-color: #2a1b52; background-size: cover; background-position: center 30%; box-shadow: 0 6px 18px rgba(60, 30, 110, .32); min-height: 76px; }
+.med-card img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, .6); flex: none; }
+.med-card span { flex: 1; min-width: 0; display: flex; flex-direction: column; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); } .med-card small { opacity: .9; font-size: 12.5px; }
+.med-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; } .med-head img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+.med-journeys { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0 12px; }
+.med-j { position: relative; aspect-ratio: 3 / 4; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 1px; padding: 8px; border-radius: 16px; text-align: right; color: #fff;
+  background-color: #1d1238; background-size: cover; background-position: center; border: 2px solid transparent; opacity: .82; transition: opacity .2s, transform .2s; }
+.med-j b { font-size: 15px; } .med-j small { font-size: 10.5px; line-height: 1.25; opacity: .88; }
+.med-j.on { opacity: 1; border-color: #f3c97a; box-shadow: 0 0 0 3px rgba(243, 201, 122, .25), 0 8px 20px rgba(60, 30, 110, .4); transform: translateY(-2px); }
+.live.med-live .stage.run-stage { flex: 0 0 50% !important; }
+.live.med-live .stage.run-stage video, .live.med-live .stage.run-stage img.poster { object-position: 50% 26%; }

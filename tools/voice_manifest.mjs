@@ -6,6 +6,7 @@ import { heKg } from './he_kg.mjs';
 
 export const VOICES = { ori: 'PBHwEnXdzx0yfhIO2UCH' /* Dorian */, noa: 's0T0DT6EAPeX57MQpn3I' /* Danit */, maya: 'tPkZ8BPQfux4koA8Wyli' /* קול שעוצב למאיה */, tamar: 'cgSgspJ2msm6clMCkdW9' /* Jessica */,
   guy: 'SSaO8heNHx6ee5ZRpZ1X' /* Gad Tamir */, shira: 'RrrmZPMES7HQ6Dm2L7GF' /* קול שעוצב לשירה */, lia: 'OehHK6Bc1muk8t8UAZmT' /* קול שעוצב לליה, 20.11.2026: רגוע יותר ("ליה 7"); הקודם: 1rNBx0CqYBvQubC1R0kV */, yael: 'lxMfkT0dhgEot7mUeEV9' /* קול שעוצב ליעל */,
+  or: 'DZfLHmU9ZV4zoN4hMX7h' /* אור — מדיטציה בתנועה: הקול של מסע האלבום ב"המדריך" ("תפילות – קריינית"), בחירת בעל המוצר 24.11.2026 */,
   mei: '3i8AEHdRIbmSE7VcoKkk' /* הקול של המורה מהריפו taichi; חלק מהקליפים (ex_t_*, tc_*) מועתקים משם — tools/build_tai.py */ };
 const PRONOUN_FIX = { m: [[/גאה בך\./g, 'גאה בְּךָ.']], f: [[/גאה בך\./g, 'גאה בָּךְ.']] };
 
@@ -15,7 +16,9 @@ const say = (t) => SAY.reduce((x, [re, rep]) => x.replace(re, rep), t);
 
 // ליה מדברת רגוע (בקשת בעל המוצר, 20.11.2026): בלי סימוני התלהבות ובלי סימני קריאה בהקלטה, והשם מנוקד כדי שלא ייאמר "לי".
 // הטקסט שמוצג בכתוביות לא משתנה.
-const CALM = { lia: (t) => t.replace(/\[excited\]\s*/g, '').replace(/!+/g, '.').replace(/ליה/g, 'לִיָה') };
+const CALM = { lia: (t) => t.replace(/\[excited\]\s*/g, '').replace(/!+/g, '.').replace(/ליה/g, 'לִיָה'),
+  // אור: דיבור איטי ושקט, והשם מנוקד כדי שלא ייאמר "עור"
+  or: (t) => `[calm] [slowly] ${t.replace(/אני אור\./, 'אני אוֹר.')}` };
 
 export function manifest() {
   const out = {};

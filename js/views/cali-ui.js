@@ -249,7 +249,7 @@ function after(track, rerender) {
 
 // ───── המלצת המערכת (הגדרות) ─────
 // אותה המלצה כמו בסוף ההיכרות: שאלה אחת על גישה לחדר כושר, והשאר מהפרופיל (מטרה, ימים, פציעות).
-const TRACK_NAME = { gym: 'חדר כושר', cali: 'קליסתניקס', mix: 'משולב', mob: 'מוביליטי', run: 'ריצה', hiit: 'HIIT', pil: 'פילאטיס', yoga: 'יוגה', tai: 'טאי צ\'י', walk: 'הליכה' };
+const TRACK_NAME = { gym: 'חדר כושר', cali: 'קליסתניקס', mix: 'משולב', mob: 'מוביליטי', run: 'ריצה', hiit: 'HIIT', pil: 'פילאטיס', yoga: 'יוגה', tai: 'טאי צ\'י', walk: 'הליכה', med: 'מדיטציה בתנועה' };
 export function recommendSheet(rerender) {
   const p = get().profile;
   const cur = p.track || 'gym';

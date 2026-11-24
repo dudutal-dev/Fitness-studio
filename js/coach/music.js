@@ -19,6 +19,9 @@ const POOLS = {
   high: n('hiit', 7),
   run: n('run', 9),
   walk: n('walk', 4),
+  // מדיטציה בתנועה (אור): פסיכדלית רגועה ומרחפת לחימום ולהליכה האיטית, פסיכדלית קצבית למקטעים המהירים
+  medcalm: n('medcalm', 3),
+  medbeat: n('medbeat', 3),
   yoga: n('yoga', 4),
   tai: n('tai', 4),
   pil: n('pil', 4),

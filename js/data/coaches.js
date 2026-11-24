@@ -45,10 +45,15 @@ export const COACHES = {
     bio: 'רגועה, סבלנית ומדויקת. מלמדת טאי צ\'י בעמידה גבוהה ובצעדים קטנים: לאט, בלי כאב, ועם כיסא בהישג יד.',
     style: 'רגוע-סבלני', img: 'assets/coaches/mei.webp', face: 'assets/coaches/mei_face.webp',
   },
+  or: {
+    id: 'or', name: 'אור', title: 'מלווה מדיטציה בתנועה', voice: 'קול ייעודי (ElevenLabs)', track: 'med', f: true,
+    bio: 'שקטה, חמה ונוכחת. מדברת מעט ומשאירה הרבה שקט: רעיון אחד לכל הליכה, והדרך עושה את השאר.',
+    style: 'שקט-חם', img: 'assets/coaches/or.webp', face: 'assets/coaches/or_face.webp',
+  },
 };
 COACHES.noa.f = true;
 // המאמנים של כל מסלול: חדר כושר — אורי ונועה; קליסתניקס — מאיה; מוביליטי — תמר; ריצה — גיא ושירה
-const OWN = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'];
+const OWN = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk', 'med'];
 export const coachesFor = (track) => Object.values(COACHES).filter((c) => (c.tracks || [c.track || 'gym']).includes(OWN.includes(track) ? track : 'gym'));
 
 export const demoVideo = (coach, exId) => `assets/demos/${coach}/${exId}.mp4`;

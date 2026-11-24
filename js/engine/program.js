@@ -6,6 +6,7 @@ import { isPil, buildPilWeek, buildPilSessions, pilBlocked, PIL_PHASE } from './
 import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } from './yoga.js';
 import { isTai, buildTaiWeek, buildTaiSessions, taiBlocked, TAI_PHASE } from './tai.js';
 import { isWalk, buildWalkWeek, buildWalkSessions, WALK_PHASE } from './walking.js';
+import { buildMedSessions } from './meditation.js';
 import { isHiit, buildHiitWeek, buildHiitSessions, hiitBlocked, HIIT_PHASE } from './hiit.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -235,9 +236,9 @@ function withMob(profile, week, mobN, opt) {
 // profile.extras = { yoga: 1, run: 2 } — מספר האימונים בשבוע מכל תחום. profile.days הוא סך כל האימונים בשבוע;
 // המסלול הראשי מקבל את מה שנשאר (לפחות אימון אחד). מוביליטי ממשיך לעבוד דרך profile.mobN.
 // במסלול המשולב חדר הכושר והקליסתניקס כבר בפנים, ולכן הם לא נוספים אליו.
-export const EXTRA_TRACKS = ['yoga', 'pil', 'tai', 'hiit', 'walk', 'run', 'cali', 'gym'];
-const EXTRA_NAME = { yoga: 'יוגה', tai: 'טאי צ\'י', walk: 'הליכה', pil: 'פילאטיס', hiit: 'HIIT', run: 'ריצה', cali: 'קליסתניקס', gym: 'חדר כושר' };
-export const extraCoach = (profile, t) => (t === 'yoga' ? 'yael' : t === 'tai' ? 'mei' : t === 'walk' ? 'shira' : t === 'pil' || t === 'hiit' ? 'lia' : t === 'run' ? profile.runCoach || 'guy' : t === 'cali' ? 'maya' : profile.gymCoach || 'ori');
+export const EXTRA_TRACKS = ['yoga', 'pil', 'tai', 'hiit', 'walk', 'med', 'run', 'cali', 'gym'];
+const EXTRA_NAME = { yoga: 'יוגה', tai: 'טאי צ\'י', walk: 'הליכה', med: 'מדיטציה בתנועה', pil: 'פילאטיס', hiit: 'HIIT', run: 'ריצה', cali: 'קליסתניקס', gym: 'חדר כושר' };
+export const extraCoach = (profile, t) => (t === 'yoga' ? 'yael' : t === 'tai' ? 'mei' : t === 'walk' ? 'shira' : t === 'med' ? 'or' : t === 'pil' || t === 'hiit' ? 'lia' : t === 'run' ? profile.runCoach || 'guy' : t === 'cali' ? 'maya' : profile.gymCoach || 'ori');
 export const canExtra = (profile, t) => EXTRA_TRACKS.includes(t) && t !== profile.track && !(profile.track === 'mix' && (t === 'gym' || t === 'cali')) && (t !== 'cali' || !!profile.cali);
 export function extrasOf(profile) {
   const all = Math.min(6, Math.max(2, profile?.days || 4));
@@ -260,7 +261,7 @@ function withExtras(profile, week, extras, opt) {
   const add = [];
   for (const { track, n } of extras) {
     const q = extraProfile(profile, track);
-    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'tai' ? buildTaiSessions(q, n, opt) : track === 'walk' ? buildWalkSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : track === 'hiit' ? buildHiitSessions(q, n, opt)
+    const list = track === 'yoga' ? buildYogaSessions(q, n, opt) : track === 'tai' ? buildTaiSessions(q, n, opt) : track === 'walk' ? buildWalkSessions(q, n, opt) : track === 'med' ? buildMedSessions(q, n, opt) : track === 'pil' ? buildPilSessions(q, n, opt) : track === 'hiit' ? buildHiitSessions(q, n, opt)
       : track === 'run' ? buildRunSessions(q, n, opt) : track === 'cali' ? buildCaliSessions(q, n, opt) : buildMainWeek({ ...q, days: n }, { ...opt, min: 1 }).sessions;
     // חדר כושר כתחום נוסף: רק אימון הכוח (בלי הריצה שמצורפת אליו במסלול חדר הכושר)
     for (const w of list.slice(0, n)) { const { run: _r, ...rest } = track === 'gym' ? w : { ...w, run: undefined }; add.push({ ...(track === 'gym' ? rest : w), ...(track === 'gym' ? {} : { track }), extra: true, xtrack: track, coach: extraCoach(profile, track), name: /^(ריצה|קליסתניקס|הליכה)/.test(w.name) ? w.name : `${EXTRA_NAME[track]} · ${w.name}` }); }
@@ -338,7 +339,7 @@ export function buildFieldWorkout(profile) {
 export function applyReadiness(workout, readiness) {
   const w = structuredClone(workout);
   w.readiness = readiness;
-  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil' || w.track === 'yoga' || w.track === 'tai' || w.track === 'walk') return w;
+  if (w.track === 'mob' || w.track === 'run' || w.track === 'pil' || w.track === 'yoga' || w.track === 'tai' || w.track === 'walk' || w.track === 'med') return w;
   if (w.track === 'hiit') {
     // HIIT: ביום קשה מורידים סבב; אין משקל לשנות
     if (readiness < 0.4 && w.rounds > 2) { w.items = w.items.map((it) => ({ ...it, sets: it.sets - 1 })); w.rounds -= 1; w.note = 'יום קשה? הורדתי סבב אחד. עדיף אימון קצר וטוב.'; }

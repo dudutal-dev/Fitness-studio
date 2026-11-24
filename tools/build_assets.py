@@ -10,12 +10,12 @@ OUT = os.path.join(ROOT, "assets")
 
 def coaches():
     os.makedirs(f"{OUT}/coaches", exist_ok=True)
-    for c in ("ori", "noa", "maya", "tamar", "guy", "shira", "lia", "yael"):   # מיי: tools/build_tai.py
+    for c in ("ori", "noa", "maya", "tamar", "guy", "shira", "lia", "yael", "or"):   # מיי: tools/build_tai.py
         if not os.path.exists(f"{SRC}/coach_{c}.png"): continue  # אין מקור מקומי — משאירים את הקובץ הקיים
         im = Image.open(f"{SRC}/coach_{c}.png").convert("RGB")
         w, h = im.size
         big = im.copy(); big.thumbnail((900, 1200)); big.save(f"{OUT}/coaches/{c}.webp", quality=82)
-        s = int(w * 0.46); cx, cy = (int(w * 0.54), int(h * 0.30)) if c == "maya" else (int(w * 0.5), int(h * 0.19)) if c in ("tamar", "yael") else (int(w * 0.5), int(h * 0.33)) if c == "guy" else (int(w * 0.51), int(h * 0.20)) if c == "lia" else (int(w * 0.52), int(h * 0.30)) if c == "shira" else (w // 2, int(h * 0.27))
+        s = int(w * 0.46); cx, cy = (int(w * 0.54), int(h * 0.30)) if c == "maya" else (int(w * 0.5), int(h * 0.19)) if c in ("tamar", "yael") else (int(w * 0.5), int(h * 0.33)) if c in ("guy", "or") else (int(w * 0.51), int(h * 0.20)) if c == "lia" else (int(w * 0.52), int(h * 0.30)) if c == "shira" else (w // 2, int(h * 0.27))
         face = im.crop((cx - s // 2, cy - s // 2, cx + s // 2, cy + s // 2 + int(s * 0.2))).resize((360, 432), Image.LANCZOS)
         face.save(f"{OUT}/coaches/{c}_face.webp", quality=84)
 

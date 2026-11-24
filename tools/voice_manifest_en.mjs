@@ -2,7 +2,8 @@
 // הקולות: תשעה קולות שעוצבו באנגלית (ElevenLabs Voice Design v3) לפי האופי של כל מאמן — 20.11.2026.
 // הרצה: node tools/i18n.mjs build && node tools/voice_manifest_en.mjs out.json
 export const VOICES_EN = { ori: 'IuLnYv01kSbKZlZIGAC5', noa: '8CYlJulGrRsjrdWfnLCc', maya: 'EUiiDSZNR3WS64UTAJee', tamar: 'zflek5p75cEyvmhCtddx', guy: 'PoB1yI9fx8l77NGGLgwK',
-  shira: 'E4ECevXo2L90KlHN98Nl', lia: 'Z06gPXJ4hPCDhJXAWdp2', yael: 'Knx0MUxBCg7ispHA4gjU', mei: '0psODMu7JXRtdGVBpykA' };
+  shira: 'E4ECevXo2L90KlHN98Nl', lia: 'Z06gPXJ4hPCDhJXAWdp2', yael: 'Knx0MUxBCg7ispHA4gjU', mei: '0psODMu7JXRtdGVBpykA',
+  or: 'tNvEqdMHIjqGUYDksRfx' /* אור — קול שעוצב באנגלית (24.11.2026): נמוך, חם, איטי */ };
 
 import { WEIGHT_VALUES, WEIGHT_COACHES, weightFile } from '../js/data/weights.js';
 import { enKg } from './he_kg.mjs';

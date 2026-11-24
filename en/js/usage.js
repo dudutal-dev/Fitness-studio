@@ -35,7 +35,7 @@ const ACTS = {
   share: 'feat:share', 'share-run': 'feat:share', 'route-img': 'feat:route-img', map: 'feat:map', music: 'feat:music', tv: 'feat:tv', pause: 'feat:pause',
   backup: 'feat:backup', garmin: 'feat:garmin', 'add-food': 'feat:add-food', weigh: 'feat:weigh', 'mob-test': 'feat:mob-test', 'quick-mob': 'feat:quick-mob',
   field: 'feat:field', swap: 'feat:swap', regen: 'feat:regen', shuffle: 'feat:shuffle', track: 'feat:track-sheet', guide: 'feat:guide', speak: 'feat:speak',
-  'free-walk': 'feat:free-walk', 'free-run': 'feat:free-run', notices: 'feat:notices', 'nut-on': 'feat:nut-on', 'nut-off': 'feat:nut-off', lang: 'feat:lang',
+  'free-walk': 'feat:free-walk', med: 'feat:med', 'free-run': 'feat:free-run', notices: 'feat:notices', 'nut-on': 'feat:nut-on', 'nut-off': 'feat:nut-off', lang: 'feat:lang',
 };
 const SCREENS = ['home', 'plan', 'progress', 'nutrition', 'coach', 'guide'];
 

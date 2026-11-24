@@ -22,7 +22,7 @@ export const ACTIVITY = {
 // עומס שבועי: לא כל אימון שווה. שיעור יוגה, פילאטיס או מוביליטי עולה הרבה פחות אנרגיה מאימון כוח, ריצה או HIIT
 // (Compendium of Physical Activities: יוגה ~2.5 MET, פילאטיס ~3, מתיחות ~2.3, מול 3.5–8 באימון כוח ו-HIIT).
 // המשקלים עצמם הם בחירה תכנונית. כך שבוע של "חדר כושר + יוגה" מקבל יעד אחר משבוע של חמישה אימוני כוח.
-const LOAD_W = { yoga: 0.5, pil: 0.6, mob: 0.35, tai: 0.35, walk: 0.5 };
+const LOAD_W = { yoga: 0.5, pil: 0.6, mob: 0.35, tai: 0.35, walk: 0.5, med: 0.35 };
 export function weeklyLoad(profile) {
   const days = Math.min(6, Math.max(1, profile.days || 4));
   const extras = Object.entries(profile.extras || {}).filter(([t, n]) => n > 0 && t !== profile.track);
@@ -87,7 +87,7 @@ export function targets(profile) {
   const tracks = [profile.track, ...Object.keys(profile.extras || {}).filter((k) => profile.extras[k] > 0)];
   const mobOnly = tracks.every((x) => x === 'mob' || x === 'yoga' || x === 'tai'); // גם יוגה: בלי אימוני כוח
   // ריצה בלבד: 1.6 ג׳/ק״ג (ISSN לספורט סבולת: 1.4–1.8), ובגירעון 2.0
-  const runOnly = !mobOnly && tracks.every((x) => ['run', 'pil', 'hiit', 'mob', 'yoga', 'tai', 'walk'].includes(x)); // גם HIIT ופילאטיס: בלי משקולות
+  const runOnly = !mobOnly && tracks.every((x) => ['run', 'pil', 'hiit', 'mob', 'yoga', 'tai', 'walk', 'med'].includes(x)); // גם HIIT ופילאטיס: בלי משקולות
   const perKg0 = mobOnly ? (profile.goal === 'cut' ? 1.8 : 1.4) : runOnly ? (profile.goal === 'cut' ? 2.0 : 1.6) : profile.goal === 'cut' ? 2.2 : 2.0;
   // מצב רפואי: חלבון מתון (עומס חלבון גבוה אינו מתאים למחלת כליות); מתחת לגיל 18: עד 1.6 ג׳/ק״ג
   const perKg = guard.reasons.includes('med') ? Math.min(perKg0, 1.2) : guard.reasons.includes('minor') ? Math.min(perKg0, 1.6) : perKg0;
@@ -474,7 +474,7 @@ export function loadOf(x) {
     if (run.type === 'long' || sec >= 3600) return 'long';
     return ['intervals', 'tempo', 'test'].includes(run.type) ? 'hard' : 'light';
   }
-  if (x.track === 'mob' || x.track === 'pil' || x.track === 'yoga' || x.track === 'tai' || x.track === 'walk' || x.easy) return 'light';
+  if (x.track === 'mob' || x.track === 'pil' || x.track === 'yoga' || x.track === 'tai' || x.track === 'walk' || x.track === 'med' || x.easy) return 'light';
   return 'hard';
 }
 // איזה יום היום: לפי מה שכבר בוצע היום; אחרת לפי האימון הבא בתוכנית — אלא אם המתאמן סימן "מנוחה" (manual === 'rest')

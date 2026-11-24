@@ -53,6 +53,7 @@ export const goalDesc = (goal, track) => (track === 'cali' && CALI_GOAL_DESC[goa
 const nWorkouts = (n, kind) => (n === 1 ? `1 × ${kind} ` : `${n} × ${kind}`);
 export const splitText = (gym, cali) => `${nWorkouts(gym, 'Gym')} + ${nWorkouts(cali, 'Calisthenics')}`;
 export const TRACKS = {
+  med: { name: 'Moving meditation', sub: 'A meditative walk with Or', desc: 'An outdoor walk with Or: one idea per walk — release, healing, connection, reset, gratitude or presence — a few words, plenty of silence, and music that shifts with the pace.' },
   gym: { name: 'Gym', sub: 'Weights, machines and running', desc: 'A strength and fitness plan with Ori or Noa: weights that update themselves, runs and a 3 km test.' },
   mix: { name: 'Combined', sub: 'Gym + calisthenics in the same week', desc: 'Some workouts in the gym with Ori or Noa, and some with bodyweight with Maya. Weights and ladders progress side by side, and you can set how many workouts of each kind — and add mobility workouts with Tamar too.' },
   run: { name: 'Running', sub: 'From a first 5 km to a half marathon', desc: 'A running plan with Guy or Shira: run-walk for beginners, easy runs, intervals and a long run that grows every week. Distance and pace by GPS, and a 3 km test once a month.' },

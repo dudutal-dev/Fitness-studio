@@ -3,6 +3,7 @@
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, emi } from '../ui/dom.js';
 import { get, set, addXP, XP, pushEvent } from '../store.js';
 import { isWalk, walkTarget, paceVerdict } from '../engine/walking.js';
+import { medLine, MED_ANCHORS } from '../data/med-lines.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { shareCard } from '../share-card.js';
 import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget, isRun } from '../engine/running.js';
@@ -12,7 +13,7 @@ import { sessionCoach } from '../engine/cali.js';
 import { say, sayNow, stop, onSpeaking, unlock, preload, useCoach } from '../coach/voice.js';
 import { musicOn, startMusic, stopMusic, setMusicMood } from '../coach/music.js';
 // המוזיקה בריצה: חימום ושחרור רגועים יותר, ובשאר הקטעים — מוזיקת ריצה
-const runMood = (kind, walk) => (kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
+const runMood = (kind, walk, med) => (med ? (kind === 'brisk' ? 'medbeat' : 'medcalm') : kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
 import { gpsTracker, simplifyPath } from '../devices/gps.js';
 import { routeMap } from '../ui/map.js';
 import { track } from '../usage.js';
@@ -42,10 +43,12 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   // ריצה: המאמן של מסלול חדר הכושר, או מאמן הריצה במסלול הריצה. ריצה שנוספה לשבוע של מסלול אחר (extra) — עם מאמן הריצה
   const coach = forced || sessionCoach(profile, null);
   if (forced) useCoach(forced);
+  const medS = run.med || null;   // הליכה מדיטטיבית עם אור: בלי הכוונת קצב, ספירה וטיפים — רק קטע דיבור בפתיחת כל מקטע, ושקט
   const walkS = !!run.walk;   // הליכה מודרכת: אותו מסך, עם הניסוחים, הקולות והמוזיקה של ההליכה
   const runCoach = COACHES[coach].track === 'run', demo = walkS ? 'outdoor_walk' : runCoach ? 'outdoor_run' : 'treadmill_run';
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3',
-    ...(walkS ? ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_pace_hold', 'walk_no_gps', 'walk_count', 'walk_km', 'walk_free'] : [])].filter((k) => coachSays(k, coach)));
+    ...(medS ? ['med_hello', 'med_done', ...MED_ANCHORS, ...[0, 1, 2, 3, 4, 5].map((n) => medLine(medS, n))] : []),
+    ...(walkS && !medS ? ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_pace_hold', 'walk_no_gps', 'walk_count', 'walk_km', 'walk_free'] : [])].filter((k) => coachSays(k, coach)));
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
   let i = 0;
@@ -78,9 +81,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     return gps.distM;
   };
 
-  const root = el(`<div class="live" role="dialog" aria-label="${walkS ? 'הליכה' : 'ריצה'}">
-    <div class="stage run-stage" style="flex:0 0 38%"><img class="poster" src="${demoPoster(coach, demo)}" alt="">
-      <video muted playsinline loop autoplay src="${demoVideo(coach, demo)}"></video>
+  const root = el(`<div class="live ${medS ? 'med-live' : ''}" role="dialog" aria-label="${walkS ? 'הליכה' : 'ריצה'}">
+    <div class="stage run-stage" style="flex:0 0 38%"><img class="poster" src="${medS ? `assets/med/${medS}.webp` : demoPoster(coach, demo)}" alt="">
+      <video muted playsinline loop autoplay src="${medS ? `assets/med/${medS}.mp4` : demoVideo(coach, demo)}"></video>
       <div class="run-map" id="rmap" data-act="mapmode" hidden></div>
       <div class="map-zoom"><button data-act="zin" aria-label="הגדלת המפה">+</button><button data-act="zout" aria-label="הקטנת המפה">−</button></div>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>
@@ -107,7 +110,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <button class="btn primary block xl" style="margin-top:10px;display:none" data-act="free-done" id="freeDone">סיום ושמירה</button>
     </div></div>`);
   document.body.append(root);
-  if (musicOn()) startMusic(runMood(segs[0]?.kind, walkS));
+  if (musicOn()) startMusic(runMood(segs[0]?.kind, walkS, medS));
   document.body.style.overflow = 'hidden';
   const $ = (q) => root.querySelector(q);
   const pill = hrPill();
@@ -150,7 +153,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (paused === v) return;
     paused = v; gps.pause(paused); setKeepAliveState(paused);
     // בהשהיה גם המאמן והמוזיקה שותקים; בהמשך המוזיקה חוזרת
-    if (paused) { stop(); stopMusic(); } else if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS));
+    if (paused) { stop(); stopMusic(); } else if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS, medS));
     $('#pauseBtn').innerHTML = paused ? `${icon('play', 'width="22" height="22"')} המשך` : `${icon('pause', 'width="22" height="22"')} השהה`;
     paused ? $('video').pause() : $('video').play().catch(() => {});
   }
@@ -161,18 +164,19 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     zoneOutSince = 0;
     root.querySelectorAll('.segs i').forEach((n, j) => { n.classList.toggle('cur', j === i); n.classList.toggle('past', j < i); });
     $('#kind').className = `run-kind ${sg.kind}`;
-    setMusicMood(runMood(sg.kind, walkS));
+    setMusicMood(runMood(sg.kind, walkS, medS));
     $('#kind').textContent = SEG_LABEL[sg.kind];
-    $('#lbl').textContent = sg.label + (TARGET_Z[sg.kind] ? ` · יעד דופק Z${TARGET_Z[sg.kind].join('–Z')}` : '');
+    $('#lbl').textContent = sg.label + (TARGET_Z[sg.kind] && !medS ? ` · יעד דופק Z${TARGET_Z[sg.kind].join('–Z')}` : '');
     const p = run.pace;
     const pace = sg.kind === 'fast' ? p.fast : sg.kind === 'tempo' ? p.tempo : sg.kind === 'test' ? p.test : ['steady', 'easy'].includes(sg.kind) ? p.easy : null;
     if ($('#pace')) $('#pace').textContent = pace ? `${fmtPace(pace)} לק״מ` : 'הליכה / קל';
-    segPace = walkS ? walkTarget(profile, sg.kind) : pace ? { max: pace } : null;
+    segPace = medS ? null : walkS ? walkTarget(profile, sg.kind) : pace ? { max: pace } : null;
     if (walkS && segPace?.max) $('#lbl').textContent += ` · יעד קצב ${fmtPace(segPace.max)} לק״מ`;
     const isLastFast = sg.kind === 'fast' && !segs.slice(i + 1).some((x) => x.kind === 'fast');
     const lastPower = walkS && sg.kind === 'power' && !segs.slice(i + 1).some((x) => x.kind === 'power');
     // הליכה: בפתיחה שירה מציגה את עצמה, ואז את המקטע הראשון (בלי לקטוע את הברכה)
-    if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
+    if (medS) say(medLine(medS, Math.min(i, 5)), { priority: !(i === 0 && elapsed === 0), keep: true });   // keep: הפתיחה מחכה לסוף הברכה הארוכה
+    else if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
     else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) });
     tipped = false; praised = false; counted = false;
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
@@ -199,7 +203,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const off = !!(pc && segPace && (segPace.max ? pc > segPace.max * 1.05 : pc < segPace.min * 0.95));
     $('#cpace').className = `num${pc && segPace ? (off ? ' pace-off' : ' pace-ok') : ''}`;
     // מפה: נפתחת לבד כשמתקבל מיקום ראשון (אלא אם כובתה), ומתעדכנת פעם בשנייה
-    if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false) showMap(true); }
+    if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false && !medS) showMap(true); }   // במדיטציה נשאר האיור של המסע; המפה — בכפתור
     if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); map.draw(gps.path, gps.here); }   // המיקום העדכני — המפה זזה עם ההליכה
     if (Math.floor(d / 1000) > splits.length) splits.push(Math.round(elapsed / 1000));
     if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳${st.accuracy > 40 ? ' · קליטה חלשה, המרחק מקורב' : ''}` : st.fixes ? 'אין קליטת GPS כרגע…' : 'מחפש GPS…'; }
@@ -217,7 +221,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       }
     }
     // קילומטרים
-    if (sg.kind !== 'test' && Math.floor(d / 1000) > kmAnnounced) { kmAnnounced = Math.floor(d / 1000); say(walkS ? 'walk_km' : 'run_km'); }
+    if (sg.kind !== 'test' && !medS && Math.floor(d / 1000) > kmAnnounced) { kmAnnounced = Math.floor(d / 1000); say(walkS ? 'walk_km' : 'run_km'); }
 
     if (sg.kind === 'free') {   // אימון חופשי: הטיימר סופר קדימה, ומסיימים בכפתור
       $('#big').textContent = fmtTime(inSeg);
@@ -232,10 +236,12 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     }
     // מאמני הריצה: דגש טכניקה אחרי שתי דקות בקטע ריצה ארוך, ותזכורת קצב בריצות הקלות
     if (runCoach && !tipped && inSeg > 120 && sg.sec >= 480 && ['steady', 'easy'].includes(sg.kind)) { tipped = true; say(i % 2 ? 'run_breathe' : 'run_form'); }
-    if (walkS && !tipped && inSeg > 90 && sg.sec >= 300 && ['stroll', 'brisk'].includes(sg.kind)) { tipped = true; say(sg.kind === 'brisk' ? 'walk_talk' : 'walk_form'); }
+    // מדיטציה: באמצע מקטע ארוך — משפט עיגון קצר אחד (חוזרים אל הצעדים / אל הנשימה)
+    if (medS && !tipped && sg.sec >= 300 && inSeg >= sg.sec / 2 && sg.sec - inSeg > 45) { tipped = true; say(MED_ANCHORS[i % MED_ANCHORS.length]); }
+    if (walkS && !medS && !tipped && inSeg > 90 && sg.sec >= 300 && ['stroll', 'brisk'].includes(sg.kind)) { tipped = true; say(sg.kind === 'brisk' ? 'walk_talk' : 'walk_form'); }
     const left = sg.sec - inSeg;
     // הליכה לפי הקצב מה-GPS: לאט מדי במקטע מהיר — מגבירים; מהר מדי במקטע רגוע — מאטים; ועל קצב טוב שנשמר — מילה טובה
-    if (walkS && !paused) {
+    if (walkS && !medS && !paused) {
       const v = gps.status.ok ? paceVerdict(walkTarget(profile, sg.kind), pc && pc < 2400 ? pc : null) : null;
       if (v !== paceWas) { paceWas = v; paceSince = now; }
       // תגובה מהירה יותר (24.11.2026): אחרי חצי דקה במקטע, סטייה שנמשכת רבע דקה, ולא יותר מפעם בדקה
@@ -248,20 +254,20 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       }
     }
     // אין קליטת מיקום (מסך נעול, או בלי הרשאה): שירה לא רואה את הקצב — אומרת זאת פעם אחת, כדי שיהיה ברור למה אין הכוונה
-    if (walkS && !blindSaid) {
+    if (walkS && !medS && !blindSaid) {
       if (paused || gps.status.ok) blindSince = 0; else if (!blindSince) blindSince = now;
       else if (now - blindSince > 75000 && inSeg > 20 && left > 20) { blindSaid = true; say('walk_no_gps'); }
     }
     $('#big').textContent = fmtTime(left);
     // סוף מקטע בהליכה: ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים), שמסתיימת עם סוף המקטע
-    if (walkS && !counted && left <= 3.35 && left > 2 && sg.sec >= 20) { counted = true; sayNow(['walk_count']); }
+    if (walkS && !medS && !counted && left <= 3.35 && left > 2 && sg.sec >= 20) { counted = true; sayNow(['walk_count']); }
     const secLeft = Math.ceil(left);
     if (secLeft !== tick.last) {
       tick.last = secLeft;
-      if (secLeft === 60 && sg.sec >= 180) say('run_min');
+      if (secLeft === 60 && sg.sec >= 180 && !medS) say('run_min');
       // סוף מקטע: בהליכה — ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים); בריצה — כמו קודם
       if (!walkS && secLeft <= 3 && secLeft >= 1) sayNow([`n${secLeft}`]);
-      if (!saidHalf && totalPlanned > 600 && elapsed / 1000 >= totalPlanned / 2) { saidHalf = true; say(walkS ? 'walk_half' : 'run_half'); }
+      if (!saidHalf && !medS && totalPlanned > 600 && elapsed / 1000 >= totalPlanned / 2) { saidHalf = true; say(walkS ? 'walk_half' : 'run_half'); }
     }
     // סוף המקטע. אם הדף היה מושהה (מסך נעול) והזמן עבר את סוף המקטע — העודף נזקף למקטע הבא, כדי שהאימון יישאר מסונכרן לשעון
     if (left <= 0) { nextSeg(); if (left < -1 && segs[i] !== sg) segStart = elapsed + left * 1000; }
@@ -282,7 +288,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     clearInterval(timer);
     gps.stop();
     const hr = hrRec.stop();
-    if (!testSec) { stop(); say(walkS ? 'walk_done' : 'run_done', { priority: true }); } else say('run_done');
+    if (!testSec) { stop(); say(medS ? 'med_done' : walkS ? 'walk_done' : 'run_done', { priority: true }); } else say('run_done');
     // משפט אחד בהקשר בסיום: השבוע נסגר, פעילות עשירית, פעילות ארוכה (הריצה נשמרת רק אחרי הדירוג, ולכן plus: 1)
     if ((walkS || runCoach) && !testSec) {
       const st0 = get(), tot = st0.plan?.week?.sessions?.length || 0, did = st0.plan?.completedDays || [];
@@ -319,7 +325,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
-      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}) });
+      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}), ...(medS ? { med: medS } : {}) });
       stamp.saved = true; if (routeBlob) saveRouteImage(stamp(), routeBlob);
       close();
     });
@@ -339,7 +345,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const a = t.dataset.act;
     if (a === 'music') {
       set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
-      if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS)); else stopMusic();
+      if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS, medS)); else stopMusic();
       t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
       toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
       return;
@@ -364,7 +370,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     }
   });
 
-  if (walkS) say('walk_hello', { priority: true });
+  if (walkS) say(medS ? 'med_hello' : 'walk_hello', { priority: true });
   else if (runCoach && run.type !== 'test') say(`hello_${coach}`, { priority: true });
   if ((walkS || runCoach) && run.type !== 'test') { const c0 = ctxStart(coach); if (c0) say(c0); }   // משפט אחד בהקשר, אחרי הברכה   // מאמני הריצה מברכים בפתיחה, ובשם
   keepAlive({ title: run.name, artist: COACHES[coach].name, artwork: COACHES[coach].face, togglePause: setPaused });   // ממשיך גם כשהמסך נעול
@@ -374,7 +380,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
 
 // שמירת ריצה (גם מייבוא Garmin): עדכון רמת ריצה במבדק, XP, שיאים
 // לסטטיסטיקת השימוש: רק סוג הפעילות
-const runKind = (r) => (r.type === 'free' ? (r.walk ? 'free-walk' : 'free-run') : r.walk ? 'walk' : 'run');
+const runKind = (r) => (r.type === 'free' ? (r.walk ? 'free-walk' : 'free-run') : r.med ? 'med' : r.walk ? 'walk' : 'run');
 
 export function saveRun(r) {
   if (!r.source) track(`done:${runKind(r)}`);   // לא ריצות שיובאו משעון

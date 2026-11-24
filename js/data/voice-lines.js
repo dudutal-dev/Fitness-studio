@@ -8,6 +8,7 @@ import { HIIT_TIPS } from './hiit-exercises.js';
 import { PIL_TIPS } from './pil-exercises.js';
 import { YOGA_TIPS } from './yoga-exercises.js';
 import { TAI_SAY } from './tai-exercises.js';
+import { MED_LINES } from './med-lines.js';
 
 const NUM = ['', 'אחת', 'שתיים', 'שלוש', 'ארבע', 'חמש', 'שש', 'שבע', 'שמונה', 'תשע', 'עשר',
   'אחת עשרה', 'שתים עשרה', 'שלוש עשרה', 'ארבע עשרה', 'חמש עשרה', 'שש עשרה', 'שבע עשרה', 'שמונה עשרה', 'תשע עשרה', 'עשרים'];
@@ -209,6 +210,8 @@ export const MOBILITY_TIPS = {
 Object.assign(MOBILITY_TIPS, MOB_TIPS, HIIT_TIPS, PIL_TIPS, YOGA_TIPS);
 for (const [id, text] of Object.entries(MOBILITY_TIPS)) lines[`tip_${id}`] = text;
 
+// מדיטציה בתנועה (אור): המשפטים ב-js/data/med-lines.js; רק אור אומרת אותם, והיא לא אומרת שום דבר אחר
+Object.assign(lines, MED_LINES);
 export const VOICE_LINES = lines;
 
 // משפטים בנוסח של מאמן מסוים (גוברים על הנוסח הכללי). מאיה מדברת על שליטה, סבלנות וטכניקה.
@@ -306,6 +309,7 @@ Object.assign(COACH_LINES.guy, { ctx_first: 'זו הריצה הראשונה של
 const CTX_SETS = ['ctx_easy', 'ctx_max', 'ctx_swap'];
 
 export function coachSays(key, coach) {
+  if (key.startsWith('med_') || coach === 'or') return key.startsWith('med_') && coach === 'or';
   const track = coachTrack(coach), cali = track === 'cali';
   if (key.startsWith('ctx_')) return !CTX_SETS.includes(key) || track === 'gym' || cali;
   const all = COACHES[coach]?.tracks || [track];   // מאמנת של שני מסלולים (ליה: HIIT ופילאטיס)
@@ -423,7 +427,7 @@ export function lineFor(key, coach, sex = 'm') {
 
 // נוסח לפי מאמן אם יש (hello לכולם; workout_done לתמר), אחרת הנוסח הכללי
 // התבנית של משפט־שם למאמן: נוסח משלו, או הנוסח הכללי. משפט שיש רק למאמנים מסוימים (pil_hello — רק ליה) מחזיר undefined לאחרים
-export const nameTpl = (v, coach) => v[coach] || (v.m ? v : v.hello_generic);
+export const nameTpl = (v, coach) => (coach === 'or' ? null : v[coach] || (v.m ? v : v.hello_generic));   // אור לא פונה בשם
 export function nameLine(nkey, coach, sex, name) {
   const v = NAME_LINES[nkey];
   if (!v) return null;
