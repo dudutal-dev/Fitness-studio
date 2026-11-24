@@ -122,7 +122,7 @@ export function journeySetup(onStart) {
       <div class="mj-hero short" data-hero style="background-image:url(${medArt(MJ_PATHS[c.path].art, false)})"><button class="icon-btn mj-back" data-mback aria-label="Close">${icon('close', 'width="20" height="20"')}</button>
         <div class="mj-title"><div class="eyebrow">Moving meditation · with ${esc(COACHES.or.name)}</div><div class="mj-name">My Journey</div><div class="mj-desc">A spiritual journey in stages that also builds walking fitness</div></div></div>
       <div class="mj-body">
-        <div class="field"><span>Which path?</span><div class="mjp-list">${Object.entries(MJ_PATHS).map(([k, v]) => `<button type="button" class="mjp ${c.path === k ? 'on' : ''}" data-path="${k}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.25), rgba(12,10,26,.9) 55%), url(${medArt(v.art)})"><b>${v.name}</b><small>${v.desc}</small></button>`).join('')}</div></div>
+        <div class="field"><span>Which path?</span><div class="mjp-list">${Object.entries(MJ_PATHS).map(([k, v]) => `<button type="button" class="mjp ${c.path === k ? 'on' : ''}" data-path="${k}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.05), rgba(12,10,26,.82) 60%), url(${medArt(v.art)})"><b>${v.name}</b><small>${v.desc}</small></button>`).join('')}</div></div>
         <div class="mj-pick">
           <label class="field"><span>Journey length</span>${segH('weeks', MJ_WEEKS.map((v) => [v, `${v} weeks`]))}</label>
           <label class="field"><span>How many walks a week?</span>${segH('days', [2, 3, 4, 5, 6].map((v) => [v, v]))}</label>

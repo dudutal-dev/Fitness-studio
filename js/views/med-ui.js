@@ -122,7 +122,7 @@ export function journeySetup(onStart) {
       <div class="mj-hero short" data-hero style="background-image:url(${medArt(MJ_PATHS[c.path].art, false)})"><button class="icon-btn mj-back" data-mback aria-label="סגירה">${icon('close', 'width="20" height="20"')}</button>
         <div class="mj-title"><div class="eyebrow">מדיטציה בתנועה · עם ${esc(COACHES.or.name)}</div><div class="mj-name">המסע שלי</div><div class="mj-desc">מסע רוחני בשלבים, שבונה גם כושר הליכה</div></div></div>
       <div class="mj-body">
-        <div class="field"><span>איזו דרך?</span><div class="mjp-list">${Object.entries(MJ_PATHS).map(([k, v]) => `<button type="button" class="mjp ${c.path === k ? 'on' : ''}" data-path="${k}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.25), rgba(12,10,26,.9) 55%), url(${medArt(v.art)})"><b>${v.name}</b><small>${v.desc}</small></button>`).join('')}</div></div>
+        <div class="field"><span>איזו דרך?</span><div class="mjp-list">${Object.entries(MJ_PATHS).map(([k, v]) => `<button type="button" class="mjp ${c.path === k ? 'on' : ''}" data-path="${k}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.05), rgba(12,10,26,.82) 60%), url(${medArt(v.art)})"><b>${v.name}</b><small>${v.desc}</small></button>`).join('')}</div></div>
         <div class="mj-pick">
           <label class="field"><span>אורך המסע</span>${segH('weeks', MJ_WEEKS.map((v) => [v, `${v} שבועות`]))}</label>
           <label class="field"><span>כמה הליכות בשבוע?</span>${segH('days', [2, 3, 4, 5, 6].map((v) => [v, v]))}</label>

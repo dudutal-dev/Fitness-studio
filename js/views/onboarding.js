@@ -213,7 +213,7 @@ export function renderOnboarding(root, done) {
     // 4 — מטרה
     () => (med() ? html`<div class="eyebrow">שלב 4 · הדרך</div><div class="q">איזו דרך?</div>
       <p class="sub">הדרך קובעת אילו מסעות פוגשים בכל שלב. אפשר להתחיל מסע חדש בכל רגע, בהגדרות.</p>
-      ${Object.entries(MJ_PATHS).map(([id, x]) => html`<button class="goal-card ${d.mjPath === id ? 'on' : ''}" data-mjpath="${id}"><div class="gi"><img src="assets/med/${x.art}_sq.webp" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></div><div><b>${x.name}</b><span>${x.desc}</span></div></button>`)}`
+      <div class="mjp-list">${Object.entries(MJ_PATHS).map(([id, x]) => `<button type="button" class="mjp ${d.mjPath === id ? 'on' : ''}" data-mjpath="${id}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.05), rgba(12,10,26,.82) 60%), url(assets/med/${x.art}_sq.webp)"><b>${x.name}</b><small>${x.desc}</small></button>`).join('')}</div>`
     : html`<div class="eyebrow">שלב 4 · המטרה</div><div class="q">על מה עובדים?</div>
       ${(undecided() ? ['combat', 'muscle', 'strength', 'cut', 'skill'] : goalsFor(d.track)).map((id) => html`<button class="goal-card ${d.goal === id ? 'on' : ''}" data-goal="${id}">
         <div class="gi">${icon(GOALS[id].icon)}</div><div><b>${GOALS[id].name}</b><span>${goalDesc(id, d.track)}</span></div></button>`)}`),
@@ -468,7 +468,7 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-yogalevel] button', (e, t) => { d.yogaLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-walklevel] button', (e, t) => { d.walkLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-mjlevel] button', (e, t) => { d.mjLevel = Number(t.dataset.v); paint(); });
-  on(root, 'click', '[data-mjpath]', (e, t) => { d.mjPath = t.dataset.mjpath; paint(); });
+  on(root, 'click', '[data-mjpath]', (e, t) => { d.mjPath = t.dataset.mjpath; root.querySelectorAll('[data-mjpath]').forEach((x) => x.classList.toggle('on', x === t)); });   // בלי ציור מחדש: המסך לא מהבהב בכל בחירה
   on(root, 'click', '[data-tailevel] button', (e, t) => { d.taiLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-hiitlevel] button', (e, t) => { d.hiitLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-flag]', (e, t) => { toggle(d.flags, t.dataset.flag); paint(); });
