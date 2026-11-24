@@ -10,7 +10,7 @@ import { get, set, addXP, XP, pushEvent, regenerateWeek, today } from '../store.
 import { EX, EXERCISES, MUSCLES } from '../data/exercises.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { shareCard } from '../share-card.js';
-import { suggest, isPR, roundLoad, bestSet, evaluateLevel } from '../engine/progression.js';
+import { suggest, isPR, roundLoad, nextSetLoad, bestSet, evaluateLevel } from '../engine/progression.js';
 import { applyReadiness, blockedSet, LEVEL_NAMES, warmupFor, cooldownFor } from '../engine/program.js';
 import { say, sayNow, resolve, clipDur, keyDur, stop, onSpeaking, preload, unlock, isSpeaking, coachId, useCoach } from '../coach/voice.js';
 import { weightClip, weightChange, isRecordWeight } from '../data/weights.js';
@@ -466,9 +466,11 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     intraMsg = '';
     const nextSame = steps[k + 1] && steps[k + 1].ii === cur().ii ? log[cur().ii].sets[steps[k + 1].si] : null;
     if (nextSame && e.type === 'weight') {
-      if (sl.rpe <= 6.5 && sl.reps >= it.reps[1] - 1) { nextSame.w = roundLoad(sl.w + e.inc, e); intraMsg = `That was easy — raised to ${nextSame.w} kg`; }
-      else if (sl.rpe >= 10 && sl.reps < it.reps[0]) { nextSame.w = roundLoad(sl.w * 0.92, e); intraMsg = `Lowered to ${nextSame.w} kg to protect your technique`; }
-      else nextSame.w = sl.w;
+      const adj = nextSetLoad(sl, it, e);
+      // חל על כל הסטים שנותרו בתרגיל, כמו שינוי ידני
+      log[cur().ii].sets.forEach((x, j) => { if (j > cur().si && !x.done) x.w = adj.w; });
+      if (adj.why === 'up') intraMsg = `That was easy — raised to ${adj.w} kg`;
+      else if (adj.why === 'down') intraMsg = `Lowered to ${adj.w} kg to protect your technique`;
       nextSame.reps = Math.max(nextSame.reps, it.reps[0]);
     }
     if (k >= steps.length - 1) return finish();

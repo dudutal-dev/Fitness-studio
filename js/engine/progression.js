@@ -13,6 +13,22 @@ export function roundLoad(w, ex) {
   return /מוט/.test(ex.equip) && !/משקולת/.test(ex.equip) ? Math.max(20, r) : r;
 }
 
+// ───── התאמת המשקל בין סטים של אותו תרגיל (אוטו־רגולציה לפי דירוג הסט) ─────
+// set: { w, reps, rpe } — הסט שהסתיים · item: { reps: [lo, hi], rpe: יעד המאמץ של השבוע } · why: 'up' / 'down' / null
+// קל, ובראש טווח החזרות — מעלים צעד. קשה מהיעד — מורידים, כדי שהסטים הבאים יישארו בטווח החזרות ובטכניקה (כ-4% לכל נקודת מאמץ מעל היעד;
+// Helms et al. 2016, Zourdos et al. 2016): לא הגיעו למינימום החזרות — 8% ("עד הקצה") או 5% ("קשה"); "עד הקצה" בתוך הטווח — 5%;
+// "קשה" כשיעד השבוע נמוך ממנו בנקודה לפחות — 4%. בשבוע שיא "קשה" הוא היעד, והמשקל נשאר.
+export function nextSetLoad(set, item, ex) {
+  const { w, reps, rpe } = set, [lo, hi] = item.reps, target = item.rpe || 8;
+  if (rpe <= 6.5 && reps >= hi - 1) return { w: roundLoad(w + ex.inc, ex), why: 'up' };
+  const cut = reps < lo ? (rpe >= 10 ? 0.08 : rpe >= 9 ? 0.05 : 0) : rpe >= 10 ? 0.05 : rpe >= 9 && rpe - target >= 1 ? 0.04 : 0;
+  if (!cut || !(w > 0)) return { w, why: null };
+  let nw = roundLoad(w * (1 - cut), ex);
+  // העיגול החזיר את אותו משקל (משקלים קטנים): יורדים צעד אחד — אם הוא לא יותר מ-12% מהמשקל; אחרת נשארים
+  if (nw >= w) { const step = ex.inc >= 5 ? 2.5 : ex.inc >= 2 ? 1 : 0.5, cand = roundLoad(w - step, ex); nw = cand < w && (w - cand) / w <= 0.12 ? cand : w; }
+  return nw < w ? { w: nw, why: 'down' } : { w, why: null };
+}
+
 // ───── הרמות ידועות (מההרשמה / ההגדרות) ─────
 // profile.lifts: { bench_press | back_squat | deadlift: { w, reps } } — מה שהמתאמן יודע שהוא מרים.
 // משמש רק למשקל הפתיחה של תרגיל שעוד אין לו היסטוריה; אחרי האימון הראשון ההיסטוריה קובעת.
