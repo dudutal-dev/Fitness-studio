@@ -422,7 +422,7 @@ export function renderOnboarding(root, done) {
     if (!COACHES[d.coach].track) d.gymCoach = d.coach; // רק אורי/נועה הם מאמני חדר הכושר
     if (COACHES[d.coach].track === 'run') d.runCoach = d.coach;
     set((s) => { s.profile = s.profile || {}; s.profile.coach = d.coach; return s; });
-    stop(); say(pil() ? 'pil_hello' : `hello_${d.coach}`, { priority: true });
+    stop(); say(d.coach === 'or' ? 'med_hello' : pil() ? 'pil_hello' : `hello_${d.coach}`, { priority: true });   // לאור אין hello_or — משפט הפתיחה שלה הוא med_hello
     paint();
   });
   on(root, 'click', '[data-lohem]', () => { if (importFromLohem()) { toast('הנתונים מ"חוד" הועתקו'); done(); } });
