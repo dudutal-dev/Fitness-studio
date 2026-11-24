@@ -101,5 +101,8 @@
  "כל הליכה נפתחת בחימום ומסתיימת בשחרור. באמצע: הליכה מהירה, קטעים נמרצים עם התאוששות ביניהם, או הליכה ארוכה שגדלה בחמש דקות כל שבוע.": "Every walk opens with a warm-up and ends with a cool-down. In between: a brisk walk, power intervals with recovery between them, or a long walk that grows by five minutes every week.",
  "אומרת מתי להגביר ומתי להאט, והמרחק והקצב נמדדים ב-GPS.": "tells you when to speed up and when to ease off, and distance and pace are measured by GPS.",
  "מהירה": "Brisk",
- "רגועה": "Calm"
+ "רגועה": "Calm",
+ "שבועות": "weeks",
+ "אורך המסע": "Journey length",
+ "הליכה": "Walk"
 }

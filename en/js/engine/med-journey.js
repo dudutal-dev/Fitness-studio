@@ -1,0 +1,60 @@
+// המסלול המדיטטיבי כמסע רוחני בשלבים (בקשת בעל המוצר, 25.11.2026; רק ב-MOVA). כשמדיטציה בתנועה היא המסלול הראשי,
+// התוכנית אינה רק סבב של הליכות: היא מסע של 4 / 8 / 12 שבועות בארבעה שלבים — הגעה, שחרור, העמקה, שילוב — שבונה גם כושר הליכה.
+// הפרמטרים שבוחרים (profile.medJ): path — הדרך הרוחנית · weeks — אורך המסע · level — כושר ההליכה בנקודת הפתיחה (1–3) · time — מתי הולכים.
+// לצדם: profile.days (ימים בשבוע) ו-profile.medMin (אורך הליכה רגילה). השבוע במסע = blockIndex * 4 + weekInBlock (התוכנית נבנית מחדש כשמתחילים מסע).
+// ההתקדמות בכושר: החלק של ההליכות המהירות גדל משלב לשלב (ולפי הרמה); ההליכה הארוכה של השבוע מתארכת בחמש דקות בכל שבוע (עד 20);
+// השבוע האחרון של כל שלב קל יותר (כשהשלב ארוך משבוע): בלי הליכה ארוכה, ופחות הליכות מהירות.
+import { MED_JOURNEYS } from '../data/med-lines.js';
+import { buildMedSession } from './meditation.js';
+
+export const MJ_PATHS = {
+  quiet: { name: 'Inner Quiet', desc: 'Quiet the mind, and come back to this moment', art: 'presence', stages: [['presence', 'reset'], ['release', 'reset'], ['presence', 'heal'], ['thanks', 'presence']] },
+  heal: { name: 'Healing and Renewal', desc: 'Put down what is heavy, and let body and mind renew', art: 'heal', stages: [['heal', 'presence'], ['release', 'heal'], ['heal', 'connect'], ['thanks', 'joy']] },
+  connect: { name: 'Connection and Meaning', desc: 'Connect to your surroundings, to people, and to what truly matters', art: 'connect', stages: [['presence', 'connect'], ['release', 'thanks'], ['connect', 'thanks'], ['joy', 'connect']] },
+  full: { name: 'The Full Journey', desc: 'All the journeys, stage after stage', art: 'thanks', stages: [['presence', 'reset'], ['release', 'heal'], ['connect', 'thanks'], ['energy', 'joy', 'thanks']] },
+};
+export const MJ_STAGES = [
+  { id: 'arrive', name: 'Arriving', desc: 'Arriving. Learning to walk slowly, breathe, and notice.' },
+  { id: 'release', name: 'Release', desc: 'Putting down what is heavy, and the body starts moving more.' },
+  { id: 'deepen', name: 'Deepening', desc: 'Going inward. The walks get longer, and the pace rises.' },
+  { id: 'integrate', name: 'Integration', desc: 'Bringing what was found into life itself, and closing the journey.' },
+];
+export const MJ_WEEKS = [4, 8, 12];
+export const MJ_LEVELS = { 1: 'Just starting', 2: 'Walking regularly', 3: 'Good walking fitness' };
+export const MJ_TIMES = { morning: 'Morning', day: 'During the day', evening: 'Evening' };
+export const MJ_DEFAULT = { path: 'full', weeks: 8, level: 1, time: 'day' };
+
+export const mjOf = (profile) => (profile?.track === 'med' && profile.medJ && MJ_PATHS[profile.medJ.path] ? { ...MJ_DEFAULT, ...profile.medJ } : null);
+// איפה נמצאים במסע בשבוע w (מתחיל ב-0): השלב, השבוע בתוך השלב, האם זה שבוע קל, והאם המסע הושלם
+export function mjAt(mj, w = 0) {
+  const weeks = MJ_WEEKS.includes(mj.weeks) ? mj.weeks : 8, per = weeks / 4, done = w >= weeks, ww = Math.min(Math.max(0, w), weeks - 1);
+  const stage = Math.floor(ww / per), inStage = ww - stage * per;
+  return { weeks, per, week: ww, stage, inStage, light: !done && per >= 2 && inStage === per - 1, done };
+}
+// כמה שבועות "בונים" היו עד השבוע הזה (בלי השבועות הקלים) — לפיהם מתארכת ההליכה הארוכה
+const buildWeeks = (mj, w) => { let n = 0; for (let i = 0; i < w; i++) if (!mjAt(mj, i).light) n++; return n; };
+const FAST_SHARE = [0, 0.34, 0.5, 0.5], FAST_ORDER = [1, 3, 5, 2, 4, 0];
+
+// התוכנית של שבוע במסע: לכל הליכה — המסע שלה, האורך, והקצב
+export function mjWeekPlan(mj, w, n, baseMin = 30) {
+  const at = mjAt(mj, w), pool = MJ_PATHS[mj.path].stages[at.stage], level = Math.min(3, Math.max(1, mj.level || 1));
+  const share = Math.max(0, FAST_SHARE[at.stage] + (level - 1) * 0.17 - (at.light ? 0.34 : 0));
+  const fastN = Math.min(n - 1, Math.round(n * share)), fast = new Set(FAST_ORDER.filter((i) => i < n).slice(0, Math.max(0, fastN)));
+  const add = at.light ? 0 : Math.min(20, 5 * buildWeeks(mj, at.done ? at.weeks : w));
+  return Array.from({ length: n }, (_, i) => {
+    // מי שהולך בבוקר פותח את השבוע במסע הבוקר (כשיש לפחות שלוש הליכות)
+    const journey = mj.time === 'morning' && i === 0 && n >= 3 ? 'morning' : pool[(i + at.inStage) % pool.length];
+    const long = n >= 2 && i === n - 1 && add > 0;
+    return { journey, pace: fast.has(i) ? 'fast' : 'calm', minutes: Math.min(65, baseMin + (long ? add : 0)), long };
+  });
+}
+export function buildMjWeek(profile, { blockIndex = 0, weekInBlock = 0, days = null } = {}) {
+  const mj = mjOf(profile), w = blockIndex * 4 + weekInBlock, at = mjAt(mj, w), n = days ?? Math.min(6, Math.max(2, profile.days || 3)), st = MJ_STAGES[at.stage];
+  const sessions = mjWeekPlan(mj, w, n, profile.medMin || 30).map((x, i) => {
+    const run = buildMedSession(x.journey, { minutes: x.minutes, pace: x.pace, anyLength: true });
+    return { day: i + 1, name: run.name, focus: `${MED_JOURNEYS[run.med].desc}${x.long ? ' · the long walk of the week' : ''}`, track: 'med', runOnly: true, minutes: Math.round(run.totalSec / 60), items: [], warmup: [], cooldown: [], run, ...(x.long ? { long: true } : {}) };
+  });
+  return { blockIndex, weekInBlock, mj: { ...at, path: mj.path },
+    phase: { id: 'med', name: `${MJ_PATHS[mj.path].name} · ${st.name}`, desc: at.done ? 'The journey is complete. Keep walking at the same pace until you choose a new journey.' : st.desc },
+    week: { name: at.done ? 'After the journey' : `Week ${at.week + 1} of ${at.weeks}${at.light ? ' · easy week' : ''}`, rpe: at.light ? 2 : 3, volume: 1, load: 1 }, sessions };
+}

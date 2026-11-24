@@ -7,6 +7,7 @@ import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } fro
 import { isTai, buildTaiWeek, buildTaiSessions, taiBlocked, TAI_PHASE } from './tai.js';
 import { isWalk, isMed, buildWalkWeek, buildWalkSessions, WALK_PHASE } from './walking.js';
 import { buildMedSessions, buildMedWeek, MED_PHASE } from './meditation.js';
+import { mjOf, buildMjWeek } from './med-journey.js';
 import { isHiit, buildHiitWeek, buildHiitSessions, hiitBlocked, HIIT_PHASE } from './hiit.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -293,6 +294,7 @@ function buildCoreWeek(profile, opt = {}) {
 }
 
 function buildMainWeek(profile, { blockIndex = 0, weekInBlock = 0, min = 3 } = {}) {
+  if (mjOf(profile)) return buildMjWeek(profile, { blockIndex, weekInBlock, days: min < 3 ? Math.max(1, profile.days) : null });
   if (isMed(profile)) return buildMedWeek(profile, { blockIndex, weekInBlock, days: min < 3 ? Math.max(1, profile.days) : null });
   if (isWalk(profile)) return min < 3 ? { ...buildWalkWeek(profile, { blockIndex, weekInBlock }), sessions: buildWalkSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildWalkWeek(profile, { blockIndex, weekInBlock });
   if (isTai(profile)) return min < 3 ? { ...buildTaiWeek(profile, { blockIndex, weekInBlock }), sessions: buildTaiSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildTaiWeek(profile, { blockIndex, weekInBlock });

@@ -5,6 +5,7 @@ import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
 import { MED_JOURNEYS, MED_ALL, MED_ABOUT } from '../data/med-lines.js';
 import { buildMedSession, weekJourney, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
+import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, mjOf, mjAt, mjWeekPlan } from '../engine/med-journey.js';
 import { startRun } from './run.js';
 import { STILL, STILL_ALL, STILL_MINUTES, STILL_STAGES, STILL_FRAC } from '../data/med-still.js';
 import { startStill } from './still.js';
@@ -97,8 +98,47 @@ export function journeyScreen(journey, closeSheet) {
   on(root, 'click', '[data-mmin] button', (e, b) => { minutes = Number(b.dataset.v); seg('[data-mmin]', minutes); root.querySelector('[data-way]').innerHTML = way(); });
   on(root, 'click', '[data-mpace] button', (e, b) => { pace = b.dataset.v; seg('[data-mpace]', pace); root.querySelector('[data-way]').innerHTML = way(); });
   on(root, 'click', '[data-mgo]', () => {
-    set((x) => { x.profile.medMin = minutes; x.profile.medPace = pace; return x; });
+    set((x) => { if (!mjOf(x.profile)) { x.profile.medMin = minutes; x.profile.medPace = pace; } return x; });   // במסע בשלבים האורך והקצב נקבעים במסע — הליכה חד־פעמית לא משנה אותם
     close(); closeSheet?.(); startRun(buildMedSession(journey, { minutes, pace }), { coach: 'or' });
   });
+  document.body.append(root);
+}
+
+// הגדרת המסע (25.11.2026): כשמדיטציה בתנועה נבחרת כמסלול ראשי — בוחרים דרך רוחנית, אורך מסע, ימים בשבוע, אורך הליכה, כושר הליכה ומתי הולכים,
+// ורואים את ארבעת השלבים לפני שמתחילים. onStart מקבל { medJ, days, medMin } — מי שקרא שומר ובונה את התוכנית.
+export function journeySetup(onStart) {
+  const p = get().profile, cur = mjOf(p);
+  const c = { ...MJ_DEFAULT, ...(p.medJ || {}), days: Math.min(6, Math.max(2, p.days || 3)), medMin: MED_MINUTES.includes(p.medMin) ? p.medMin : 30 };
+  if (!MJ_PATHS[c.path]) c.path = MJ_DEFAULT.path;
+  const names = (pool) => pool.map((j) => MED_JOURNEYS[j].name).join(' · ');
+  const stages = () => { const per = c.weeks / 4;
+    return `<div class="mj-top"><b>Four stages</b><span class="ms-eff">${c.weeks} weeks</span></div>
+      <ol class="mj-way">${MJ_STAGES.map((st, i) => { const w = i * per, pl = mjWeekPlan(c, w, c.days, c.medMin), fast = pl.filter((x) => x.pace === 'fast').length, long = Math.max(...pl.map((x) => x.minutes));
+        return `<li><span class="dot ${i === 0 ? 'stroll' : i === 3 ? 'power' : 'brisk'}"></span><div><b>${st.name}</b><small>${per === 1 ? `Week ${w + 1}` : `weeks ${w + 1}–${w + per}`} · ${esc(names(MJ_PATHS[c.path].stages[i]))}</small>
+          <p>${esc(st.desc)} ${fast ? `${fast} of ${c.days} walks at a brisk pace` : 'All walks are calm'}${long > c.medMin ? `, and a long walk of ${long} minutes` : ''}.</p></div></li>`; }).join('')}</ol>`; };
+  const segH = (key, opts) => `<div class="seg" data-js="${key}">${opts.map(([v, t]) => `<button type="button" data-v="${v}" class="${String(c[key]) === String(v) ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+  const root = el(html`<div class="med-screen" role="dialog" aria-modal="true" aria-label="My Journey">
+    <div class="mj-scroll">
+      <div class="mj-hero short" data-hero style="background-image:url(${medArt(MJ_PATHS[c.path].art, false)})"><button class="icon-btn mj-back" data-mback aria-label="Close">${icon('close', 'width="20" height="20"')}</button>
+        <div class="mj-title"><div class="eyebrow">Moving meditation · with ${esc(COACHES.or.name)}</div><div class="mj-name">My Journey</div><div class="mj-desc">A spiritual journey in stages that also builds walking fitness</div></div></div>
+      <div class="mj-body">
+        <div class="field"><span>Which path?</span><div class="mjp-list">${Object.entries(MJ_PATHS).map(([k, v]) => `<button type="button" class="mjp ${c.path === k ? 'on' : ''}" data-path="${k}" style="background-image:linear-gradient(90deg, rgba(12,10,26,.25), rgba(12,10,26,.9) 55%), url(${medArt(v.art)})"><b>${v.name}</b><small>${v.desc}</small></button>`).join('')}</div></div>
+        <div class="mj-pick">
+          <label class="field"><span>Journey length</span>${segH('weeks', MJ_WEEKS.map((v) => [v, `${v} weeks`]))}</label>
+          <label class="field"><span>How many walks a week?</span>${segH('days', [2, 3, 4, 5, 6].map((v) => [v, v]))}</label>
+          <label class="field"><span>Regular walk length (minutes)</span>${segH('medMin', MED_MINUTES.map((v) => [v, v]))}</label>
+          <label class="field"><span>Walking fitness today</span>${segH('level', Object.entries(MJ_LEVELS))}</label>
+          <label class="field"><span>When do you walk?</span>${segH('time', Object.entries(MJ_TIMES))}</label>
+        </div>
+        <div class="mj-card" data-stages>${stages()}</div>
+        <div class="sub t-foot">The long walk of the week gets longer gradually, and the last week of each stage is easier. This track has no nutrition menu.</div>
+      </div>
+    </div>
+    <div class="mj-go"><button class="btn primary block xl" data-jstart>${cur ? 'Start a new journey' : 'Start the journey'}</button></div></div>`);
+  const close = () => root.remove(), fresh = () => { root.querySelector('[data-stages]').innerHTML = stages(); };
+  on(root, 'click', '[data-mback]', close);
+  on(root, 'click', '[data-path]', (e, b) => { c.path = b.dataset.path; root.querySelectorAll('.mjp').forEach((x) => x.classList.toggle('on', x === b)); root.querySelector('[data-hero]').style.backgroundImage = `url(${medArt(MJ_PATHS[c.path].art, false)})`; fresh(); });
+  on(root, 'click', '[data-js] button', (e, b) => { const k = b.closest('[data-js]').dataset.js; c[k] = k === 'time' ? b.dataset.v : Number(b.dataset.v); b.parentElement.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); fresh(); });
+  on(root, 'click', '[data-jstart]', () => { close(); onStart({ medJ: { path: c.path, weeks: c.weeks, level: c.level, time: c.time }, days: c.days, medMin: c.medMin }); });
   document.body.append(root);
 }

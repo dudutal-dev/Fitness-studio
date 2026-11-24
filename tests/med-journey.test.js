@@ -1,0 +1,51 @@
+// המסלול המדיטטיבי כמסע רוחני בשלבים: שלבים, התקדמות בכושר ההליכה, שבוע קל, ומבנה השבוע
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, mjOf, mjAt, mjWeekPlan, buildMjWeek } from '../js/engine/med-journey.js';
+import { MED_JOURNEYS } from '../js/data/med-lines.js';
+import { buildWeek } from '../js/engine/program.js';
+
+const prof = (medJ, extra = {}) => ({ track: 'med', coach: 'or', days: 4, medMin: 30, level: 1, goal: 'zen', injuries: [], medJ, ...extra });
+
+test('ארבעה שלבים בכל אורך מסע, ושבוע קל בסוף שלב ארוך', () => {
+  assert.equal(MJ_STAGES.length, 4);
+  for (const weeks of MJ_WEEKS) {
+    const mj = { path: 'full', weeks, level: 1, time: 'day' }, stages = Array.from({ length: weeks }, (_, w) => mjAt(mj, w).stage);
+    assert.deepEqual([...new Set(stages)], [0, 1, 2, 3]);
+    for (let s = 0; s < 4; s++) assert.equal(stages.filter((x) => x === s).length, weeks / 4);
+    const light = Array.from({ length: weeks }, (_, w) => mjAt(mj, w).light);
+    assert.equal(light.filter(Boolean).length, weeks === 4 ? 0 : 4);
+    if (weeks > 4) assert.ok(light[weeks / 4 - 1] && light[weeks - 1]);
+    assert.ok(mjAt(mj, weeks).done && !mjAt(mj, weeks - 1).done);
+  }
+});
+
+test('כל דרך מפנה למסעות קיימים, בארבעה שלבים', () => {
+  for (const [id, p] of Object.entries(MJ_PATHS)) { assert.equal(p.stages.length, 4, id); for (const pool of p.stages) for (const j of pool) assert.ok(MED_JOURNEYS[j], `${id}: ${j}`); assert.ok(MED_JOURNEYS[p.art]); }
+});
+
+test('כושר ההליכה נבנה: יותר הליכות מהירות משלב לשלב, וההליכה הארוכה מתארכת', () => {
+  const mj = { path: 'full', weeks: 8, level: 1, time: 'day' };
+  const fastN = (w) => mjWeekPlan(mj, w, 4, 30).filter((x) => x.pace === 'fast').length, longest = (w) => Math.max(...mjWeekPlan(mj, w, 4, 30).map((x) => x.minutes));
+  assert.equal(fastN(0), 0);                     // בתחילת הדרך, בשלב ההגעה: רק הליכות רגועות
+  assert.ok(fastN(2) >= 1 && fastN(4) >= fastN(2) && fastN(4) >= 2);
+  assert.equal(longest(0), 30); assert.equal(longest(2), 35); assert.ok(longest(6) > longest(4) && longest(4) > longest(2));
+  assert.equal(longest(1), 30); assert.ok(fastN(3) < fastN(2));   // שבוע קל: בלי הליכה ארוכה ופחות מהירות
+  for (let w = 0; w < 9; w++) { const pl = mjWeekPlan(mj, w, 4, 45); assert.ok(pl.some((x) => x.pace === 'calm')); assert.ok(pl.every((x) => x.minutes <= 65 && x.minutes % 5 === 0)); }
+  // רמה גבוהה יותר — יותר הליכות מהירות באותו שבוע
+  assert.ok(mjWeekPlan({ ...mj, level: 3 }, 2, 4).filter((x) => x.pace === 'fast').length > fastN(2));
+  assert.ok(mjWeekPlan({ ...mj, level: 3 }, 0, 4).filter((x) => x.pace === 'fast').length >= 1);
+});
+
+test('השבוע נבנה דרך התוכנית הרגילה, עם שם השלב; בלי medJ — הסבב הישן', () => {
+  const p = prof({ path: 'heal', weeks: 8, level: 2, time: 'morning' });
+  assert.ok(mjOf(p)); assert.equal(mjOf(prof(null)), null); assert.equal(mjOf({ ...p, track: 'gym' }), null);
+  const w0 = buildWeek(p, { blockIndex: 0, weekInBlock: 0 }), w5 = buildWeek(p, { blockIndex: 1, weekInBlock: 0 });
+  assert.equal(w0.sessions.length, 4); assert.equal(w0.mj.stage, 0); assert.equal(w5.mj.stage, 2);
+  assert.match(w0.phase.name, /ריפוי והתחדשות · הגעה/); assert.match(w5.week.name, /שבוע 5 מתוך 8/);
+  assert.equal(w0.sessions[0].run.med, 'morning');   // הולכים בבוקר: השבוע נפתח במסע הבוקר
+  for (const s of [...w0.sessions, ...w5.sessions]) { assert.equal(s.run.segs.length, 6); assert.equal(s.run.totalSec, s.minutes * 60); assert.equal(s.track, 'med'); }
+  assert.ok(w5.sessions.at(-1).long && w5.sessions.at(-1).minutes > 30);
+  const old = buildWeek(prof(null), { blockIndex: 0, weekInBlock: 0 }); assert.equal(old.mj, undefined); assert.equal(old.phase.name, 'מדיטציה בתנועה');
+  const after = buildMjWeek(p, { blockIndex: 2, weekInBlock: 0 }); assert.ok(after.mj.done); assert.equal(after.mj.stage, 3);
+});

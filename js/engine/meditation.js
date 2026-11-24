@@ -39,8 +39,9 @@ export function medEffort(journey, pace = 'calm') {
 export const MED_EFFORT = ['', 'עדינה', 'בינונית', 'נמרצת'];
 
 // הליכה אחת. pace: calm / fast — בוחר את מבנה המסע; minutes: האורך הכולל
-export function buildMedSession(journey = 'release', { minutes = 30, pace = 'calm' } = {}) {
-  const j = MED_JOURNEYS[journey] ? journey : 'release', mins = MED_MINUTES.includes(minutes) ? minutes : 30, pc = pace === 'fast' ? 'fast' : 'calm';
+// anyLength: במסע בשלבים ההליכה הארוכה מתארכת בחמש דקות בכל פעם (15–65 דקות)
+export function buildMedSession(journey = 'release', { minutes = 30, pace = 'calm', anyLength = false } = {}) {
+  const j = MED_JOURNEYS[journey] ? journey : 'release', mins = MED_MINUTES.includes(minutes) || (anyLength && minutes >= 15 && minutes <= 65 && minutes % 5 === 0) ? minutes : 30, pc = pace === 'fast' ? 'fast' : 'calm';
   const sh = SHAPES[j], kinds = medShape(j, pc), total = mins * 60;
   const warm = round15(total * sh.edge[0]), cool = round15(total * sh.edge[1]), main = total - warm - cool, wsum = sh.w.reduce((a, b) => a + b, 0);
   const parts = sh.w.map((w) => round15((main * w) / wsum)); parts[3] += main - parts.reduce((a, b) => a + b, 0);   // העיגול נסגר בחלק האחרון

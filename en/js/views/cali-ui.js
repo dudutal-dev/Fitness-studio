@@ -7,6 +7,7 @@ import { EQUIP, MAX_ACTIVE_SKILLS } from '../data/cali.js';
 import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, rungState, ladderLock, ladderOpen, setRung, toggleSkill, newCali, caliLevel, recommendTrack, mixCaliCount } from '../engine/cali.js';
 import { newMob, mobLevel, mobTested } from '../engine/mob.js';
 import { mobTestSheet } from './mob-ui.js';
+import { journeySetup } from './med-ui.js';
 import { goalForTrack } from '../engine/program.js';
 import { runLevelFrom3k } from '../engine/running.js';
 import { infoSheet } from './workout.js';
@@ -94,16 +95,19 @@ export function switchTrack(track, rerender) {
   if (p.track === 'tai' && track !== 'tai') set((s) => { s.profile.taiLevel = s.profile.level; return s; });
   if (p.track === 'walk' && track !== 'walk') set((s) => { s.profile.walkLevel = s.profile.level; return s; });
   // מדיטציה בתנועה כמסלול ראשי: בלי רמות ובלי תפריט; ההליכות לפי profile.medMin / medPace
+  // מ-25.11.2026 זה מסע רוחני בשלבים: קודם מסך ההגדרה (דרך, אורך, ימים, כושר הליכה), ורק אחרי "מתחילים" עוברים מסלול והתוכנית נבנית
   if (track === 'med') {
-    set((s) => {
-      const q = s.profile;
-      if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
-      q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin ??= 30; q.medPace ??= 'calm'; q.days = Math.min(6, Math.max(2, q.days || 3));
-      if (q.extras) delete q.extras.med;
-      s.plan = createPlan(q);
-      return s;
+    journeySetup((cfg) => {
+      set((s) => {
+        const q = s.profile;
+        if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+        q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin = cfg.medMin; q.medPace ??= 'calm'; q.days = cfg.days; q.medJ = cfg.medJ;
+        if (q.extras) delete q.extras.med;
+        s.plan = createPlan(q);
+        return s;
+      });
+      after('med', rerender);
     });
-    after('med', rerender);
     return;
   }
   if (track === 'walk') {

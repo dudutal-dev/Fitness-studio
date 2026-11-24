@@ -1405,3 +1405,12 @@ button.mi .tag { margin-inline-end: 4px; }
 .segs.jsegs i b { position: absolute; inset-block: 0; inset-inline-start: 0; width: 0; border-radius: 999px; background: #8a5cf6; transition: width .3s linear; }
 .segs.jsegs i.brisk b { background: #f3c97a; } .segs.jsegs i.power b { background: #f3875a; } .segs.jsegs i.warm b, .segs.jsegs i.cool b { background: #6f63b8; }
 .segs.jsegs i.cur { box-shadow: 0 0 0 2px rgba(243, 201, 122, .55); }
+
+/* הגדרת המסע המדיטטיבי (25.11.2026) */
+.mj-hero.short { height: min(38vh, 340px); }
+.mjp-list { display: grid; gap: 8px; }
+.mjp { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; padding: 14px 16px; min-height: 68px; border-radius: 16px; border: 2px solid transparent; background-color: #1a1630; background-size: cover; background-position: center 30%; color: #fff; opacity: .78; }
+.mjp b { font-size: 17px; } .mjp small { font-size: 13px; opacity: .9; }
+.mjp.on { opacity: 1; border-color: #f3c97a; box-shadow: 0 0 0 3px rgba(243, 201, 122, .22); }
+.med-screen .seg button { font-size: 13.5px; padding-inline: 4px; }
+.cycle-bar.mj4 { grid-template-columns: repeat(4, 1fr); gap: 8px; }

@@ -16,6 +16,7 @@ import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
 import { isTai, TAI_LEVELS, taiLevel, TAI_MINUTES } from '../engine/tai.js';
 import { isWalk, isMed, WALK_LEVELS, walkLevel, WALK_MINUTES } from '../engine/walking.js';
 import { MED_MINUTES, MED_PACES } from '../engine/meditation.js';
+import { MJ_PATHS, mjOf } from '../engine/med-journey.js';
 import { flagChips, flagNotes } from './mob-ui.js';
 import { mobSettings, bindMobSettings } from './mob-ui.js';
 import { TRACKS, goalDesc } from './onboarding.js';
@@ -103,7 +104,8 @@ export function renderCoach(root) {
       ${pil ? `<label class="field"><span>אורך שיעור (דקות)</span><div class="seg" data-seg="pilMin">${[20, 30, 40].map((v) => `<button data-v="${v}" class="${(p.pilMin || 30) === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       <label class="field"><span>רמה</span><div class="seg" data-seg="level">${[1, 2, 3].map((v) => `<button data-v="${v}" class="${pilLevel(p) === v ? 'on' : ''}">${PIL_LEVELS[v]}</button>`).join('')}</div></label>
       <div class="field"><span>יש אחד מאלה?</span><div data-pilflags>${flagChips(p.pilFlags || [])}</div>${flagNotes(p.pilFlags || [])}</div>` : ''}
-      ${med ? `<label class="field"><span>אורך הליכה (דקות)</span><div class="seg" data-seg="medMin">${MED_MINUTES.map((v) => `<button data-v="${v}" class="${(p.medMin || 30) === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
+      ${med && mjOf(p) ? `<div class="field"><span>המסע שלי</span><div class="card tight row between"><div><b>${MJ_PATHS[p.medJ.path].name}</b><div class="sub">${p.medJ.weeks || 8} שבועות · ${p.days} הליכות בשבוע · ${p.medMin || 30} דקות</div></div><button type="button" class="btn" data-mjsetup>מסע חדש</button></div></div>` : ''}
+      ${med && !mjOf(p) ? `<div class="field"><button type="button" class="btn block" data-mjsetup>להפוך למסע בשלבים</button></div><label class="field"><span>אורך הליכה (דקות)</span><div class="seg" data-seg="medMin">${MED_MINUTES.map((v) => `<button data-v="${v}" class="${(p.medMin || 30) === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       <label class="field"><span>איזו הליכה?</span><div class="seg" data-seg="medPace">${Object.entries(MED_PACES).map(([v, n]) => `<button data-v="${v}" class="${(p.medPace || 'calm') === v ? 'on' : ''}">${n}</button>`).join('')}</div></label>` : ''}
       ${walk ? `<label class="field"><span>אורך הליכה רגילה (דקות)</span><div class="seg" data-seg="walkMin">${WALK_MINUTES.map((v) => `<button data-v="${v}" class="${(p.walkMin || 30) === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
       <label class="field"><span>רמה</span><div class="seg" data-seg="level">${[1, 2, 3].map((v) => `<button data-v="${v}" class="${walkLevel(p) === v ? 'on' : ''}">${WALK_LEVELS[v]}</button>`).join('')}</div></label>` : ''}
@@ -200,6 +202,7 @@ export function renderCoach(root) {
   if (sessionStorage.getItem('scrollTo') === 'reminders') { sessionStorage.removeItem('scrollTo'); setTimeout(() => root.querySelector('#reminders')?.scrollIntoView({ behavior: 'smooth' }), 100); }
   on(root, 'click', '[data-th]', (e, b) => { set((s2) => { s2.settings.theme = b.dataset.th; return s2; }); applyTheme(); renderCoach(root); });
   on(root, 'click', '[data-rec-track]', () => recommendSheet(() => renderCoach(root)));
+  on(root, 'click', '[data-mjsetup]', () => switchTrack('med', () => renderCoach(root)));
   on(root, 'click', '[data-track]', (e, b) => { if (b.dataset.track !== track) switchTrack(b.dataset.track, () => renderCoach(root)); });
   on(root, 'click', '[data-equip]', (e, b) => {
     const eq = [...get().profile.cali.equip], i = eq.indexOf(b.dataset.equip);
