@@ -64,5 +64,9 @@
  "· קליטה חלשה, המרחק מקורב": "· weak signal, distance is approximate",
  "אין קליטת GPS כרגע…": "No GPS signal right now…",
  "ק״מ ·": "km ·",
- "תמונת המסלול": "Route image"
+ "תמונת המסלול": "Route image",
+ "קצב לק״מ": "Pace per km",
+ "עם": "with",
+ "הנקודות של המסע": "The points of the journey",
+ "המספרים מסומנים על המפה, במקום שבו כל נקודה התחילה.": "The numbers are marked on the map, where each point began."
 }

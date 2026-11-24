@@ -39,7 +39,8 @@ COACHES = {
              "and black leggings, standing barefoot on a wooden studio floor beside a rolled exercise mat, one hand resting lightly on her hip, waist-up framing. "
              "Calm premium movement studio with a light wooden floor, a few rolled mats and a foam roller in the soft-focus background, warm amber and soft teal "
              "accent lighting, shallow depth of field, photorealistic editorial fitness photography, 85mm, cinematic. Absolutely no text, no logos, no brand names, no lettering anywhere.",
-    # אור — מדיטציה בתנועה (24.11.2026): מראה רוחני ומואר, בחוץ בשעת הזהב; בלי צבעי חדר הכושר
+    # אור — מדיטציה בתנועה (24.11.2026). זו הגרסה הראשונה (בגדי פשתן); בעל המוצר ביקש אותה באותו נוף אבל בבגדי ספורט ועם עיניים ירוקות בוהקות —
+    # התמונה שבשימוש נוצרה מהראשונה כתמונת ייחוס (assets/_src/coaches.json: or), עם: fitted black sleeveless training top with thin amber-orange piping, black leggings, bright vivid green eyes.
     "or": "Portrait of Or, a beautiful serene Israeli woman, about 32, a walking-meditation guide. Long loose wavy dark-brown hair with sun-lit highlights, warm olive skin, "
           "luminous calm eyes looking at the camera, a soft radiant gentle smile, graceful relaxed posture. She wears a flowing off-white linen wrap top and light linen trousers, "
           "a thin gold necklace with a small sun pendant, arms relaxed at her sides, standing, waist-up framing. "

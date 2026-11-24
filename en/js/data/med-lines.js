@@ -10,6 +10,15 @@ export const MED_JOURNEYS = {
   thanks: { name: 'Gratitude', icon: 'star', desc: 'Three good things, one in each part of the way' },
   presence: { name: 'Presence', icon: 'flame', desc: 'The senses, one by one — being here' },
 };
+// "הנקודות" של כל מסע — שם קצר לכל אחד מארבעת חלקי ההליכה (הרעיון שאור מדברת עליו שם). מופיעות בשם המקטע, ובסיום — על מפת המסלול.
+export const MED_POINTS = {
+  release: ['A long exhale', 'The hand opens', 'Leave it on the trail', 'Lightness'],
+  heal: ['From the soles of the feet', 'Breathe into the place', 'A hand on the heart', 'Trust the body'],
+  connect: ['Lift your gaze', 'Someone you love', 'Wish them well', 'Connecting inward'],
+  reset: ['Counting steps', 'Four in, six out', 'Passing thoughts', 'One intention'],
+  thanks: ['Thanks to the body', 'Thanks to a person', 'Thanks for the moment', 'Three good things'],
+  presence: ['Touch', 'Sight', 'Hearing', 'All together'],
+};
 export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];
 
 const L = {

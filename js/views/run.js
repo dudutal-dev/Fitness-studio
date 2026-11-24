@@ -13,7 +13,7 @@ import { sessionCoach } from '../engine/cali.js';
 import { say, sayNow, stop, onSpeaking, unlock, preload, useCoach } from '../coach/voice.js';
 import { musicOn, startMusic, stopMusic, setMusicMood } from '../coach/music.js';
 // המוזיקה בריצה: חימום ושחרור רגועים יותר, ובשאר הקטעים — מוזיקת ריצה
-const runMood = (kind, walk, med) => (med ? (kind === 'brisk' ? 'medbeat' : 'medcalm') : kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
+const runMood = (kind, walk, med) => (med ? (kind === 'brisk' || kind === 'power' ? 'medbeat' : 'medcalm') : kind === 'warm' ? 'warm' : kind === 'cool' ? 'calm' : walk ? 'walk' : 'run');
 import { gpsTracker, simplifyPath } from '../devices/gps.js';
 import { routeMap } from '../ui/map.js';
 import { track } from '../usage.js';
@@ -70,6 +70,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   // המפה: מוצגת במקום הסרטון ברגע שיש מיקום; הכפתור שבראש המסך מחליף בין מפה לסרטון, ולחיצה על המפה — בין מעקב לכל המסלול
   let map = null, mapOn = false, mapDrawn = 0, segPace = null, ended = false;
   const splits = [];   // זמן האימון (שניות) בסוף כל קילומטר
+  const marks = [];   // מדיטציה: הנקודה של כל חלק במסע — היכן על המסלול היא התחילה (לסימון על מפת הסיום ובדף המסלול)
   let routeBlob = null;   // תמונת המסלול — נוצרת בסיום ונשמרת עם האימון
   const stamp = () => (stamp.at ||= new Date().toISOString());
   let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false, blindSince = 0, blindSaid = false, counted = false;
@@ -179,6 +180,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     else if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
     else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) });
     tipped = false; praised = false; counted = false;
+    if (medS && sg.point && sg.kind !== 'warm' && sg.kind !== 'cool') marks.push({ name: sg.point, pos: gps.status.ok && gps.here ? [...gps.here] : null, i });
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
     else { $('#testDone').style.display = 'none'; $('[data-act="skip"]').style.display = sg.kind === 'free' ? 'none' : ''; }
     $('#freeDone').style.display = sg.kind === 'free' ? '' : 'none';
@@ -236,6 +238,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     }
     // מאמני הריצה: דגש טכניקה אחרי שתי דקות בקטע ריצה ארוך, ותזכורת קצב בריצות הקלות
     if (runCoach && !tipped && inSeg > 120 && sg.sec >= 480 && ['steady', 'easy'].includes(sg.kind)) { tipped = true; say(i % 2 ? 'run_breathe' : 'run_form'); }
+    // נקודה שהתחילה לפני שהיה מיקום — מקבלת את המיקום הראשון שמגיע, כל עוד אנחנו באותו חלק
+    if (medS && marks.length) { const mk = marks[marks.length - 1]; if (!mk.pos && mk.i === i && gps.status.ok && gps.here) mk.pos = [...gps.here]; }
     // מדיטציה: באמצע מקטע ארוך — משפט עיגון קצר אחד (חוזרים אל הצעדים / אל הנשימה)
     if (medS && !tipped && sg.sec >= 300 && inSeg >= sg.sec / 2 && sg.sec - inSeg > 45) { tipped = true; say(MED_ANCHORS[i % MED_ANCHORS.length]); }
     if (walkS && !medS && !tipped && inSeg > 90 && sg.sec >= 300 && ['stroll', 'brisk'].includes(sg.kind)) { tipped = true; say(sg.kind === 'brisk' ? 'walk_talk' : 'walk_form'); }
@@ -301,10 +305,13 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const route = measured >= 200 ? simplifyPath(gps.path) : [];
     $('#mapBtn').hidden = true;
     ended = true; root.classList.remove('map-full', 'panel-min'); root.classList.add('run-ended');
-    if (route.length > 1) { showMap(true); map.setMode('fit'); }
+    const pts = marks.map((m, n) => ({ ...m, n: n + 1 })).filter((m) => m.pos).map(({ name, pos, n }) => ({ name, n, pos: [Math.round(pos[0] * 1e5) / 1e5, Math.round(pos[1] * 1e5) / 1e5] }));
+    if (route.length > 1) { showMap(true); map.setMode('fit'); map.setMarks(pts); }
     else if (mapOn) layoutMap();
     // תמונת המסלול: נוצרת ברקע; כשהיא מוכנה מופיע הכפתור, ובשמירה היא נשמרת בטלפון לפי תאריך האימון
-    if (route.length > 1) renderRouteImage(route, { title: run.name, caption: `${(measured / 1000).toFixed(2)} ק״מ · ${fmtTime(dur)} · ${fmtPace(dur / (measured / 1000))} לק״מ` })
+    if (route.length > 1) renderRouteImage(route, { title: run.name, date: new Date().toLocaleDateString(document.documentElement.lang === 'en' ? 'en-GB' : 'he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' }),
+      stats: [{ v: (measured / 1000).toFixed(2), l: 'ק״מ' }, { v: fmtTime(dur), l: 'זמן' }, { v: fmtPace(dur / (measured / 1000)), l: 'קצב לק״מ' }],
+      ...(medS ? { marks: pts, accent: '#8a5cf6', sub: `עם ${COACHES.or.name}`, art: `assets/med/${medS}.webp` } : {}) })
       .then((b) => { routeBlob = b; const btn = $('#routeImgBtn'); if (btn) btn.hidden = false; if (stamp.saved) saveRouteImage(stamp(), b); }).catch(() => {});
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">קצב ממוצע <b class="num">${fmtPace(dur / (measured / 1000))}</b> לק״מ${splits.map((t, k) => ` · ק״מ ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
     const distGuess = testSec ? 3 : measured >= 200 ? Math.round(measured / 10) / 100 : '';
@@ -312,6 +319,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <div class="kpis" style="margin:14px 0"><div class="kpi"><b>${fmtTime(dur)}</b><span>זמן כולל</span></div>
         ${testSec ? `<div class="kpi up"><b>${fmtTime(testSec)}</b><span>3 ק״מ</span></div>` : `<div class="kpi"><b>${distGuess || '—'}</b><span>ק״מ</span></div>`}
         <div class="kpi"><b>+${XP.run}</b><span>XP</span></div></div>
+      ${medS ? `<div class="med-points"><b>הנקודות של המסע</b><ol>${marks.map((m) => `<li class="${m.pos ? '' : 'nopos'}">${esc(m.name)}</li>`).join('')}</ol>${pts.length ? '<div class="sub t-cap">המספרים מסומנים על המפה, במקום שבו כל נקודה התחילה.</div>' : ''}</div>` : ''}
       ${splitsHtml}${hrSummaryHtml(hr)}
       <label class="field" style="margin-top:12px"><span>מרחק (ק״מ) ${measured >= 200 ? '— נמדד ב-GPS, אפשר לתקן' : '— לא חובה'}</span><input class="input num" id="dist" type="number" step="0.01" inputmode="decimal" value="${distGuess}" placeholder="למשל 5.2"></label>
       <div class="sub" style="margin-bottom:6px">כמה קשה היה?</div>
@@ -325,7 +333,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
-      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}), ...(medS ? { med: medS } : {}) });
+      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}), ...(medS ? { med: medS } : {}), ...(route.length > 1 && pts.length ? { marks: pts } : {}) });
       stamp.saved = true; if (routeBlob) saveRouteImage(stamp(), routeBlob);
       close();
     });
@@ -389,7 +397,7 @@ export function saveRun(r) {
   const isPR = r.timeSec && (!prev.length || r.timeSec < Math.min(...prev));
   set((s2) => {
     s2.runs.push({ date: r.date || new Date().toISOString(), ...r });
-    s2.runs.filter((x) => x.route).slice(0, -40).forEach((x) => { delete x.route; });   // המסלול נשמר ל-40 האימונים האחרונים
+    s2.runs.filter((x) => x.route).slice(0, -40).forEach((x) => { delete x.route; delete x.marks; });   // המסלול נשמר ל-40 האימונים האחרונים
     // מסלול ריצה: הריצה היא האימון של היום בתוכנית
     if ((isRun(s2.profile) || isWalk(s2.profile) || r.planDay) && r.day != null && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
     if (isRun(s2.profile) && r.timeSec) s2.profile.level = runLevelFrom3k(r.timeSec);

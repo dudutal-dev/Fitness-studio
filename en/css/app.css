@@ -1329,3 +1329,18 @@ button.mi .tag { margin-inline-end: 4px; }
 .med-j.on { opacity: 1; border-color: #f3c97a; box-shadow: 0 0 0 3px rgba(243, 201, 122, .25), 0 8px 20px rgba(60, 30, 110, .4); transform: translateY(-2px); }
 .live.med-live .stage.run-stage { flex: 0 0 50% !important; }
 .live.med-live .stage.run-stage video, .live.med-live .stage.run-stage img.poster { object-position: 50% 26%; }
+
+/* נקודות ממוספרות על מפת המסלול */
+.rmap-line .marks circle { fill: #f3c97a; stroke: #fff; stroke-width: 2.5; }
+.rmap-line .marks text { fill: #2a1b52; font: 800 13px Heebo, system-ui, sans-serif; text-anchor: middle; }
+
+/* מדיטציה: מבנה ההליכה בחלונית הבחירה, ורשימת הנקודות בסיכום */
+.med-shape { border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin: 4px 0 10px; }
+.ms-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.ms-eff { font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(138, 92, 246, .18); color: #b79cff; } .ms-eff.e3 { background: rgba(243, 151, 90, .2); color: #f3a56a; } .ms-eff.e1 { background: rgba(90, 200, 170, .18); color: #6fd3b6; }
+.ms-bar { display: flex; gap: 3px; height: 10px; border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
+.ms-bar i, .ms-list .dot { background: #3c3566; } .ms-bar i.stroll, .ms-list .dot.stroll { background: #8a5cf6; } .ms-bar i.brisk, .ms-list .dot.brisk { background: #f3c97a; } .ms-bar i.power, .ms-list .dot.power { background: #f3875a; }
+.ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ms-list li { display: flex; align-items: baseline; gap: 8px; font-size: 14px; } .ms-list .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; transform: translateY(-1px); } .ms-list small { opacity: .7; margin-inline-start: auto; font-size: 12.5px; }
+.med-points { border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin: 6px 0 12px; }
+.med-points ol { margin: 8px 0 4px; padding-inline-start: 22px; display: grid; gap: 4px; } .med-points li::marker { color: #f3c97a; font-weight: 800; } .med-points li.nopos { opacity: .7; }

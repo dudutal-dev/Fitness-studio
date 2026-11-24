@@ -25,11 +25,11 @@ export function fitView(path, w, h, pad = 28, maxZ = 17) {
 export function routeMap(host, { zoom = 16, anchor = 0.5, inset = 0 } = {}) {
   host.classList.add('rmap');
   host.innerHTML = `<div class="rmap-tiles"></div>
-    <svg class="rmap-line" aria-hidden="true"><polyline class="edge"/><polyline class="path"/><circle class="a" r="7"/><circle class="halo" r="13"/><circle class="b" r="7"/></svg>
+    <svg class="rmap-line" aria-hidden="true"><polyline class="edge"/><polyline class="path"/><circle class="a" r="7"/><circle class="halo" r="13"/><circle class="b" r="7"/><g class="marks"></g></svg>
     <a class="rmap-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>`;
   const layer = host.querySelector('.rmap-tiles'), q = (s) => host.querySelector(s);
   const tiles = new Map();   // "z/x/y" → img, או זמן הכישלון האחרון (כדי לא לנסות שוב ושוב בלי רשת)
-  let mode = 'follow', last = { path: [], here: null };
+  let mode = 'follow', last = { path: [], here: null }, marks = [];   // marks: נקודות ממוספרות על המסלול [{ pos: [lat, lon] }]
 
   function draw(path = last.path, here = last.here) {
     last = { path, here };
@@ -56,10 +56,12 @@ export function routeMap(host, { zoom = 16, anchor = 0.5, inset = 0 } = {}) {
     q('.edge').setAttribute('points', pts); q('.path').setAttribute('points', pts);
     const put = (sel, p) => { const c = q(sel); c.style.display = p ? '' : 'none'; if (p) { const [x, y] = xy(p); c.setAttribute('cx', x); c.setAttribute('cy', y); } };
     put('.a', path[0]); put('.b', at); put('.halo', mode === 'follow' ? at : null);
+    q('.marks').innerHTML = marks.map((mk, i) => { const [x, y] = xy(mk.pos); return `<circle cx="${x}" cy="${y}" r="12"/><text x="${x}" y="${y + 4.5}">${mk.n || i + 1}</text>`; }).join('');
   }
   return {
     draw,
     setMode(m) { mode = m; draw(); },
+    setMarks(list) { marks = (list || []).filter((x) => x && x.pos); draw(); },
     layout(o) { anchor = o.anchor ?? anchor; inset = o.inset ?? inset; draw(); },
     zoomBy(d) { zoom = Math.max(12, Math.min(18, zoom + d)); mode = 'follow'; draw(); },
     get mode() { return mode; },

@@ -3,7 +3,7 @@ import { html, esc, on, sheet, icon } from '../ui/dom.js';
 import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
 import { MED_JOURNEYS, MED_ORDER } from '../data/med-lines.js';
-import { buildMedSession, weekJourney, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
+import { buildMedSession, weekJourney, medEffort, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
 import { startRun } from './run.js';
 
 export const medArt = (id, sq = true) => `../assets/med/${id}${sq ? '_sq' : ''}.webp`;
@@ -13,10 +13,16 @@ export const medCardHtml = () => html`<button class="med-card" data-act="med" st
 export function medSheet() {
   const s = get(), p = s.profile;
   let journey = weekJourney((s.plan?.blockIndex || 0) * 4 + (s.plan?.weekInBlock || 0)), minutes = MED_MINUTES.includes(p.medMin) ? p.medMin : 30, pace = p.medPace === 'fast' ? 'fast' : 'calm';
+  // מבנה ההליכה של המסע שנבחר: שישה חלקים באורך יחסי, צבע לפי הקצב, ושם הנקודה של כל חלק
+  const shapeHtml = () => { const r = buildMedSession(journey, { minutes, pace });
+    return `<div class="med-shape"><div class="ms-top"><b>How this walk is built</b><span class="ms-eff e${r.effort}">${MED_EFFORT[medEffort(journey, pace)]}</span></div>
+      <div class="ms-bar">${r.segs.map((x) => `<i class="${x.kind}" style="flex:${x.sec}"></i>`).join('')}</div>
+      <ol class="ms-list">${r.segs.map((x) => `<li><span class="dot ${x.kind}"></span><b>${esc(x.point || '')}</b><small>${x.kind === 'brisk' ? 'brisk walk' : x.kind === 'power' ? 'power walk' : x.kind === 'stroll' ? 'calm walk' : 'slow walk'} · ${Math.round(x.sec / 60)} min</small></li>`).join('')}</ol></div>`; };
   const body = () => html`<div class="med-journeys">${MED_ORDER.map((id) => `<button type="button" class="med-j ${id === journey ? 'on' : ''}" data-mj="${id}" style="background-image:linear-gradient(180deg, rgba(20,12,40,0) 30%, rgba(20,12,40,.92) 78%), url(${medArt(id)})"><b>${MED_JOURNEYS[id].name}</b><small>${esc(MED_JOURNEYS[id].desc)}</small></button>`).join('')}</div>
     <label class="field"><span>How long? (minutes)</span><div class="seg" data-mmin>${MED_MINUTES.map((v) => `<button type="button" data-v="${v}" class="${minutes === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
     <label class="field"><span>Which walk?</span><div class="seg" data-mpace>${Object.entries(MED_PACES).map(([k, v]) => `<button type="button" data-v="${k}" class="${pace === k ? 'on' : ''}">${v}</button>`).join('')}</div></label>
-    <div class="sub t-foot">${pace === 'fast' ? 'Two parts at a brisk walk, with rhythmic music; the rest at a calm pace.' : 'The whole walk at a calm pace, with quiet, floating music.'} Eyes open, gaze on the path.</div>`;
+    ${shapeHtml()}
+    <div class="sub t-foot">The music is calm and floating in the calm parts, and rhythmic in the brisk parts. Eyes open, gaze on the path.</div>`;
   sheet(html`<div class="med-head"><img src="${COACHES.or.face}" alt=""><div><div class="eyebrow">Moving meditation</div><div class="h1" style="font-size:22px">A walk with  ${esc(COACHES.or.name)}</div></div></div>
     <p class="sub">Choose one idea for the walk. ${esc(COACHES.or.name)} says a little at the start of each part, and leaves plenty of silence.</p>
     <div data-mbody>${body()}</div>

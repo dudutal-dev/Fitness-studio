@@ -1,24 +1,51 @@
 // מסלול "מדיטציה בתנועה" עם אור (בקשת בעל המוצר, 24.11.2026; רק ב-MOVA): הליכה מדיטטיבית בחוץ, בקצב רגוע או מהיר.
-// נוסף לשבוע כתחום נוסף (profile.extras.med) או מתחיל מיד מהכרטיס שבמסך הבית. רץ במסך ההליכה החי (views/run.js) עם run.med = מזהה המסע:
+// נוסף לשבוע כתחום נוסף (profile.extras.med), נבחר כמסלול ראשי, או מתחיל מיד מהכרטיס שבמסך הבית. רץ במסך ההליכה החי (views/run.js) עם run.med = מזהה המסע:
 // בלי הכוונת קצב ובלי ספירה; אור מדברת בפתיחת כל מקטע (js/data/med-lines.js), והמוזיקה מתחלפת בין רגועה לקצבית לפי המקטע.
-// תמיד שישה מקטעים: חימום · ארבעה חלקי הליכה · סיום רגוע — כך שלכל מסע יש שישה קטעי דיבור.
-import { MED_JOURNEYS, MED_ORDER } from '../data/med-lines.js';
+// תמיד שישה מקטעים: פתיחה · ארבעה חלקים · סיום — כך שלכל מסע יש שישה קטעי דיבור.
+// לכל מסע מבנה משלו (25.11.2026): סוג ההליכה בכל חלק, האורך היחסי של כל חלק, ואורך הפתיחה והסיום — לפי מה שהמסע מבקש מהגוף:
+//   שחרור — גל של מאמץ: מגבירים כדי לפרוק, ואז מרפים · ריפוי — הכי עדין, עם פתיחה וסיום ארוכים · חיבור — קצב יציב, ולב ההליכה מעט מהיר יותר
+//   איפוס — קצבי (ספירת צעדים ונשימה בצעדים), ומסתיים בשקט · הודיה — נבנה בהדרגה, והסוף קל ומהיר · נוכחות — הליכה איטית מאוד, כמעט בלי שינוי קצב
+import { MED_JOURNEYS, MED_ORDER, MED_POINTS } from '../data/med-lines.js';
 
 export const MED_MINUTES = [20, 30, 45];
 export const MED_PACES = { calm: 'Calm', fast: 'Brisk' };
-const seg = (kind, sec, label) => ({ kind, sec, label });
+// s = stroll (הליכה רגועה) · b = brisk (הליכה מהירה) · p = power (הליכה נמרצת). w: האורך היחסי של כל חלק. edge: החלק של הפתיחה ושל הסיום מכלל ההליכה
+const SHAPES = {
+  release: { calm: 'sbbs', fast: 'bbps', w: [1, 1.1, 1.1, 0.8], edge: [0.12, 0.12] },
+  heal: { calm: 'ssss', fast: 'sbss', w: [1, 1.1, 1, 0.9], edge: [0.15, 0.17] },
+  connect: { calm: 'ssbs', fast: 'sbbs', w: [1, 1, 1.1, 0.9], edge: [0.13, 0.13] },
+  reset: { calm: 'ssbs', fast: 'bsbs', w: [1, 1, 1.1, 0.9], edge: [0.11, 0.13] },
+  thanks: { calm: 'sssb', fast: 'sbsb', w: [0.9, 1, 1, 1.1], edge: [0.12, 0.12] },
+  presence: { calm: 'ssss', fast: 'ssbs', w: [1, 1, 1, 1], edge: [0.14, 0.14] },
+};
+const KIND = { s: 'stroll', b: 'brisk', p: 'power' }, KIND_NAME = { stroll: 'calm walk', brisk: 'brisk walk', power: 'power walk' };
+const seg = (kind, sec, label, point) => ({ kind, sec, label, ...(point ? { point } : {}) });
+const round15 = (sec) => Math.max(60, Math.round(sec / 15) * 15);
 
-// הליכה אחת. pace: calm — כל ההליכה בקצב נינוח · fast — החלק השני והרביעי בהליכה מהירה
+// סוגי ההליכה בארבעת החלקים של מסע, בקצב שנבחר
+export const medShape = (journey, pace = 'calm') => [...(SHAPES[journey] || SHAPES.release)[pace === 'fast' ? 'fast' : 'calm']].map((c) => KIND[c]);
+// רמת המאמץ של ההליכה: 1 עדינה · 2 בינונית · 3 נמרצת — לפי החלק של ההליכה המהירה והנמרצת
+export function medEffort(journey, pace = 'calm') {
+  const sh = SHAPES[journey] || SHAPES.release, k = medShape(journey, pace), tot = sh.w.reduce((a, b) => a + b, 0);
+  const load = k.reduce((a, x, i) => a + (x === 'power' ? 1.5 : x === 'brisk' ? 1 : 0) * sh.w[i], 0) / tot;
+  return load >= 0.6 ? 3 : load >= 0.2 ? 2 : 1;
+}
+export const MED_EFFORT = ['', 'Gentle', 'Moderate', 'Vigorous'];
+
+// הליכה אחת. pace: calm / fast — בוחר את מבנה המסע; minutes: האורך הכולל
 export function buildMedSession(journey = 'release', { minutes = 30, pace = 'calm' } = {}) {
-  const j = MED_JOURNEYS[journey] ? journey : 'release', mins = MED_MINUTES.includes(minutes) ? minutes : 30;
-  const warm = mins <= 20 ? 180 : 240, cool = mins <= 20 ? 180 : 240, part = Math.round((mins * 60 - warm - cool) / 4);
-  const kinds = pace === 'fast' ? ['stroll', 'brisk', 'stroll', 'brisk'] : ['stroll', 'stroll', 'stroll', 'stroll'];
-  const segs = [seg('warm', warm, 'Opening at a slow walk'), ...kinds.map((k, i) => seg(k, part, k === 'brisk' ? `Part ${i + 1} · brisk walk` : `Part ${i + 1} · calm walk`)), seg('cool', cool, 'Closing at a slow walk')];
-  return { type: 'med', walk: true, med: j, medPace: pace === 'fast' ? 'fast' : 'calm', name: `Meditative walk · ${MED_JOURNEYS[j].name}`, icon: MED_JOURNEYS[j].icon, segs, totalSec: segs.reduce((t, s) => t + s.sec, 0), pace: {}, lvl: 0 };
+  const j = MED_JOURNEYS[journey] ? journey : 'release', mins = MED_MINUTES.includes(minutes) ? minutes : 30, pc = pace === 'fast' ? 'fast' : 'calm';
+  const sh = SHAPES[j], kinds = medShape(j, pc), total = mins * 60;
+  const warm = round15(total * sh.edge[0]), cool = round15(total * sh.edge[1]), main = total - warm - cool, wsum = sh.w.reduce((a, b) => a + b, 0);
+  const parts = sh.w.map((w) => round15((main * w) / wsum)); parts[3] += main - parts.reduce((a, b) => a + b, 0);   // העיגול נסגר בחלק האחרון
+  const segs = [seg('warm', warm, 'Opening at a slow walk', 'Opening'),
+    ...kinds.map((k, i) => seg(k, parts[i], `${MED_POINTS[j][i]} · ${KIND_NAME[k]}`, MED_POINTS[j][i])),
+    seg('cool', cool, 'Closing at a slow walk', 'Closing')];
+  return { type: 'med', walk: true, med: j, medPace: pc, effort: medEffort(j, pc), name: `Meditative walk · ${MED_JOURNEYS[j].name}`, icon: MED_JOURNEYS[j].icon, segs, totalSec: segs.reduce((t, s) => t + s.sec, 0), pace: {}, lvl: 0 };
 }
 // המסע של השבוע: מתחלף כל שבוע, לפי הסדר
 export const weekJourney = (weekIdx = 0) => MED_ORDER[((weekIdx % MED_ORDER.length) + MED_ORDER.length) % MED_ORDER.length];
-// n הליכות מדיטטיביות לשבוע (כתחום נוסף): המסע של השבוע; כשיש יותר מאחת — השנייה במסע הבא
+// n הליכות מדיטטיביות לשבוע: המסע של השבוע; כשיש יותר מאחת — הבאות במסעות הבאים, כך שבשבוע יש גיוון
 export function buildMedSessions(profile, n, { blockIndex = 0, weekInBlock = 0 } = {}) {
   const w = blockIndex * 4 + weekInBlock, minutes = profile?.medMin || 30, pace = profile?.medPace || 'calm';
   return Array.from({ length: Math.max(1, n) }, (_, i) => {

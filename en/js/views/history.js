@@ -95,7 +95,8 @@ export function openRunEditor(index, onDone) {
         loadRouteImage(orig.date).then((b) => { if (!b || !sh.isConnected) return; saved = b; const im = sh.querySelector('#himg'); im.src = URL.createObjectURL(b); im.hidden = false; hm.hidden = true; });
         sh.querySelector('[data-rimg]').addEventListener('click', async () => {
           const km = orig.distanceKm, cap = km && orig.durationSec ? `${km} km · ${fmtTime(orig.durationSec)} · ${fmtTime(orig.durationSec / km)} per km` : '';
-          shareRouteImage(saved || await renderRouteImage(orig.route, { title: orig.name, caption: cap }), orig.name);
+          shareRouteImage(saved || await renderRouteImage(orig.route, { title: orig.name, caption: cap, date: new Date(orig.date).toLocaleDateString(document.documentElement.lang === 'en' ? 'en-GB' : 'en-US', { day: 'numeric', month: 'numeric', year: 'numeric' }),
+            stats: km && orig.durationSec ? [{ v: km, l: 'km' }, { v: fmtTime(orig.durationSec), l: 'Time' }, { v: fmtTime(orig.durationSec / km), l: 'Pace per km' }] : [], marks: orig.marks || [], ...(orig.med ? { accent: '#8a5cf6', art: `../assets/med/${orig.med}.webp` } : {}) }), orig.name);
         });
       }
       const parseDur = (v) => { const m = String(v || '').match(/^(?:(\d+):)?(\d{1,3}):(\d{2})$/); return m ? (Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3])) : null; };
