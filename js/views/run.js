@@ -44,7 +44,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const coach = forced || sessionCoach(profile, null);
   if (forced) useCoach(forced);
   const medS = run.med || null;   // הליכה מדיטטיבית עם אור: בלי הכוונת קצב, ספירה וטיפים — רק קטע דיבור בפתיחת כל מקטע, ושקט
-  const walkS = !!run.walk;   // הליכה מודרכת: אותו מסך, עם הניסוחים, הקולות והמוזיקה של ההליכה
+  const walkS = !!run.walk;
+  // המוזיקה: בהליכה מדיטטיבית היא פועלת כברירת מחדל (בקשת בעל המוצר, 25.11.2026) — הגדרה נפרדת (settings.medMusic), כדי לא לשנות את הבחירה לשאר האימונים
+  const mOn = () => (medS ? get().settings.medMusic !== false : musicOn());   // הליכה מודרכת: אותו מסך, עם הניסוחים, הקולות והמוזיקה של ההליכה
   const runCoach = COACHES[coach].track === 'run', demo = walkS ? 'outdoor_walk' : runCoach ? 'outdoor_run' : 'treadmill_run';
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3',
     ...(medS ? ['med_hello', 'med_done', ...MED_ANCHORS, ...Object.values(MED_PACE), ...[0, 1, 2, 3, 4, 5].map((n) => medLine(medS, n))] : []),
@@ -89,7 +91,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <div class="map-zoom"><button data-act="zin" aria-label="הגדלת המפה">+</button><button data-act="zout" aria-label="הקטנת המפה">−</button></div>
       <div class="hud-top"><button class="icon-btn" data-act="exit">${icon('close', 'width="20" height="20"')}</button><span class="spacer"></span>
         <button class="icon-btn off" data-act="map" id="mapBtn" aria-label="מפה" aria-pressed="false" hidden>${icon('compass', 'width="20" height="20"')}</button>
-        <button class="icon-btn ${musicOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${musicOn()}">${icon('music', 'width="20" height="20"')}</button>
+        <button class="icon-btn ${mOn() ? '' : 'off'}" data-act="music" aria-label="מוזיקת רקע" aria-pressed="${mOn()}">${icon('music', 'width="20" height="20"')}</button>
         <span class="clock num" id="tot">0:00</span></div>
       <div class="coach-pip"><img src="${COACHES[coach].face}" alt=""></div><div class="say"></div>
       <div class="title"><div class="eyebrow">${emi(run.icon)} ${esc(run.name)}</div><div class="name" style="font-size:22px">${walkS ? `הליכה עם ${esc(COACHES[coach].name)}` : run.type === 'free' ? `ריצה עם ${esc(COACHES[coach].name)}` : 'קצב יעד: <span class="num" id="pace"></span>'}</div></div></div>
@@ -111,7 +113,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <button class="btn primary block xl" style="margin-top:10px;display:none" data-act="free-done" id="freeDone">סיום ושמירה</button>
     </div></div>`);
   document.body.append(root);
-  if (musicOn()) startMusic(runMood(segs[0]?.kind, walkS, medS));
+  if (mOn()) startMusic(runMood(segs[0]?.kind, walkS, medS));
   document.body.style.overflow = 'hidden';
   const $ = (q) => root.querySelector(q);
   const pill = hrPill();
@@ -154,7 +156,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (paused === v) return;
     paused = v; gps.pause(paused); setKeepAliveState(paused);
     // בהשהיה גם המאמן והמוזיקה שותקים; בהמשך המוזיקה חוזרת
-    if (paused) { stop(); stopMusic(); } else if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS, medS));
+    if (paused) { stop(); stopMusic(); } else if (mOn()) startMusic(runMood(segs[i]?.kind, walkS, medS));
     $('#pauseBtn').innerHTML = paused ? `${icon('play', 'width="22" height="22"')} המשך` : `${icon('pause', 'width="22" height="22"')} השהה`;
     paused ? $('video').pause() : $('video').play().catch(() => {});
   }
@@ -355,10 +357,10 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   on(root, 'click', '[data-act]', (e, t) => {
     const a = t.dataset.act;
     if (a === 'music') {
-      set((s2) => { s2.settings.music = !musicOn(); s2.settings.musicHint = true; return s2; });
-      if (musicOn()) startMusic(runMood(segs[i]?.kind, walkS, medS)); else stopMusic();
-      t.classList.toggle('off', !musicOn()); t.setAttribute('aria-pressed', musicOn());
-      toast(musicOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
+      set((s2) => { const v = !mOn(); if (medS) s2.settings.medMusic = v; else s2.settings.music = v; s2.settings.musicHint = true; return s2; });
+      if (mOn()) startMusic(runMood(segs[i]?.kind, walkS, medS)); else stopMusic();
+      t.classList.toggle('off', !mOn()); t.setAttribute('aria-pressed', mOn());
+      toast(mOn() ? 'מוזיקת רקע פועלת' : 'מוזיקת הרקע כובתה', 1400);
       return;
     }
     if (a === 'map') { showMap(!mapOn); set((s2) => { s2.settings.runMap = mapOn; return s2; }); return; }
