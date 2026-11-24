@@ -54,6 +54,8 @@ export const MED_ALL = ['morning', 'energy', 'joy', ...MED_ORDER];   // כל ה�
 const L = {
   // כללי
   med_hello: 'Hello. I\'m Or. ... On this walk there is nowhere to get to. ... Eyes open, a soft gaze, and your attention on the path. ... I\'ll say a little, and leave plenty of silence. ... Let\'s begin to walk.',
+  // משפט היכרות קצר — לכפתור "לשמוע אותה" בשאלון ההיכרות (בעל המוצר ביקש קצר בהרבה ממשפט הפתיחה)
+  med_hi: 'Hello, I\'m Or. ... We\'ll walk together, step by step.',
   med_done: 'The walk is over. ... Stand still for a moment, and take one deep breath. ... Whatever you found on the way stays with you.',
   med_a1: 'Come back to your steps. ... One foot, and then the other.',
   med_a2: 'If your thoughts wandered off, that\'s fine. ... Come back gently to the breath.',
