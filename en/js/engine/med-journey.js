@@ -54,7 +54,7 @@ export function buildMjWeek(profile, { blockIndex = 0, weekInBlock = 0, days = n
     const run = buildMedSession(x.journey, { minutes: x.minutes, pace: x.pace, anyLength: true });
     return { day: i + 1, name: run.name, focus: `${MED_JOURNEYS[run.med].desc}${x.long ? ' · the long walk of the week' : ''}`, track: 'med', runOnly: true, minutes: Math.round(run.totalSec / 60), items: [], warmup: [], cooldown: [], run, ...(x.long ? { long: true } : {}) };
   });
-  return { blockIndex, weekInBlock, mj: { ...at, path: mj.path },
+  return { blockIndex, weekInBlock, mj: { ...at, path: mj.path }, stills: mjStills(mj, w),
     phase: { id: 'med', name: `${MJ_PATHS[mj.path].name} · ${st.name}`, desc: at.done ? 'The journey is complete. Keep walking at the same pace until you choose a new journey.' : st.desc },
     week: { name: at.done ? 'After the journey' : `Week ${at.week + 1} of ${at.weeks}${at.light ? ' · easy week' : ''}`, rpe: at.light ? 2 : 3, volume: 1, load: 1 }, sessions };
 }
@@ -67,8 +67,18 @@ export function mjStep(mj, w) {
   return b.stage > a.stage ? { kind: 'stage', stage: a.stage } : null;
 }
 // מה נעשה מאז תאריך: הליכות מדיטטיביות, דקות וקילומטרים — לסיכום שלב ולסיכום המסע
-export function mjStats(runs, since) {
+export function mjStats(runs, since, sessions = []) {
   const t0 = since ? new Date(since).getTime() : 0, list = (runs || []).filter((r) => r.med && new Date(r.date).getTime() > t0);
-  return { walks: list.length, minutes: Math.round(list.reduce((a, r) => a + (r.durationSec || 0), 0) / 60), km: Math.round(list.reduce((a, r) => a + (r.distanceKm || 0), 0) * 10) / 10 };
+  return { walks: list.length, minutes: Math.round(list.reduce((a, r) => a + (r.durationSec || 0), 0) / 60), km: Math.round(list.reduce((a, r) => a + (r.distanceKm || 0), 0) * 10) / 10,
+    stills: sessions.filter((x) => x.still && new Date(x.date).getTime() > t0).length };
 }
 export const MJ_STAGE_LINES = ['med_j_s1', 'med_j_s2', 'med_j_s3'];
+
+// מדיטציות הבוקר והלילה של השבוע (25.11.2026): בנוסף להליכות — אחת בבוקר (בישיבה) ואחת בלילה (בשכיבה), מתחלפות לפי השלב.
+// הן רשות: לא נכנסות ליומן האימונים ולא מעכבות את התקדמות השבוע. בוצעה = נשמרה מדיטציה כזאת מאז תחילת השבוע
+const STILL_BY_STAGE = [['wake', 'sleep'], ['intent', 'quiet'], ['wake', 'quiet'], ['intent', 'sleep']];
+export const mjStills = (mj, w = 0) => STILL_BY_STAGE[mjAt(mj, w).stage];
+export function mjStillsDone(sessions, weekStart) {
+  const t0 = weekStart ? new Date(`${String(weekStart).slice(0, 10)}T00:00:00`).getTime() : 0;
+  return new Set((sessions || []).filter((x) => x.still && new Date(x.date).getTime() >= t0).map((x) => x.still));
+}

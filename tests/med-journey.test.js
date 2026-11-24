@@ -60,6 +60,19 @@ test('סוף שלב וסוף מסע: mjStep, וסיכום ההליכות', async
   assert.equal(mjStep(mj, 8), null); assert.equal(mjStep(mj, 12), null);   // אחרי המסע אין עוד הודעות
   const m4 = { ...mj, weeks: 4 }; assert.deepEqual([0, 1, 2, 3].map((w) => mjStep(m4, w)?.kind), ['stage', 'stage', 'stage', 'journey']);
   const runs = [{ med: 'heal', date: '2026-11-01T08:00:00Z', durationSec: 1800, distanceKm: 2.04 }, { med: 'reset', date: '2026-11-10T08:00:00Z', durationSec: 2100, distanceKm: 2.5 }, { date: '2026-11-11T08:00:00Z', durationSec: 900, distanceKm: 3 }];
-  assert.deepEqual(mjStats(runs, '2026-11-05T00:00:00Z'), { walks: 1, minutes: 35, km: 2.5 });
-  assert.deepEqual(mjStats(runs, null), { walks: 2, minutes: 65, km: 4.5 });
+  assert.deepEqual(mjStats(runs, '2026-11-05T00:00:00Z'), { walks: 1, minutes: 35, km: 2.5, stills: 0 });
+  assert.deepEqual(mjStats(runs, null), { walks: 2, minutes: 65, km: 4.5, stills: 0 });
+});
+
+test('מדיטציות הבוקר והלילה של השבוע: בנוסף להליכות, מתחלפות לפי השלב, ולא חלק מאימוני השבוע', async () => {
+  const { mjStills, mjStillsDone, mjStats } = await import('../js/engine/med-journey.js');
+  const { STILL } = await import('../js/data/med-still.js');
+  const mj = { path: 'full', weeks: 8, level: 1, time: 'day' };
+  for (let w = 0; w < 8; w++) { const [m, n] = mjStills(mj, w); assert.equal(STILL[m].when, 'morning'); assert.equal(STILL[n].when, 'night'); }
+  assert.notDeepEqual(mjStills(mj, 0), mjStills(mj, 2));
+  const wk = buildWeek(prof(mj), { blockIndex: 0, weekInBlock: 0 });
+  assert.equal(wk.stills.length, 2); assert.equal(wk.sessions.length, 4); assert.ok(wk.sessions.every((x) => !x.still));
+  const sessions = [{ still: 'wake', date: '2026-11-23T07:00:00' }, { still: 'sleep', date: '2026-11-10T22:00:00' }, { date: '2026-11-23T09:00:00' }];
+  assert.deepEqual([...mjStillsDone(sessions, '2026-11-22')], ['wake']);
+  assert.equal(mjStats([], '2026-11-01T00:00:00', sessions).stills, 2);
 });

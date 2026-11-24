@@ -5,7 +5,7 @@ import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
 import { MED_JOURNEYS, MED_ALL, MED_ABOUT } from '../data/med-lines.js';
 import { buildMedSession, weekJourney, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
-import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, MJ_STAGE_LINES, mjOf, mjAt, mjWeekPlan, mjStats } from '../engine/med-journey.js';
+import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, MJ_STAGE_LINES, mjOf, mjAt, mjWeekPlan, mjStats, mjStillsDone, mjStills } from '../engine/med-journey.js';
 import { say, stop, unlock, useCoach } from '../coach/voice.js';
 import { startRun } from './run.js';
 import { STILL, STILL_ALL, STILL_MINUTES, STILL_STAGES, STILL_FRAC } from '../data/med-still.js';
@@ -160,13 +160,13 @@ export function mjCardHtml(s) {
 export function mjNoteScreen(onNew) {
   const s = get(), n = s.mjNote; if (!n || !MJ_PATHS[n.path]) return false;
   if (document.querySelector('.med-screen.mj-note')) return true;
-  const P = MJ_PATHS[n.path], st = MJ_STAGES[n.stage], nx = MJ_STAGES[n.stage + 1], end = n.kind === 'journey', x = mjStats(s.runs, n.since), up = end && (n.level || 1) < 3;
+  const P = MJ_PATHS[n.path], st = MJ_STAGES[n.stage], nx = MJ_STAGES[n.stage + 1], end = n.kind === 'journey', x = mjStats(s.runs, n.since, s.sessions), up = end && (n.level || 1) < 3;
   const root = el(html`<div class="med-screen mj-note" role="dialog" aria-modal="true" aria-label="${end ? 'Journey complete' : 'Stage complete'}">
     <div class="mj-scroll">
       <div class="mj-hero short" style="background-image:url(${medArt(end ? 'thanks' : P.art, false)})"><div class="mj-title"><div class="eyebrow">${esc(P.name)} · ${end ? `${n.weeks} weeks` : `Stage ${n.stage + 1} of 4`}</div>
         <div class="mj-name">${end ? 'Journey complete' : `${esc(st.name)} — complete`}</div><div class="mj-desc">${end ? 'All four stages are behind you: arriving, release, deepening and integration.' : esc(st.desc)}</div></div></div>
       <div class="mj-body">
-        <div class="mjn-stats"><div><b class="num">${x.walks}</b><span>walks</span></div><div><b class="num">${x.minutes}</b><span>minutes</span></div>${x.km ? `<div><b class="num">${x.km}</b><span>km</span></div>` : ''}</div>
+        <div class="mjn-stats"><div><b class="num">${x.walks}</b><span>walks</span></div><div><b class="num">${x.minutes}</b><span>minutes</span></div>${x.km ? `<div><b class="num">${x.km}</b><span>km</span></div>` : ''}${x.stills ? `<div><b class="num">${x.stills}</b><span>meditations</span></div>` : ''}</div>
         ${end ? `<div class="mj-card"><b>What now?</b><p class="mj-about" style="margin:8px 0 0">${up ? `You can set out on a new journey at a higher walking level (${MJ_LEVELS[(n.level || 1) + 1]}), on a different path or the same one.` : 'You can set out on a new journey, on a different path or the same one.'} Or simply keep walking at the same pace.</p></div>`
     : `<div class="mj-card"><div class="mj-top"><b>Next stage: ${esc(nx.name)}</b><span class="ms-eff">Stage ${n.stage + 2} of 4</span></div><p class="mj-about" style="margin:0">${esc(nx.desc)}</p></div>`}
       </div>
@@ -181,3 +181,13 @@ export function mjNoteScreen(onNew) {
   speak();
   return true;
 }
+
+// מדיטציות הבוקר והלילה של השבוע במסע (25.11.2026): שני כרטיסים קטנים במסך הבית ובלשונית התוכנית — בנוסף להליכות, רשות
+export function mjStillsHtml(s) {
+  const mj = mjOf(s.profile), wk = s.plan?.week; if (!mj || !wk?.mj) return '';
+  const ids = wk.stills || mjStills(mj, wk.mj.week);   // שבוע שנבנה לפני הגרסה הזאת עוד לא מחזיק את הרשימה
+  const done = mjStillsDone(s.sessions, s.plan.weekStart);
+  return html`<div class="mj-stills"><div class="sub t-cap">Also this week · in addition to the walks</div><div class="mjs-row">${ids.map((id) => { const M = STILL[id], night = M.when === 'night';
+    return `<button type="button" class="mjs ${done.has(id) ? 'done' : ''}" data-mstill="${id}" style="background-image:linear-gradient(180deg, rgba(20,12,40,.15), rgba(20,12,40,.9) 70%), url(${medArt(id)})"><i>${done.has(id) ? '✓ Done' : night ? 'Night · lying down' : 'Morning · sitting'}</i><b>${M.name}</b><small>${night ? 'Night meditation' : 'Morning meditation'}</small></button>`; }).join('')}</div></div>`;
+}
+export const bindMjStills = (root) => on(root, 'click', '[data-mstill]', (e, b) => stillScreen(b.dataset.mstill));

@@ -22,7 +22,7 @@ import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
 import { isWalk, isMed } from '../engine/walking.js';
-import { medCardHtml, medSheet, mjCardHtml, mjNoteScreen } from './med-ui.js';
+import { medCardHtml, medSheet, mjCardHtml, mjNoteScreen, mjStillsHtml, bindMjStills } from './med-ui.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { homeNextHtml, bindCalendar } from './calendar-ui.js';
 import { nextPlanned, trainedToday } from '../engine/schedule.js';
@@ -156,6 +156,7 @@ export function renderHome(root) {
 
     <div class="free-row"><button class="btn sm" data-act="free-walk">${icon('leaf', 'width="18" height="18"')} הליכה חופשית</button><button class="btn sm" data-act="free-run">${icon('run', 'width="18" height="18"')} ריצה חופשית</button></div>
     ${mjCardHtml(s)}
+    ${mjStillsHtml(s)}
     ${medCardHtml()}
 
     ${homeNextHtml()}
@@ -211,6 +212,7 @@ export function renderHome(root) {
     if (a === 'mob-test') mobTestSheet(() => renderHome(root));
   };
   bindCalendar(root, () => renderHome(root));
+  bindMjStills(root);
   on(root, 'click', '[data-act]', (e, el) => act(el.dataset.act, el));
   // מסע מדיטטיבי: סיכום שלב / מסע שמחכה (נשמר כשהשבוע התקדם) נפתח כאן
   if (s.mjNote) setTimeout(() => mjNoteScreen((preset) => switchTrack('med', () => renderHome(root), preset)), 500);

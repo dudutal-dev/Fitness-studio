@@ -24,6 +24,7 @@ import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
 import { isTai, TAI_LEVELS, taiLevel } from '../engine/tai.js';
 import { isWalk, isMed, WALK_LEVELS, walkLevel } from '../engine/walking.js';
 import { MJ_STAGES } from '../engine/med-journey.js';
+import { mjStillsHtml, bindMjStills } from './med-ui.js';
 
 let libFilter = 'all';
 let libAll = false;
@@ -52,6 +53,7 @@ export function renderPlan(root) {
       <div class="sub t-foot">${esc(plan.week.phase.desc)} ${med ? 'Eyes open, gaze on the path.' : walk ? 'A good pace is one where you can talk, but not sing.' : tai ? 'Knee over the foot, only a slight bend. If something hurts — stand up straight and rest.' : yoga ? 'Hold each pose for a few breaths. If your breath stops — ease out of the pose a little.' : pil ? 'About a minute per exercise, moving slowly. If your neck strains — rest your head down.' : hiit ? (plan.weekInBlock === 3 ? 'This week: recovery — one round fewer in every workout.' : 'During work — nearly everything you\'ve got. During rest — breathe.') : run ? (plan.weekInBlock === 3 ? 'This week: recovery, and a 3 km test to update your paces.' : 'On easy runs — a pace you can talk at.') : mob ? (plan.weekInBlock === 3 ? 'This week: a range-of-motion retest, to see what has improved.' : 'A comfortable stretch only — no pain and no bouncing.') : plan.weekInBlock === 3 ? `This week: deload — less volume, the body recovers and comes back stronger.${cali ? '' : ' + 3 km test.'}` : cali ? 'Stop a rep or two before failure.' : `Target effort: RPE ${plan.week.week.rpe}.`}</div>
     </div>
 
+    ${mjStillsHtml(s)}
     ${calendarCardHtml()}
 
     <div class="h2">This week<span class="more" data-act="regen">Rebuild</span></div>
@@ -86,6 +88,7 @@ export function renderPlan(root) {
     ${libList.length > 6 ? `<button class="btn block mt-3" data-act="lib-all">${libAll ? 'Show less' : `Show all ${libList.length} exercises`}</button>` : ''}`}
   `;
 
+  bindMjStills(root);
   on(root, 'click', '[data-info]', (e, t) => infoSheet(t.dataset.info, t.dataset.coach || p.coach));
   if (withCali) bindLadders(root, () => renderPlan(root));
   on(root, 'click', '[data-filter]', (e, t) => { libFilter = t.dataset.filter; libAll = false; renderPlan(root); });

@@ -24,6 +24,7 @@ import { isYoga, YOGA_LEVELS, yogaLevel } from '../engine/yoga.js';
 import { isTai, TAI_LEVELS, taiLevel } from '../engine/tai.js';
 import { isWalk, isMed, WALK_LEVELS, walkLevel } from '../engine/walking.js';
 import { MJ_STAGES } from '../engine/med-journey.js';
+import { mjStillsHtml, bindMjStills } from './med-ui.js';
 
 let libFilter = 'all';
 let libAll = false;
@@ -52,6 +53,7 @@ export function renderPlan(root) {
       <div class="sub t-foot">${esc(plan.week.phase.desc)} ${med ? 'העיניים פקוחות, והמבט על הדרך.' : walk ? 'קצב טוב הוא קצב שאפשר לדבר בו, אבל לא לשיר.' : tai ? 'ברך מעל כף הרגל, כיפוף קל בלבד. אם משהו כואב — מזדקפים ונחים.' : yoga ? 'מחזיקים כל תנוחה כמה נשימות. אם הנשימה נעצרת — יוצאים מעט מהתנוחה.' : pil ? 'כל תרגיל כדקה, בתנועה איטית. אם הצוואר מתאמץ — מניחים את הראש.' : hiit ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות — סבב אחד פחות בכל אימון.' : 'בזמן העבודה — כמעט כל מה שיש. במנוחה — נושמים.') : run ? (plan.weekInBlock === 3 ? 'השבוע: התאוששות, ומבדק 3 ק״מ לעדכון הקצבים.' : 'בריצות הקלות — קצב שאפשר לדבר בו.') : mob ? (plan.weekInBlock === 3 ? 'השבוע: מבחן טווחים חוזר, כדי לראות מה השתפר.' : 'מתיחה נעימה בלבד — בלי כאב ובלי קפיצות.') : plan.weekInBlock === 3 ? `השבוע: פריקה — פחות נפח, גוף מתאושש וחוזר חזק יותר.${cali ? '' : ' + מבדק 3 ק״מ.'}` : cali ? 'עוצרים חזרה או שתיים לפני כישלון.' : `מאמץ יעד: RPE ${plan.week.week.rpe}.`}</div>
     </div>
 
+    ${mjStillsHtml(s)}
     ${calendarCardHtml()}
 
     <div class="h2">השבוע<span class="more" data-act="regen">בנה מחדש</span></div>
@@ -86,6 +88,7 @@ export function renderPlan(root) {
     ${libList.length > 6 ? `<button class="btn block mt-3" data-act="lib-all">${libAll ? 'הצג פחות' : `הצג את כל ${libList.length} התרגילים`}</button>` : ''}`}
   `;
 
+  bindMjStills(root);
   on(root, 'click', '[data-info]', (e, t) => infoSheet(t.dataset.info, t.dataset.coach || p.coach));
   if (withCali) bindLadders(root, () => renderPlan(root));
   on(root, 'click', '[data-filter]', (e, t) => { libFilter = t.dataset.filter; libAll = false; renderPlan(root); });
