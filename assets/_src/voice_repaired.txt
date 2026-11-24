@@ -439,3 +439,4 @@ noa/kg/110.mp3
 noa/kg/17.mp3
 noa/w_up.mp3
 ori/w_record.mp3
+shira/walk_no_gps.mp3

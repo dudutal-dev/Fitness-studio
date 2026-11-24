@@ -45,7 +45,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const walkS = !!run.walk;   // הליכה מודרכת: אותו מסך, עם הניסוחים, הקולות והמוזיקה של ההליכה
   const runCoach = COACHES[coach].track === 'run', demo = walkS ? 'outdoor_walk' : runCoach ? 'outdoor_run' : 'treadmill_run';
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3',
-    ...(walkS ? ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_km', 'walk_free'] : [])].filter((k) => coachSays(k, coach)));
+    ...(walkS ? ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_pace_hold', 'walk_no_gps', 'walk_count', 'walk_km', 'walk_free'] : [])].filter((k) => coachSays(k, coach)));
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
   let i = 0;
@@ -69,7 +69,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const splits = [];   // זמן האימון (שניות) בסוף כל קילומטר
   let routeBlob = null;   // תמונת המסלול — נוצרת בסיום ונשמרת עם האימון
   const stamp = () => (stamp.at ||= new Date().toISOString());
-  let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false;
+  let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false, blindSince = 0, blindSaid = false, counted = false;
   const hrRec = recorder(profile);
   let rscBase = null;
   const distM = () => {
@@ -174,7 +174,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     // הליכה: בפתיחה שירה מציגה את עצמה, ואז את המקטע הראשון (בלי לקטוע את הברכה)
     if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
     else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) });
-    tipped = false; praised = false;
+    tipped = false; praised = false; counted = false;
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
     else { $('#testDone').style.display = 'none'; $('[data-act="skip"]').style.display = sg.kind === 'free' ? 'none' : ''; }
     $('#freeDone').style.display = sg.kind === 'free' ? '' : 'none';
@@ -238,19 +238,29 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (walkS && !paused) {
       const v = gps.status.ok ? paceVerdict(walkTarget(profile, sg.kind), pc && pc < 2400 ? pc : null) : null;
       if (v !== paceWas) { paceWas = v; paceSince = now; }
-      if (v && inSeg > 45 && left > 20 && now > paceCooldown) {
+      // תגובה מהירה יותר (24.11.2026): אחרי חצי דקה במקטע, סטייה שנמשכת רבע דקה, ולא יותר מפעם בדקה
+      if (v && inSeg > 30 && left > 15 && now > paceCooldown) {
         const held = now - paceSince;
-        if (v === 'slow' && held > 25000) { say('walk_pace_up'); paceCooldown = now + 90000; paceSince = now; }
-        else if (v === 'fast' && held > 25000) { say('walk_pace_easy'); paceCooldown = now + 120000; paceSince = now; }
+        if (v === 'slow' && held > 15000) { say('walk_pace_up'); paceCooldown = now + 60000; paceSince = now; }
+        else if (v === 'fast' && held > 15000) { say('walk_pace_easy'); paceCooldown = now + 75000; paceSince = now; }
+        else if (v === 'over' && held > 20000) { say('walk_pace_hold'); paceCooldown = now + 90000; paceSince = now; }
         else if (v === 'ok' && held > 90000 && !praised && segPace?.max) { praised = true; say('walk_pace_good'); paceCooldown = now + 60000; }
       }
     }
+    // אין קליטת מיקום (מסך נעול, או בלי הרשאה): שירה לא רואה את הקצב — אומרת זאת פעם אחת, כדי שיהיה ברור למה אין הכוונה
+    if (walkS && !blindSaid) {
+      if (paused || gps.status.ok) blindSince = 0; else if (!blindSince) blindSince = now;
+      else if (now - blindSince > 75000 && inSeg > 20 && left > 20) { blindSaid = true; say('walk_no_gps'); }
+    }
     $('#big').textContent = fmtTime(left);
+    // סוף מקטע בהליכה: ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים), שמסתיימת עם סוף המקטע
+    if (walkS && !counted && left <= 3.35 && left > 2 && sg.sec >= 20) { counted = true; sayNow(['walk_count']); }
     const secLeft = Math.ceil(left);
     if (secLeft !== tick.last) {
       tick.last = secLeft;
       if (secLeft === 60 && sg.sec >= 180) say('run_min');
-      if (secLeft <= 3 && secLeft >= 1) sayNow([`n${secLeft}`]);
+      // סוף מקטע: בהליכה — ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים); בריצה — כמו קודם
+      if (!walkS && secLeft <= 3 && secLeft >= 1) sayNow([`n${secLeft}`]);
       if (!saidHalf && totalPlanned > 600 && elapsed / 1000 >= totalPlanned / 2) { saidHalf = true; say(walkS ? 'walk_half' : 'run_half'); }
     }
     // סוף המקטע. אם הדף היה מושהה (מסך נעול) והזמן עבר את סוף המקטע — העודף נזקף למקטע הבא, כדי שהאימון יישאר מסונכרן לשעון

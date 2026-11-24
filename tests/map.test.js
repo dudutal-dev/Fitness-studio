@@ -33,6 +33,8 @@ test('יעדי הקצב בהליכה: מהיר ונמרץ לפי הרמה; בה�
   assert.equal(walkTarget({ level: 1 }, 'warm'), null);
   const b = walkTarget({ level: 2 }, 'brisk');   // 10:00 לק״מ
   assert.equal(paceVerdict(b, 590), 'ok'); assert.equal(paceVerdict(b, 620), 'ok'); assert.equal(paceVerdict(b, 700), 'slow');
+  assert.equal(paceVerdict(b, 500), 'over');   // מהר יותר מהמקטעים הנמרצים — במקטע מהיר רגיל
+  assert.equal(paceVerdict(walkTarget({ level: 2 }, 'power'), 430), 'ok');   // בנמרץ אין "מהר מדי"
   const st = walkTarget({ level: 2 }, 'stroll');
   assert.equal(paceVerdict(st, 700), 'ok'); assert.equal(paceVerdict(st, 500), 'fast');
   assert.equal(paceVerdict(b, null), null); assert.equal(paceVerdict(null, 600), null);

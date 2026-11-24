@@ -82,14 +82,14 @@ export function walkLevelUp(profile, runs = [], now = Date.now()) {
 const BRISK = [0, 655, 600, 555], POWER = [0, 600, 555, 515];
 export function walkTarget(profile, kind) {
   const l = walkLevel(profile);
-  if (kind === 'brisk') return { max: BRISK[l] };
+  if (kind === 'brisk') return { max: BRISK[l], floor: Math.round(POWER[l] * 0.93) };   // floor: מהר מזה — שורפים את הכוח למקטעים הנמרצים
   if (kind === 'power') return { max: POWER[l] };
   if (kind === 'stroll' || kind === 'cool') return { min: BRISK[l] };
   return null;
 }
-// איך הקצב הנוכחי ביחס ליעד: slow — לאט מדי במקטע מהיר · fast — מהר מדי במקטע רגוע · ok. סטייה של עד 5% נחשבת בסדר
+// איך הקצב הנוכחי ביחס ליעד: slow — לאט מדי במקטע מהיר · fast — מהר מדי במקטע רגוע · over — מהר מדי במקטע מהיר (לא נמרץ) · ok. סטייה של עד 5% נחשבת בסדר
 export function paceVerdict(target, paceSec) {
   if (!target || !paceSec) return null;
-  if (target.max) return paceSec > target.max * 1.05 ? 'slow' : 'ok';
+  if (target.max) return paceSec > target.max * 1.05 ? 'slow' : target.floor && paceSec < target.floor ? 'over' : 'ok';
   return paceSec < target.min * 0.95 ? 'fast' : 'ok';
 }

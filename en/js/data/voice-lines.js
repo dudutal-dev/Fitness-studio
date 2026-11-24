@@ -174,10 +174,13 @@ Object.assign(lines, {
   walk_pace_up: 'The pace has dropped a little. Pick it up — quicker steps, arms working.',
   walk_pace_good: 'Great pace! Just like that — keep going.',
   walk_pace_easy: 'Now ease off. Breathe deep and let your heart rate come down.',
+  walk_pace_hold: 'Too fast for this stretch. Ease off a touch, and save your strength for the power stretches.',
+  walk_no_gps: 'I can\'s see your pace right now. With the screen on I can guide it; for now, go by feel.',
+  walk_count: 'Three... two... one.',
   walk_km: 'Another kilometer behind us! Very nice.',
   walk_free: 'A free walk — your pace, your route. I\'ll count the kilometers.',
 });
-const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_km', 'walk_free'];
+const WALK_ONLY = ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_pace_hold', 'walk_no_gps', 'walk_count', 'walk_km', 'walk_free'];
 // מה אומרים מאמני הריצה: כל משפטי הריצה והדופק, ספירה לאחור, פתיחה וסיום — בלי סטים, משקלים ותרגילים
 const RUN_SAYS = ['n1', 'n2', 'n3', 'go', 'workout_start', 'streak', 'pr', 'm2', 'm4', 'm5', 'm6', 'm8', 'm10', 'watch_on', 'zone_up', 'zone_down', 'checkin_low', 'checkin_high'];
 const MOB_ONLY = ['mob_intro', 'mob_hold', 'mob_again', 'mob_breathe', 'mob_no_pain', 'mob_close'];
