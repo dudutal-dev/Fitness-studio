@@ -10,6 +10,12 @@ import { STILL, STILL_ALL, STILL_MINUTES, STILL_STAGES, STILL_FRAC } from '../da
 import { startStill } from './still.js';
 
 export const medArt = (id, sq = true) => `assets/med/${id}${sq ? '_sq' : ''}.webp`;
+// טעינה עמידה של האיורים (25.11.2026): בטלפון של בעל המוצר הכרטיסים נפתחו פעם בלי תמונות. כל איור נטען גם בנפרד, ואם נכשל — מנסים שוב, עד שלוש פעמים
+function ensureArt(scope) {
+  const again = (set, url, n = 0) => { const im = new Image(); im.onload = () => set(url); im.onerror = () => { if (n < 3) setTimeout(() => again(set, `${url.split('?')[0]}?r=${n + 1}`, n + 1), 1200 * (n + 1)); }; im.src = url; };
+  scope.querySelectorAll('.med-j[data-mj]').forEach((b) => again((u) => { b.style.backgroundImage = `linear-gradient(180deg, rgba(20,12,40,0) 30%, rgba(20,12,40,.92) 78%), url(${u})`; }, medArt(b.dataset.mj)));
+  scope.querySelectorAll('.med-head img').forEach((im) => { im.addEventListener('error', () => { const n = Number(im.dataset.n || 0); if (n < 3) { im.dataset.n = n + 1; setTimeout(() => { im.src = `${COACHES.or.face}?r=${n + 1}`; }, 1200 * (n + 1)); } }); });
+}
 export const medCardHtml = () => html`<button class="med-card" data-act="med" style="background-image:linear-gradient(100deg, rgba(30,18,60,.25), rgba(30,18,60,.86) 62%), url(${medArt('thanks')})"><img src="${COACHES.or.face}" alt="" loading="lazy">
   <span><b>מדיטציה עם ${esc(COACHES.or.name)}</b><small>הליכות מדיטטיביות · מדיטציית בוקר · מדיטציית לילה</small></span>${icon('play', 'width="20" height="20"')}</button>`;
 
@@ -29,7 +35,8 @@ export function medSheet(tab0 = null) {
     <div class="seg med-tabs" data-mtab>${[['walk', 'הליכה'], ['morning', 'בוקר'], ['night', 'לילה']].map(([k, v]) => `<button type="button" data-v="${k}" class="${tab === k ? 'on' : ''}">${v}</button>`).join('')}</div>
     <div data-mbody>${body()}</div>`, {
     onMount(sh, close) {
-      on(sh, 'click', '[data-mtab] button', (e, b) => { tab = b.dataset.v; sh.querySelectorAll('[data-mtab] button').forEach((x) => x.classList.toggle('on', x === b)); sh.querySelector('[data-mbody]').innerHTML = body(); });
+      ensureArt(sh);
+      on(sh, 'click', '[data-mtab] button', (e, b) => { tab = b.dataset.v; sh.querySelectorAll('[data-mtab] button').forEach((x) => x.classList.toggle('on', x === b)); sh.querySelector('[data-mbody]').innerHTML = body(); ensureArt(sh); });
       on(sh, 'click', '[data-mj]', (e, b) => (STILL[b.dataset.mj] ? stillScreen(b.dataset.mj, close) : journeyScreen(b.dataset.mj, close)));
     },
   });

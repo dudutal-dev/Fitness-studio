@@ -48,3 +48,9 @@ export async function warmMedia(plan) {
   warmed = key;
   await downloadMedia(plan);
 }
+
+// איורי המדיטציה (הכרטיסים והמסכים) והתמונה של אור — קבצים קטנים שיורדים מראש, כדי שהחלונית תיפתח עם האיורים מיד וגם בלי רשת
+export async function warmMedArt(ids = []) {
+  const files = ['../assets/coaches/or_face.webp', ...ids.map((i) => `../assets/med/${i}_sq.webp`), ...ids.map((i) => `../assets/med/${i}.webp`)];
+  for (const f of files) { if (await cached(f)) continue; try { const r = await fetch(f); if (r.ok) await r.arrayBuffer(); } catch { break; } }
+}

@@ -11,7 +11,9 @@ import { renderNutrition } from './views/nutrition.js';
 import { renderCoach } from './views/coach.js';
 import { startWorkout } from './views/workout.js';
 import { unlock, warmVoiceCache } from './coach/voice.js';
-import { warmMedia, planMedia } from './media-warm.js';
+import { warmMedia, planMedia, warmMedArt } from './media-warm.js';
+import { MED_ALL } from './data/med-lines.js';
+import { STILL_ALL } from './data/med-still.js';
 import { sessionCoach } from './engine/cali.js';
 import { openPlanIntro } from './views/plan-intro.js';
 import { initUpdater } from './updater.js';
@@ -88,6 +90,7 @@ initUsage();     // סטטיסטיקת שימוש: שמות רכיבים ומו�
 initLicense();   // קישור הפעלה אישי — חוסם רק כשהאכיפה מופעלת במסך הניהול
 // קובצי הקול של המאמן יורדים ברקע כמה שניות אחרי הפתיחה (ושוב אחרי החלפת מאמן)
 setTimeout(warmVoiceCache, 5000);
+setTimeout(() => warmMedArt([...MED_ALL, ...STILL_ALL]).catch(() => {}), 2500);   // איורי המדיטציה: קטנים, יורדים ראשונים
 addEventListener('hashchange', () => setTimeout(warmVoiceCache, 3000));
 // התמונות והסרטונים של המאמנים יורדים לטלפון ברקע (אחרי הקול), כדי שהאימון יעבוד מיד וגם בלי קליטה
 const warmDemos = () => warmMedia(planMedia(get(), sessionCoach)).catch(() => {});
