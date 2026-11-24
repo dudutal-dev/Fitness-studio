@@ -163,7 +163,8 @@ export function allowed(food, dislikes = [], dislikedFoods = []) {
 }
 
 // ליווי התזונה הוא בחירה של המתאמן (profile.nutrition === false — כבוי). פרופילים ישנים, בלי השדה: פעיל.
-export const wantsNutrition = (profile) => profile?.nutrition !== false;
+// במסלול המדיטציה בתנועה אין תפריט (החלטת בעל המוצר, 25.11.2026): ליווי התזונה כבוי כל עוד זה המסלול הראשי; הבחירה עצמה נשמרת, וחוזרת כשמחליפים מסלול
+export const wantsNutrition = (profile) => profile?.nutrition !== false && profile?.track !== 'med';
 // "בשירות" (profile.eatAt === 'service'): מי שאוכל רוב השבוע בחדר אוכל ובשטח. התפריט נבנה ממה שיש שם (ctx: base / field),
 // הלשוניות נקראות "חדר אוכל · בשטח · בבית", וברירת המחדל היא חדר האוכל. ב-MOVA מוצע במסלול חדר הכושר (וגם כשהוא תחום נוסף).
 export const canService = (o) => ['gym', 'mix'].includes(o?.track) || !!o?.extras?.gym;

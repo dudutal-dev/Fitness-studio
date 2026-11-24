@@ -55,6 +55,13 @@ export function renderNutrition(root) {
   const s = get();
   const p = s.profile;
   // ליווי התזונה כבוי (בחירת המתאמן בהיכרות): מסך אחד קצר, עם אפשרות להפעיל
+  // מסלול המדיטציה בתנועה: אין תפריט (החלטת בעל המוצר, 25.11.2026) — מסך קצר בלי כפתור הפעלה
+  if (p.track === 'med') {
+    root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
+      <div class="card nut-off"><div class="nc-ico">${icon('leaf')}</div><b style="font-size:19px">במסלול הזה אין תפריט</b>
+        <p class="sub" style="margin:8px 0 4px">מדיטציה בתנועה היא הליכה ושקט, בלי יעדי קלוריות ובלי יומן אכילה. מי שרוצה ליווי תזונה בוחר מסלול ראשי אחר ב"המסלול שלי", והתפריט חוזר כמו שהיה.</p></div>`;
+    return;
+  }
   if (!wantsNutrition(p)) {
     root.innerHTML = html`<div class="page-head"><div class="h1">תזונה</div></div>
       <div class="card nut-off"><div class="nc-ico">${icon('food')}</div><b style="font-size:19px">ליווי התזונה כבוי</b>

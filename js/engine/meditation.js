@@ -53,3 +53,12 @@ export function buildMedSessions(profile, n, { blockIndex = 0, weekInBlock = 0 }
     return { name: run.name, focus: MED_JOURNEYS[run.med].desc, track: 'med', runOnly: true, minutes: Math.round(run.totalSec / 60), items: [], warmup: [], cooldown: [], run };
   });
 }
+
+// מדיטציה בתנועה כמסלול ראשי: 2–6 הליכות בשבוע; המסע של השבוע ואחריו הבאים בתור. בלי רמות — הקצב והאורך נבחרים (profile.medPace / medMin)
+export const MED_PHASE = { id: 'med', name: 'מדיטציה בתנועה', desc: 'הליכות מדיטטיביות עם אור. בכל שבוע מסע אחר פותח את השבוע: שחרור, ריפוי, חיבור, איפוס, הודיה ונוכחות.' };
+export const MED_WEEKS = [{ name: 'שבוע ראשון', rpe: 3, volume: 1, load: 1 }, { name: 'שבוע שני', rpe: 3, volume: 1, load: 1 }, { name: 'שבוע שלישי', rpe: 3, volume: 1, load: 1 }, { name: 'שבוע רביעי', rpe: 3, volume: 1, load: 1 }];
+export function buildMedWeek(profile, { blockIndex = 0, weekInBlock = 0, days = null } = {}) {
+  const n = days ?? Math.min(6, Math.max(2, profile.days || 3));
+  const sessions = buildMedSessions(profile, n, { blockIndex, weekInBlock }).map((x, i) => ({ day: i + 1, ...x }));
+  return { blockIndex, weekInBlock, phase: MED_PHASE, week: MED_WEEKS[weekInBlock % 4], sessions };
+}

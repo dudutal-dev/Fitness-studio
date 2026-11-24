@@ -27,7 +27,7 @@ export function renderProgress(root) {
   const cali = isCali(p);
   // קליסתניקס: סולמות במקום גרפי משקלים, ולשונית הריצה מופיעה רק אם יש ריצות (מיובאות)
   const mob = isMob(p);
-  const tabs = [['week', 'Week'], ...(hasMob(p) ? [['mob', 'Range']] : []), ['weight', 'Weight'], ...(cali || mob || isRun(p) || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(p.track) ? [] : [['strength', 'Strength']]), ...(hasCali(p) ? [['ladders', 'Ladders']] : []), ...((cali || mob || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(p.track)) && !s.runs.length ? [] : [['run', 'Running']]), ['body', 'Body']];
+  const tabs = [['week', 'Week'], ...(hasMob(p) ? [['mob', 'Range']] : []), ['weight', 'Weight'], ...(cali || mob || isRun(p) || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(p.track) ? [] : [['strength', 'Strength']]), ...(hasCali(p) ? [['ladders', 'Ladders']] : []), ...((cali || mob || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(p.track)) && !s.runs.length ? [] : [['run', 'Running']]), ['body', 'Body']];
   if (!tabs.some(([k]) => k === tab)) tab = 'week';
   root.innerHTML = html`<div class="page-head"><div class="eyebrow">Tracking & metrics</div><div class="h1">Your progress</div></div>
     <div class="seg" style="margin-bottom:14px">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`)}</div>
@@ -49,7 +49,7 @@ const TABS = {
   // סיכום שבועי: 7 הימים האחרונים מול השבוע שלפניו
   week(s) {
     const w = weekSummary(s), c = w.cur, pv = w.prev;
-    const mobOnly = isMob(s.profile) || isRun(s.profile) || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(s.profile.track), cali = isCali(s.profile) || mobOnly;
+    const mobOnly = isMob(s.profile) || isRun(s.profile) || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(s.profile.track), cali = isCali(s.profile) || mobOnly;
     const delta = (a, b, unit = '') => { const d = Math.round((a - b) * 10) / 10; return d ? `<small class="${d > 0 ? 'up' : 'down'}"><span class="ltr">${d > 0 ? '+' : ''}${d.toLocaleString('en-US')}</span>${unit} vs last week</small>` : '<small>Same as last week</small>'; };
     const kpi = (ic, tone, val, label, sub) => `<div class="wk"><div class="row">${ib(ic, tone, 'sm')}<span class="sub t-cap">${label}</span></div><b class="num">${val}</b>${sub || ''}</div>`;
     const pct = (v, of) => Math.min(100, Math.round((v / Math.max(1, of)) * 100));
@@ -59,7 +59,7 @@ const TABS = {
         ${kpi('clock', '', c.minutes, 'Workout minutes', delta(c.minutes, pv.minutes))}
         ${cali ? kpi('chart', 'pri', c.sets, 'Sets', delta(c.sets, pv.sets)) : kpi('chart', 'pri', c.volume.toLocaleString('en-US'), 'kg volume', delta(c.volume, pv.volume))}
         ${mobOnly ? '' : cali ? kpi('rocket', 'pri', c.ups, 'Ladder steps up', '') : kpi('trophy', 'pri', c.prs, 'Personal records', '')}
-        ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'Active days', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? (s.profile.track === 'walk' ? 'km walked' : 'km run') : s.profile.track === 'walk' ? 'walks' : 'Runs', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
+        ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'Active days', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? (['walk', 'med'].includes(s.profile.track) ? 'km walked' : 'km run') : ['walk', 'med'].includes(s.profile.track) ? 'walks' : 'Runs', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
         ${kpi('scale', '', w.weight ? w.weight.kg : '—', 'Weight (kg)', w.weight?.delta != null ? `<small><span class="ltr">${w.weight.delta > 0 ? '+' : ''}${w.weight.delta}</span> since the last weigh-in</small>` : '<small>No weigh-in this week</small>')}
       </div>
       ${wantsNutrition(s.profile) ? html`<div class="card" style="margin-top:12px"><b>Nutrition — daily average</b>

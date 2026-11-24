@@ -6,7 +6,10 @@ import { MED_JOURNEYS, MED_ORDER, MED_LINES, MED_ANCHORS, MED_POINTS, medLine } 
 import { buildMedSession, buildMedSessions, weekJourney, medShape, medEffort, MED_MINUTES } from '../js/engine/meditation.js';
 import { coachSays, VOICE_LINES } from '../js/data/voice-lines.js';
 import { COACHES, coachesFor } from '../js/data/coaches.js';
-import { buildWeek, EXTRA_TRACKS, extraCoach } from '../js/engine/program.js';
+import { buildWeek, phaseFor, goalsFor, goalForTrack, EXTRA_TRACKS, extraCoach } from '../js/engine/program.js';
+import { hasGym, sessionCoach } from '../js/engine/cali.js';
+import { isWalk, isMed } from '../js/engine/walking.js';
+import { wantsNutrition } from '../js/engine/nutrition.js';
 
 const has = (p) => existsSync(new URL(`../${p}`, import.meta.url));
 
@@ -60,4 +63,16 @@ test('דף המסלול: נקודה לכל קילומטר שלם על המסלו
   if (!kmPoints) return;   // המודול נשען על הדפדפן
   const route = Array.from({ length: 60 }, (_, i) => [32 + i * 0.0005, 34.8]);   // כ-55 מ׳ בין נקודות, כ-3.3 ק״מ
   const k = kmPoints(route); assert.equal(k.length, 3); assert.ok(k[0][0] > 32.008 && k[0][0] < 32.0095);
+});
+test('מדיטציה בתנועה כמסלול ראשי: שבוע של הליכות עם אור, בלי חדר כושר ובלי תפריט', () => {
+  const p = { name: 'דנה', sex: 'f', age: 40, heightCm: 165, weightKg: 62, track: 'med', coach: 'or', goal: 'zen', days: 4, level: 1, medMin: 20, medPace: 'calm', nutrition: true, injuries: [], dislikes: [] };
+  assert.equal(isMed(p), true); assert.equal(isWalk(p), true); assert.equal(hasGym(p), false); assert.equal(phaseFor(p, 0).id, 'med');
+  assert.deepEqual(goalsFor('med'), ['zen']); assert.equal(goalForTrack('strength', 'med'), 'zen');
+  for (const days of [2, 3, 4, 6]) { const wk = buildWeek({ ...p, days }, { blockIndex: 0, weekInBlock: 2 });
+    assert.equal(wk.sessions.length, days); assert.ok(wk.sessions.every((s, i) => s.day === i + 1 && s.track === 'med' && s.runOnly && s.run.med && s.minutes === 20));
+    assert.equal(wk.sessions[0].run.med, 'connect', 'המסע של השבוע השלישי פותח את השבוע'); assert.equal(sessionCoach(p, wk.sessions[0]), 'or'); }
+  // אין תפריט במסלול הזה — גם כשליווי התזונה היה דולק; כשחוזרים למסלול אחר הוא חוזר
+  assert.equal(wantsNutrition(p), false); assert.equal(wantsNutrition({ ...p, track: 'walk' }), true); assert.equal(wantsNutrition({ ...p, track: 'gym', nutrition: false }), false);
+  // מסלול ההליכה הרגיל לא השתנה
+  assert.equal(isMed({ track: 'walk' }), false); assert.equal(phaseFor({ track: 'walk' }, 0).id, 'walk');
 });

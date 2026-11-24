@@ -21,7 +21,7 @@ import { isHiit } from '../engine/hiit.js';
 import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
-import { isWalk } from '../engine/walking.js';
+import { isWalk, isMed } from '../engine/walking.js';
 import { medCardHtml, medSheet } from './med-ui.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { homeNextHtml, bindCalendar } from './calendar-ui.js';
@@ -47,6 +47,8 @@ function coachLine(s) {
   const p = s.profile;
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
+  // מדיטציה בתנועה: לאור יש רק המשפטים שלה, ולכן תמיד אותה שורה שקטה
+  if (isMed(p)) return { key: 'med_a4', text: `${ns ? `Next walk: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}Nowhere to get to — just one step, and then another.` };
   if (!s.sessions.length && !s.runs.length) return { key: 'workout_start', text: `<b>${esc(p.name)}</b>, your plan is ready. The first workout matters most — ${g('let\'s', 'let\'s')} do it together.` };
   if (st >= 3) return { key: 'streak', text: `A streak of <b>${st} days</b>! ${isWalk(p) ? 'Step by step, it adds up.' : isTai(p) ? 'A few minutes every day — that is what builds balance.' : isYoga(p) ? 'A few minutes on the mat every day adds up.' : isPil(p) ? 'Class after class, your core gets stronger.' : isHiit(p) ? 'Twenty minutes a day adds up.' : isRun(p) ? 'This is how endurance is built — run after run.' : isMob(p) ? 'This is how range of motion is built — a little every day.' : isCali(p) ? 'This is how body control is built.' : 'This is how fitness is built.'} ${ns ? `Today: ${esc(ns.name)}.` : ''}` };
   if (isTai(p)) return { key: 'workout_start', text: `${ns ? `Next class: <b>${esc(ns.name)}</b>, ${ns.minutes} minutes. ` : ''}Slowly, in small steps, with a chair within reach.` };
@@ -132,10 +134,10 @@ export function renderHome(root) {
       </div>
     </div>
 
-    ${ns ? html`<div class="hero"><img class="bg" src="${demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
+    ${ns ? html`<div class="hero ${ns.run?.med ? 'med-hero' : ''}"><img class="bg" src="${ns.run?.med ? `../assets/med/${ns.run.med}.webp` : demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
       <div class="hero-in"><div class="eyebrow">Next workout · ${esc(s.plan.week.phase.name)}</div>
         <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div>
-        <div class="stats"><div><b>${estMinutes(ns)}</b>min</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>segments</div>` : `<div><b>${ns.items.length}</b>exercises</div>`}
+        <div class="stats"><div><b>${estMinutes(ns)}</b>min</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>${ns.run.med ? 'points' : 'segments'}</div>` : `<div><b>${ns.items.length}</b>exercises</div>`}
           ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>rounds</div><div><b>${ns.work}/${ns.rest}</b>sec</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.track === 'yoga' || ns.track === 'tai' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>sets</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>run</div>` : ''}</div>
         <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('Start', 'Start')} ${ns.run?.walk ? 'walk' : ns.runOnly ? 'run' : 'workout'}</button>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} Run only</button>` : ''}

@@ -13,7 +13,7 @@ import { newCali } from '../engine/cali.js';
 import { EXTRA_TRACKS, extrasOf } from '../engine/program.js';
 import { targets, wantsNutrition } from '../engine/nutrition.js';
 
-const ORDER = ['gym', 'cali', 'run', 'walk', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'];
+const ORDER = ['gym', 'cali', 'run', 'walk', 'med', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'];
 const faces = (id) => (id === 'mix' ? ['ori', 'noa', 'maya'].map((c) => COACHES[c]) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('');
 const nameOf = (id) => (TRACKS[id] || TRACKS.gym).name;
 const isClass = (id) => ['yoga', 'pil', 'hiit', 'tai'].includes(id);

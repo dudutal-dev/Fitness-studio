@@ -1344,3 +1344,5 @@ button.mi .tag { margin-inline-end: 4px; }
 .ms-list li { display: flex; align-items: baseline; gap: 8px; font-size: 14px; } .ms-list .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; transform: translateY(-1px); } .ms-list small { opacity: .7; margin-inline-start: auto; font-size: 12.5px; }
 .med-points { border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin: 6px 0 12px; }
 .med-points ol { margin: 8px 0 4px; padding-inline-start: 22px; display: grid; gap: 4px; } .med-points li::marker { color: #f3c97a; font-weight: 800; } .med-points li.nopos { opacity: .7; }
+
+.hero.med-hero img.bg { object-position: 50% 22%; }

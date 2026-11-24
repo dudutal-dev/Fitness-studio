@@ -5,8 +5,8 @@ import { isCali, isMix, hasCali, buildCaliWeek, buildCaliSessions, mixCaliCount,
 import { isPil, buildPilWeek, buildPilSessions, pilBlocked, PIL_PHASE } from './pil.js';
 import { isYoga, buildYogaWeek, buildYogaSessions, yogaBlocked, YOGA_PHASE } from './yoga.js';
 import { isTai, buildTaiWeek, buildTaiSessions, taiBlocked, TAI_PHASE } from './tai.js';
-import { isWalk, buildWalkWeek, buildWalkSessions, WALK_PHASE } from './walking.js';
-import { buildMedSessions } from './meditation.js';
+import { isWalk, isMed, buildWalkWeek, buildWalkSessions, WALK_PHASE } from './walking.js';
+import { buildMedSessions, buildMedWeek, MED_PHASE } from './meditation.js';
 import { isHiit, buildHiitWeek, buildHiitSessions, hiitBlocked, HIIT_PHASE } from './hiit.js';
 import { isMob, hasMob, mobCount, buildMobWeek, buildMobSessions, mobBlocked, MOB_PHASE } from './mob.js';
 
@@ -53,10 +53,10 @@ export const GOALS = {
   bal: { name: 'שיווי משקל ויציבות', icon: 'target', runs: 0, finisher: false, phaseOrder: ['base'], track: 'tai' },
 };
 // המטרות של כל מסלול (מסה וחיטוב משותפות)
-const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'], yoga: ['zen', 'flex', 'cut'], tai: ['bal', 'zen', 'cut'], walk: ['health', 'cut'] };
-export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'].includes(track) ? track : 'gym'];
+const TRACK_GOALS = { gym: ['combat', 'muscle', 'strength', 'cut'], cali: ['skill', 'muscle', 'cut'], mob: ['flex', 'posture', 'cut'], run: ['r5k', 'r10k', 'r21k', 'cut'], hiit: ['fit', 'cut'], pil: ['core', 'posture', 'cut'], yoga: ['zen', 'flex', 'cut'], tai: ['bal', 'zen', 'cut'], walk: ['health', 'cut'], med: ['zen'] };
+export const goalsFor = (track) => TRACK_GOALS[['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(track) ? track : 'gym'];
 // מעבר בין מסלולים: המטרה המקבילה במסלול השני
-export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : track === 'yoga' ? 'zen' : track === 'tai' ? 'bal' : track === 'walk' ? 'health' : 'combat');
+export const goalForTrack = (goal, track) => (goalsFor(track).includes(goal) ? goal : track === 'cali' ? 'skill' : track === 'mob' ? 'flex' : track === 'run' ? 'r5k' : track === 'hiit' ? 'fit' : track === 'pil' ? 'core' : track === 'yoga' ? 'zen' : track === 'tai' ? 'bal' : track === 'walk' ? 'health' : track === 'med' ? 'zen' : 'combat');
 
 // ───── תבניות פיצול ─────
 // כל משבצת: role + רשימת תרגילים מועדפים לפי סדר (בחירה לפי רמה/פציעות/רוטציה)
@@ -141,6 +141,7 @@ export function phaseFor(profile, blockIndex) {
   if (isCali(profile)) return CALI_PHASE;
   if (isMob(profile)) return MOB_PHASE;
   if (isRun(profile)) return RUN_PHASE;
+  if (isMed(profile)) return MED_PHASE;
   if (isWalk(profile)) return WALK_PHASE;
   if (isHiit(profile)) return HIIT_PHASE;
   if (isPil(profile)) return PIL_PHASE;
@@ -292,6 +293,7 @@ function buildCoreWeek(profile, opt = {}) {
 }
 
 function buildMainWeek(profile, { blockIndex = 0, weekInBlock = 0, min = 3 } = {}) {
+  if (isMed(profile)) return buildMedWeek(profile, { blockIndex, weekInBlock, days: min < 3 ? Math.max(1, profile.days) : null });
   if (isWalk(profile)) return min < 3 ? { ...buildWalkWeek(profile, { blockIndex, weekInBlock }), sessions: buildWalkSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildWalkWeek(profile, { blockIndex, weekInBlock });
   if (isTai(profile)) return min < 3 ? { ...buildTaiWeek(profile, { blockIndex, weekInBlock }), sessions: buildTaiSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildTaiWeek(profile, { blockIndex, weekInBlock });
   if (isYoga(profile)) return min < 3 ? { ...buildYogaWeek(profile, { blockIndex, weekInBlock }), sessions: buildYogaSessions(profile, Math.max(1, profile.days), { blockIndex, weekInBlock }).map((w, i) => ({ day: i + 1, ...w })) } : buildYogaWeek(profile, { blockIndex, weekInBlock });

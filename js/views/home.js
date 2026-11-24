@@ -21,7 +21,7 @@ import { isHiit } from '../engine/hiit.js';
 import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
-import { isWalk } from '../engine/walking.js';
+import { isWalk, isMed } from '../engine/walking.js';
 import { medCardHtml, medSheet } from './med-ui.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { homeNextHtml, bindCalendar } from './calendar-ui.js';
@@ -47,6 +47,8 @@ function coachLine(s) {
   const p = s.profile;
   const st = streak([...s.sessions, ...s.runs]);
   const ns = nextSession(s);
+  // מדיטציה בתנועה: לאור יש רק המשפטים שלה, ולכן תמיד אותה שורה שקטה
+  if (isMed(p)) return { key: 'med_a4', text: `${ns ? `ההליכה הבאה: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}אין לאן להגיע — רק צעד, ועוד צעד.` };
   if (!s.sessions.length && !s.runs.length) return { key: 'workout_start', text: `<b>${esc(p.name)}</b>, התוכנית שלך מוכנה. האימון הראשון הוא הכי חשוב — ${g('בוא', 'בואי')} נעשה אותו יחד.` };
   if (st >= 3) return { key: 'streak', text: `רצף של <b>${st} ימים</b>! ${isWalk(p) ? 'צעד אחרי צעד, וזה מצטבר.' : isTai(p) ? 'כמה דקות בכל יום, וזה מה שבונה שיווי משקל.' : isYoga(p) ? 'כמה דקות על המזרן בכל יום, וזה מצטבר.' : isPil(p) ? 'שיעור אחרי שיעור, והמרכז מתחזק.' : isHiit(p) ? 'עשרים דקות ביום, וזה מצטבר.' : isRun(p) ? 'ככה בונים סבולת — ריצה אחרי ריצה.' : isMob(p) ? 'טווח תנועה נבנה ככה — קצת בכל יום.' : isCali(p) ? 'ככה בונים שליטה בגוף.' : 'ככה בונים כושר.'} ${ns ? `היום: ${esc(ns.name)}.` : ''}` };
   if (isTai(p)) return { key: 'workout_start', text: `${ns ? `השיעור הבא: <b>${esc(ns.name)}</b>, ${ns.minutes} דקות. ` : ''}לאט, בצעדים קטנים, וכיסא בהישג יד.` };
@@ -132,10 +134,10 @@ export function renderHome(root) {
       </div>
     </div>
 
-    ${ns ? html`<div class="hero"><img class="bg" src="${demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
+    ${ns ? html`<div class="hero ${ns.run?.med ? 'med-hero' : ''}"><img class="bg" src="${ns.run?.med ? `assets/med/${ns.run.med}.webp` : demoPoster(sessionCoach(p, ns), heroEx)}" alt="">
       <div class="hero-in"><div class="eyebrow">האימון הבא · ${esc(s.plan.week.phase.name)}</div>
         <div class="h1" style="font-size:24px">${esc(ns.name)}</div><div class="sub">${esc(ns.focus)}</div>
-        <div class="stats"><div><b>${estMinutes(ns)}</b>דקות</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>קטעים</div>` : `<div><b>${ns.items.length}</b>תרגילים</div>`}
+        <div class="stats"><div><b>${estMinutes(ns)}</b>דקות</div>${ns.runOnly ? `<div><b>${ns.run.segs.filter((x) => !['warm', 'cool'].includes(x.kind)).length}</b>${ns.run.med ? 'נקודות' : 'קטעים'}</div>` : `<div><b>${ns.items.length}</b>תרגילים</div>`}
           ${ns.track === 'hiit' ? `<div><b>${ns.rounds}</b>סבבים</div><div><b>${ns.work}/${ns.rest}</b>שנ׳</div>` : ns.track === 'mob' || ns.track === 'pil' || ns.track === 'yoga' || ns.track === 'tai' || ns.runOnly ? '' : `<div><b>${ns.items.reduce((a, b) => a + b.sets, 0)}</b>סטים</div>`}${ns.run && !ns.runOnly ? `<div><b>+</b>ריצה</div>` : ''}</div>
         <button class="btn primary block xl" data-act="start">${icon('play', 'width="22" height="22"')} ${g('התחל', 'התחילי')} ${ns.run?.walk ? 'הליכה' : ns.runOnly ? 'ריצה' : 'אימון'}</button>
         <div class="hero-sub">${ns?.run && !ns.runOnly ? `<button class="btn sm" data-act="run">${icon('run', 'width="18" height="18"')} רק ריצה</button>` : ''}

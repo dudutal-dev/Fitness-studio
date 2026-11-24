@@ -2,7 +2,9 @@
 // profile.track === 'walk'. profile.walkMin = אורך הליכה רגילה (20 / 30 / 45 / 60 דקות). profile.level 1–3 = מתחילים / הולכים קבוע / הולכים מהר.
 // ההליכה רצה במסך הריצה החי (views/run.js): מקטעים לפי זמן, מרחק וקצב מה-GPS, ומוזיקה לפי אופי המקטע.
 // מקטעים: warm חימום · stroll הליכה נינוחה · brisk הליכה מהירה · power הליכה נמרצת (הכי מהר בלי לרוץ) · cool שחרור. הכללים: docs/WALKING.md
-export const isWalk = (profile) => profile?.track === 'walk';
+// מסלול המדיטציה בתנועה (med) הוא גם מסלול של הליכות בחוץ — כל מה שנכון למסלול הליכה (בלי חדר כושר, בלי מדד כוח, "התחל הליכה") נכון גם לו
+export const isWalk = (profile) => profile?.track === 'walk' || profile?.track === 'med';
+export const isMed = (profile) => profile?.track === 'med';
 export const WALK_MINUTES = [20, 30, 45, 60];
 export const WALK_LEVELS = ['', 'Beginners', 'Regular walkers', 'Fast walkers'];
 export const walkLevel = (profile) => Math.min(3, Math.max(1, profile?.level || 1));

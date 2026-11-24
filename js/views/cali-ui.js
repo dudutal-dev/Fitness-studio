@@ -84,7 +84,7 @@ export const equipChips = (equip) => `<div class="chips">${Object.entries(EQUIP)
 // ───── מעבר בין מסלולים ─────
 // ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר,
 // ובמסלול המשולב — כל אימון עם המאמן של המסלול שלו.
-const NO_GYM = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk'];   // מסלולים בלי מאמן ורמה של חדר כושר
+const NO_GYM = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk', 'med'];   // מסלולים בלי מאמן ורמה של חדר כושר
 export function switchTrack(track, rerender) {
   const p = get().profile;
   // יוצאים מ-HIIT: זוכרים את הרמה שלו לפעם הבאה
@@ -93,6 +93,19 @@ export function switchTrack(track, rerender) {
   if (p.track === 'yoga' && track !== 'yoga') set((s) => { s.profile.yogaLevel = s.profile.level; return s; });
   if (p.track === 'tai' && track !== 'tai') set((s) => { s.profile.taiLevel = s.profile.level; return s; });
   if (p.track === 'walk' && track !== 'walk') set((s) => { s.profile.walkLevel = s.profile.level; return s; });
+  // מדיטציה בתנועה כמסלול ראשי: בלי רמות ובלי תפריט; ההליכות לפי profile.medMin / medPace
+  if (track === 'med') {
+    set((s) => {
+      const q = s.profile;
+      if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
+      q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin ??= 30; q.medPace ??= 'calm'; q.days = Math.min(6, Math.max(2, q.days || 3));
+      if (q.extras) delete q.extras.med;
+      s.plan = createPlan(q);
+      return s;
+    });
+    after('med', rerender);
+    return;
+  }
   if (track === 'walk') {
     set((s) => {
       const q = s.profile;
@@ -242,8 +255,8 @@ function toCali(track, cali, rerender) {
 
 function after(track, rerender) {
   const p = get().profile;
-  unlock(); stop(); say(track === 'pil' ? 'pil_hello' : track === 'walk' ? 'walk_hello' : `hello_${p.coach}`, { priority: true });
-  toast(track === 'walk' ? `עברת למסלול הליכה עם ${COACHES.shira.name}` : track === 'tai' ? `עברת למסלול טאי צ'י עם ${COACHES.mei.name}` : track === 'yoga' ? `עברת למסלול יוגה עם ${COACHES.yael.name}` : track === 'pil' ? `עברת למסלול פילאטיס עם ${COACHES.lia.name}` : track === 'hiit' ? `עברת למסלול HIIT עם ${COACHES.lia.name}` : track === 'run' ? `עברת למסלול ריצה עם ${COACHES[p.coach].name}` : track === 'mob' ? `עברת למסלול מוביליטי וגמישות עם ${COACHES.tamar.name}` : track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
+  unlock(); stop(); say(track === 'med' ? 'med_hello' : track === 'pil' ? 'pil_hello' : track === 'walk' ? 'walk_hello' : `hello_${p.coach}`, { priority: true });
+  toast(track === 'med' ? `עברת למסלול מדיטציה בתנועה עם ${COACHES.or.name}. במסלול הזה אין תפריט תזונה.` : track === 'walk' ? `עברת למסלול הליכה עם ${COACHES.shira.name}` : track === 'tai' ? `עברת למסלול טאי צ'י עם ${COACHES.mei.name}` : track === 'yoga' ? `עברת למסלול יוגה עם ${COACHES.yael.name}` : track === 'pil' ? `עברת למסלול פילאטיס עם ${COACHES.lia.name}` : track === 'hiit' ? `עברת למסלול HIIT עם ${COACHES.lia.name}` : track === 'run' ? `עברת למסלול ריצה עם ${COACHES[p.coach].name}` : track === 'mob' ? `עברת למסלול מוביליטי וגמישות עם ${COACHES.tamar.name}` : track === 'cali' ? `עברת למסלול קליסתניקס עם ${COACHES.maya.name}` : track === 'mix' ? `מסלול משולב: ${COACHES[p.coach].name} בחדר הכושר, ${COACHES.maya.name} בקליסתניקס` : `עברת למסלול חדר הכושר עם ${COACHES[p.coach].name}`, 3600);
   rerender();
 }
 

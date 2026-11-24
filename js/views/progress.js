@@ -27,7 +27,7 @@ export function renderProgress(root) {
   const cali = isCali(p);
   // קליסתניקס: סולמות במקום גרפי משקלים, ולשונית הריצה מופיעה רק אם יש ריצות (מיובאות)
   const mob = isMob(p);
-  const tabs = [['week', 'שבוע'], ...(hasMob(p) ? [['mob', 'טווחים']] : []), ['weight', 'משקל'], ...(cali || mob || isRun(p) || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(p.track) ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...((cali || mob || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(p.track)) && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
+  const tabs = [['week', 'שבוע'], ...(hasMob(p) ? [['mob', 'טווחים']] : []), ['weight', 'משקל'], ...(cali || mob || isRun(p) || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(p.track) ? [] : [['strength', 'כוח']]), ...(hasCali(p) ? [['ladders', 'סולמות']] : []), ...((cali || mob || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(p.track)) && !s.runs.length ? [] : [['run', 'ריצה']]), ['body', 'גוף']];
   if (!tabs.some(([k]) => k === tab)) tab = 'week';
   root.innerHTML = html`<div class="page-head"><div class="eyebrow">מעקב ומדדים</div><div class="h1">ההתקדמות שלך</div></div>
     <div class="seg" style="margin-bottom:14px">${tabs.map(([k, t]) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${t}</button>`)}</div>
@@ -49,7 +49,7 @@ const TABS = {
   // סיכום שבועי: 7 הימים האחרונים מול השבוע שלפניו
   week(s) {
     const w = weekSummary(s), c = w.cur, pv = w.prev;
-    const mobOnly = isMob(s.profile) || isRun(s.profile) || ['hiit', 'pil', 'yoga', 'tai', 'walk'].includes(s.profile.track), cali = isCali(s.profile) || mobOnly;
+    const mobOnly = isMob(s.profile) || isRun(s.profile) || ['hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(s.profile.track), cali = isCali(s.profile) || mobOnly;
     const delta = (a, b, unit = '') => { const d = Math.round((a - b) * 10) / 10; return d ? `<small class="${d > 0 ? 'up' : 'down'}"><span class="ltr">${d > 0 ? '+' : ''}${d.toLocaleString('he-IL')}</span>${unit} מהשבוע שעבר</small>` : '<small>כמו בשבוע שעבר</small>'; };
     const kpi = (ic, tone, val, label, sub) => `<div class="wk"><div class="row">${ib(ic, tone, 'sm')}<span class="sub t-cap">${label}</span></div><b class="num">${val}</b>${sub || ''}</div>`;
     const pct = (v, of) => Math.min(100, Math.round((v / Math.max(1, of)) * 100));
@@ -59,7 +59,7 @@ const TABS = {
         ${kpi('clock', '', c.minutes, 'דקות אימון', delta(c.minutes, pv.minutes))}
         ${cali ? kpi('chart', 'pri', c.sets, 'סטים', delta(c.sets, pv.sets)) : kpi('chart', 'pri', c.volume.toLocaleString('he-IL'), 'ק״ג נפח', delta(c.volume, pv.volume))}
         ${mobOnly ? '' : cali ? kpi('rocket', 'pri', c.ups, 'עליות בסולמות', '') : kpi('trophy', 'pri', c.prs, 'שיאים אישיים', '')}
-        ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'ימים פעילים', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? (s.profile.track === 'walk' ? 'ק״מ הליכה' : 'ק״מ ריצה') : s.profile.track === 'walk' ? 'הליכות' : 'ריצות', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
+        ${cali && !c.runs ? kpi('flame', 'acc', c.activeDays, 'ימים פעילים', delta(c.activeDays, pv.activeDays)) : kpi('run', 'acc', c.runKm || c.runs, c.runKm ? (['walk', 'med'].includes(s.profile.track) ? 'ק״מ הליכה' : 'ק״מ ריצה') : ['walk', 'med'].includes(s.profile.track) ? 'הליכות' : 'ריצות', delta(c.runKm || c.runs, pv.runKm || pv.runs))}
         ${kpi('scale', '', w.weight ? w.weight.kg : '—', 'משקל (ק״ג)', w.weight?.delta != null ? `<small><span class="ltr">${w.weight.delta > 0 ? '+' : ''}${w.weight.delta}</span> מהשקילה הקודמת</small>` : '<small>אין שקילה השבוע</small>')}
       </div>
       ${wantsNutrition(s.profile) ? html`<div class="card" style="margin-top:12px"><b>תזונה — ממוצע יומי</b>
