@@ -49,6 +49,7 @@ export const musicOn = () => get().settings.music === true;
 export const musicPlaying = () => alive;
 // לבדיקות: קפיצה לסוף הרצועה (כדי לבדוק את המעבר לרצועה הבאה), ומצב הנגן
 export const musicSeekEnd = () => { if (el && el.duration) el.currentTime = el.duration - 1.5; };
+export const musicDropReady = () => { ready = null; };   // לבדיקות: כאילו הרצועה הבאה לא הספיקה לרדת
 export const musicState = () => ({ alive, paused: el ? el.paused : null, t: el ? el.currentTime : 0, track: now, mood, real: !!el && !!el.src && !el.src.startsWith('data:'), gain: gain ? gain.gain.value : null, speaking });
 
 const level = () => (speaking ? DUCK : FULL) * Math.min(1, (get().settings.volume ?? 0.9) + 0.1);
@@ -73,19 +74,36 @@ async function load(name) {
   const u = URL.createObjectURL(await res.blob()); urls.push(u); if (urls.length > 3) URL.revokeObjectURL(urls.shift());
   return u;
 }
+// הרצועה הבאה מוכנה מראש (25.11.2026): מורידים אותה ברקע בזמן שהנוכחית מתנגנת, כדי שהמעבר בסוף הרצועה לא יחכה לרשת.
+// קודם ההורדה התחילה רק כשהרצועה נגמרה — קובץ גדול, ובקליטה חלשה המוזיקה נפסקה (ואם ההורדה נכשלה, לא חזרה עד סוף האימון).
+let ready = null;   // { mood, name, url } — הרצועה הבאה, מוכנה לניגון
+function prefetch() {
+  const m = mood, my = token; if (!alive || (ready && ready.mood === m)) return;
+  const name = pick(m);
+  load(name).then((url) => { if (alive && mood === m && my === token) ready = { mood: m, name, url }; }).catch(() => { setTimeout(() => { if (alive && my === token) prefetch(); }, 20000); });
+}
 // מנגן רצועה חדשה מהמאגר הנוכחי. fade: דעיכה קצרה של מה שמתנגן לפני ההחלפה
 async function playNext(fade = false) {
-  const mine = el, my = ++token, name = pick(mood);
-  now = name;
+  const mine = el, my = ++token, pre = ready && ready.mood === mood ? ready : null, name = pre ? pre.name : pick(mood);
+  ready = null;
   try {
     if (fade) ramp(0, 0.5);
-    const [u] = await Promise.all([load(name), fade ? new Promise((r) => setTimeout(r, 650)) : null]);
+    const [u] = await Promise.all([pre ? pre.url : load(name), fade ? new Promise((r) => setTimeout(r, 650)) : null]);
     if (el !== mine || !alive || my !== token) return;
-    el.src = u; ramp(0, 0.01);
+    el.src = u; now = name; ramp(0, 0.01);
     await el.play();
     setLevel(fade ? 1.2 : 0.6);
-  } catch { /* אין רשת / נחסם: האימון ממשיך בלי מוזיקה */ }
+    prefetch();
+  } catch {
+    // אין רשת / נחסם: לא נשארים בשקט — הרצועה שהתנגנה מתחילה מחדש, ומנסים שוב את הבאה בעוד רגע
+    if (el !== mine || !alive || my !== token) return;
+    try { if (el.src && !el.src.startsWith('data:') && (el.ended || el.paused)) { el.currentTime = 0; await el.play(); setLevel(0.6); } } catch { /* */ }
+    setTimeout(() => { if (alive && my === token) prefetch(); }, 15000);
+  }
 }
+// שומר: אם המוזיקה אמורה להתנגן והנגן עומד (הדפדפן עצר אותו, או שמעבר נכשל) — מפעילים שוב
+let guard = null;
+const watch = () => { if (!alive || !el || document.visibilityState === 'hidden') return; if (el.src && !el.src.startsWith('data:') && (el.paused || el.ended)) { if (el.ended) playNext(); else el.play().then(() => setLevel(0.6)).catch(() => {}); } };
 const retry = () => { if (alive && el && el.paused && el.src && !el.src.startsWith('data:')) el.play().catch(() => {}); };
 const onVis = () => { if (!el || !alive) return; if (document.visibilityState === 'hidden') { if (!keptAlive()) el.pause(); } else el.play().catch(() => {}); };
 
@@ -100,6 +118,7 @@ export function startMusic(m) {
   if (ctx) { try { const src = ctx.createMediaElementSource(el); gain = ctx.createGain(); gain.gain.value = 0; src.connect(gain); gain.connect(ctx.destination); } catch { gain = null; } }
   el.play().catch(() => {});
   el.addEventListener('ended', () => { if (alive && !el.src.startsWith('data:')) playNext(); });
+  clearInterval(guard); guard = setInterval(watch, 6000); ready = null;
   // מנמיכים מיד כשהמאמן מדבר, ומחזירים רק אחרי שקט של שנייה וחצי — כדי שספירת חזרות לא תגרום למוזיקה לעלות ולרדת בין מספר למספר
   offSpeak = onSpeaking((v) => {
     clearTimeout(upT);
@@ -126,7 +145,7 @@ export function setMusicMood(m) {
 export function fadeOutMusic(sec = 30) { if (!alive) return; ramp(0, sec); setTimeout(() => stopMusic(), sec * 1000); }
 export function stopMusic() {
   if (!alive) return;
-  alive = false; offSpeak?.(); offSpeak = null; clearTimeout(upT); clearTimeout(pendT); pending = null; token++;
+  alive = false; offSpeak?.(); offSpeak = null; clearTimeout(upT); clearTimeout(pendT); pending = null; token++; clearInterval(guard); guard = null; ready = null;
   removeEventListener('pointerdown', retry, { capture: true });
   document.removeEventListener('visibilitychange', onVis);
   const old = el, g = gain, ctx = audioCtx(), us = urls; el = null; gain = null; urls = []; now = null;
