@@ -30,7 +30,7 @@ test('אור אומרת רק את משפטי המדיטציה, ואף מאמן �
   for (const k of Object.keys(MED_LINES)) { assert.equal(coachSays(k, 'or'), true, k); for (const c of ['ori', 'shira', 'yael']) assert.equal(coachSays(k, c), false, `${c} ${k}`); }
   for (const k of ['go', 'rest', 'walk_hello', 'hello_ori', 'm1', 'ctx_first']) assert.equal(coachSays(k, 'or'), false, k);
   for (const f of ['assets/coaches/or.webp', 'assets/coaches/or_face.webp', 'assets/demos/or/outdoor_walk.webp', 'assets/demos/or/outdoor_walk.mp4']) assert.ok(has(f), f);
-  for (const m of ['medcalm', 'medbeat']) for (const n of [4, 5, 6]) assert.ok(has(`assets/music/${m}_${n}.mp3`), `${m}_${n}`);
+  for (const m of ['medcalm', 'medbeat']) for (const n of [7, 8, 9, 10]) assert.ok(has(`assets/music/${m}_${n}.mp3`), `${m}_${n}`);
 });
 test('הליכה מדיטטיבית: תמיד שישה מקטעים באורך שנבחר, ולכל מסע מבנה ורמת מאמץ משלו', () => {
   for (const minutes of MED_MINUTES) for (const pace of ['calm', 'fast']) for (const j of MED_ALL) {
@@ -47,6 +47,11 @@ test('הליכה מדיטטיבית: תמיד שישה מקטעים באורך �
   for (const j of MED_ALL) { assert.ok(medEffort(j, 'fast') >= medEffort(j, 'calm'), j); assert.equal(MED_POINTS[j].length, 4); }
   // הבוקר מתעורר בהדרגה: מתחיל רגוע ומסתיים מהיר
   assert.deepEqual(medShape('morning', 'calm'), ['stroll', 'stroll', 'brisk', 'brisk']); assert.ok(!MED_ORDER.includes('morning'), 'הבוקר לא בסבב השבועי');
+  // מי שבחר הליכה מהירה מקבל חלקים מהירים בכל מסע: שניים לפחות, ושליש מההליכה לפחות; ברגועה — רוב ההליכה רגועה
+  for (const j of MED_ALL) for (const minutes of MED_MINUTES) { const fast = (r) => r.segs.filter((s) => s.kind === 'brisk' || s.kind === 'power');
+    const rf = buildMedSession(j, { minutes, pace: 'fast' }), rc = buildMedSession(j, { minutes, pace: 'calm' });
+    assert.ok(fast(rf).length >= 2, `${j}: ${fast(rf).length} חלקים מהירים`); assert.ok(fast(rf).reduce((a, s) => a + s.sec, 0) >= rf.totalSec / 3, `${j} ${minutes}`);
+    assert.ok(fast(rc).reduce((a, s) => a + s.sec, 0) <= rc.totalSec * 0.45, `${j} רגועה`); }
   assert.ok(new Set(MED_ORDER.map((j) => medShape(j, 'calm').join() + medShape(j, 'fast').join())).size >= 5, 'המסעות שונים זה מזה במבנה');
   assert.equal(buildMedSession('nope').med, 'release');
 });

@@ -10,15 +10,16 @@ import { MED_JOURNEYS, MED_ORDER, MED_POINTS } from '../data/med-lines.js';
 
 export const MED_MINUTES = [20, 30, 45];
 export const MED_PACES = { calm: 'רגועה', fast: 'מהירה' };
+// בהליכה מהירה יש בכל מסע לפחות שני חלקים מהירים, שהם לפחות שליש מההליכה (בקשת בעל המוצר, 25.11.2026).
 // s = stroll (הליכה רגועה) · b = brisk (הליכה מהירה) · p = power (הליכה נמרצת). w: האורך היחסי של כל חלק. edge: החלק של הפתיחה ושל הסיום מכלל ההליכה
 const SHAPES = {
   morning: { calm: 'ssbb', fast: 'sbbp', w: [0.9, 1, 1, 1.1], edge: [0.12, 0.1] },   // בוקר: מתעוררים בהדרגה, והסוף ערני
   release: { calm: 'sbbs', fast: 'bbps', w: [1, 1.1, 1.1, 0.8], edge: [0.12, 0.12] },
-  heal: { calm: 'ssss', fast: 'sbss', w: [1, 1.1, 1, 0.9], edge: [0.15, 0.17] },
+  heal: { calm: 'ssss', fast: 'sbbs', w: [1, 1.1, 1, 0.9], edge: [0.15, 0.17] },
   connect: { calm: 'ssbs', fast: 'sbbs', w: [1, 1, 1.1, 0.9], edge: [0.13, 0.13] },
   reset: { calm: 'ssbs', fast: 'bsbs', w: [1, 1, 1.1, 0.9], edge: [0.11, 0.13] },
   thanks: { calm: 'sssb', fast: 'sbsb', w: [0.9, 1, 1, 1.1], edge: [0.12, 0.12] },
-  presence: { calm: 'ssss', fast: 'ssbs', w: [1, 1, 1, 1], edge: [0.14, 0.14] },
+  presence: { calm: 'ssss', fast: 'sbsb', w: [1, 1, 1, 1], edge: [0.14, 0.14] },
 };
 const KIND = { s: 'stroll', b: 'brisk', p: 'power' }, KIND_NAME = { stroll: 'הליכה רגועה', brisk: 'הליכה מהירה', power: 'הליכה נמרצת' };
 const seg = (kind, sec, label, point) => ({ kind, sec, label, ...(point ? { point } : {}) });
