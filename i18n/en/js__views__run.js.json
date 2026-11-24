@@ -68,5 +68,9 @@
  "קצב לק״מ": "Pace per km",
  "עם": "with",
  "הנקודות של המסע": "The points of the journey",
- "המספרים מסומנים על המפה, במקום שבו כל נקודה התחילה.": "The numbers are marked on the map, where each point began."
+ "המספרים מסומנים על המפה, במקום שבו כל נקודה התחילה.": "The numbers are marked on the map, where each point began.",
+ "שלב": "Stage ",
+ "מתוך": " of ",
+ "הבא:": "Next: ",
+ "השלב האחרון": "The last stage"
 }

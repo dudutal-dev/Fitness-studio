@@ -97,7 +97,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <div class="title"><div class="eyebrow">${emi(run.icon)} ${esc(run.name)}</div><div class="name" style="font-size:22px">${walkS ? `הליכה עם ${esc(COACHES[coach].name)}` : run.type === 'free' ? `ריצה עם ${esc(COACHES[coach].name)}` : 'קצב יעד: <span class="num" id="pace"></span>'}</div></div></div>
     <div class="panel" style="flex:1;display:flex;flex-direction:column">
       <button class="panel-grab" data-act="panel" aria-label="הסתרה והצגה של לוח הנתונים" aria-expanded="true"><i></i></button>
-      <div class="segs">${segs.map((x, j) => `<i class="${x.kind}" style="flex-grow:${Math.max(30, x.sec || 600)}" data-i="${j}"></i>`).join('')}</div>
+      ${medS ? `<div class="jbar"><div class="jbar-top"><b id="jstep"></b><span id="jnext"></span></div>
+        <div class="segs jsegs">${segs.map((x, j) => `<i class="${x.kind}" style="flex-grow:${x.sec}" data-i="${j}"><b></b></i>`).join('')}</div></div>`
+      : `<div class="segs">${segs.map((x, j) => `<i class="${x.kind}" style="flex-grow:${Math.max(30, x.sec || 600)}" data-i="${j}"></i>`).join('')}</div>`}
       <div class="run-kind" id="kind"></div><div class="run-big" id="big">0:00</div><div class="sub" style="text-align:center" id="lbl"></div>
       <div class="run-stats">
         <div><b class="num" id="dist">—</b><span>ק״מ</span></div>
@@ -166,6 +168,9 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     segStart = elapsed;
     zoneOutSince = 0;
     root.querySelectorAll('.segs i').forEach((n, j) => { n.classList.toggle('cur', j === i); n.classList.toggle('past', j < i); });
+    // מדיטציה: פס ההתקדמות בשלבי המסע — איזה שלב, שם הנקודה, ומה הבא
+    if (medS) { $('#jstep').textContent = `שלב ${i + 1} מתוך ${segs.length}`; $('#jnext').textContent = segs[i + 1] ? `הבא: ${segs[i + 1].point}` : 'השלב האחרון';
+      root.querySelectorAll('.jsegs i b').forEach((n, j) => { n.style.width = j < i ? '100%' : '0%'; }); }
     $('#kind').className = `run-kind ${sg.kind}`;
     setMusicMood(runMood(sg.kind, walkS, medS));
     $('#kind').textContent = medS && (sg.kind === 'warm' || sg.kind === 'cool') ? sg.point : SEG_LABEL[sg.kind];   // במדיטציה: "פתיחה" ו"סיום", לא "חימום" ו"שחרור"
@@ -196,6 +201,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     $('#tot').textContent = fmtTime(elapsed / 1000);
     const sg = segs[i];
     const inSeg = (elapsed - segStart) / 1000;
+    if (medS && sg.sec) { const fill = root.querySelector(`.jsegs i[data-i="${i}"] b`); if (fill) fill.style.width = `${Math.min(100, (inSeg / sg.sec) * 100).toFixed(1)}%`; }
 
     // מרחק / קצב / דופק
     const d = distM();

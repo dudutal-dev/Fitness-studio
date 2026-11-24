@@ -1395,3 +1395,13 @@ button.mi .tag { margin-inline-end: 4px; }
 .still-bar { display: flex; gap: 4px; margin: 10px 0 8px; } .still-bar i { height: 6px; border-radius: 999px; background: rgba(255,255,255,.18); } .still-bar i.past { background: rgba(243,201,122,.55); } .still-bar i.cur { background: #f3c97a; }
 .still-time { font-size: 44px; font-weight: 900; text-align: center; margin: 4px 0 10px; } .still.night .still-time { font-size: 30px; opacity: .6; }
 .still-btns { gap: 10px; } .still-btns .btn { flex: 1; } .still.paused .breath { opacity: .35; }
+
+/* מדיטציה: פס ההתקדמות בשלבי המסע במסך ההליכה (גם בתצוגת המפה) */
+.jbar { margin: 8px 0 6px; }
+.jbar-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 13.5px; }
+.jbar-top b { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .jbar-top span { opacity: .65; white-space: nowrap; flex: none; font-size: 12.5px; }
+.segs.jsegs { height: 12px; gap: 4px; align-items: stretch; margin: 0; }
+.segs.jsegs i, .segs.jsegs i.stroll, .segs.jsegs i.brisk, .segs.jsegs i.power, .segs.jsegs i.warm, .segs.jsegs i.cool { height: auto; border-radius: 999px; background: rgba(var(--fg-rgb), 0.14); opacity: 1; outline: 0; }
+.segs.jsegs i b { position: absolute; inset-block: 0; inset-inline-start: 0; width: 0; border-radius: 999px; background: #8a5cf6; transition: width .3s linear; }
+.segs.jsegs i.brisk b { background: #f3c97a; } .segs.jsegs i.power b { background: #f3875a; } .segs.jsegs i.warm b, .segs.jsegs i.cool b { background: #6f63b8; }
+.segs.jsegs i.cur { box-shadow: 0 0 0 2px rgba(243, 201, 122, .55); }
