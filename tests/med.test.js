@@ -32,7 +32,7 @@ test('אור אומרת רק את משפטי המדיטציה, ואף מאמן �
   for (const k of Object.keys(MED_LINES)) { assert.equal(coachSays(k, 'or'), true, k); for (const c of ['ori', 'shira', 'yael']) assert.equal(coachSays(k, c), false, `${c} ${k}`); }
   for (const k of ['go', 'rest', 'walk_hello', 'hello_ori', 'm1', 'ctx_first']) assert.equal(coachSays(k, 'or'), false, k);
   for (const f of ['assets/coaches/or.webp', 'assets/coaches/or_face.webp', 'assets/demos/or/outdoor_walk.webp', 'assets/demos/or/outdoor_walk.mp4']) assert.ok(has(f), f);
-  for (const m of ['medcalm', 'medbeat']) for (const n of [11, 12, 13, 14]) assert.ok(has(`assets/music/${m}_${n}.mp3`), `${m}_${n}`);
+  for (const f of ['medcalm_15', 'medcalm_16', 'medcalm_17', 'medcalm_18', 'medbeat_16', 'medbeat_11', 'medbeat_12', 'medbeat_13', 'medbeat_14']) assert.ok(has(`assets/music/${f}.mp3`), f);   // הרצועות שבמאגרים (js/coach/music.js)
 });
 test('הליכה מדיטטיבית: תמיד שישה מקטעים באורך שנבחר, ולכל מסע מבנה ורמת מאמץ משלו', () => {
   for (const minutes of MED_MINUTES) for (const pace of ['calm', 'fast']) for (const j of MED_ALL) {
