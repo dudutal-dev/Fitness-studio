@@ -24,6 +24,9 @@ const POOLS = {
   // 7–10: הגרסה השלישית (25.11.2026) — פולקטרוניקה אינסטרומנטלית, פסיכדלית ואורגנית, הסגנון שבעל המוצר בחר; ארבע רגועות וארבע קצביות
   medcalm: n('medcalm', 10, 7),
   medbeat: n('medbeat', 10, 7),
+  // מדיטציות בוקר ולילה (בלי הליכה): אותו סגנון, בלי ביט; לשינה — איטי ושקט במיוחד
+  medstill: n('medstill', 2),
+  medsleep: n('medsleep', 2),
   yoga: n('yoga', 4),
   tai: n('tai', 4),
   pil: n('pil', 4),
@@ -119,6 +122,8 @@ export function setMusicMood(m) {
   playNext(true);
 }
 
+// דעיכה ארוכה ואז עצירה — לסוף מדיטציית הלילה
+export function fadeOutMusic(sec = 30) { if (!alive) return; ramp(0, sec); setTimeout(() => stopMusic(), sec * 1000); }
 export function stopMusic() {
   if (!alive) return;
   alive = false; offSpeak?.(); offSpeak = null; clearTimeout(upT); clearTimeout(pendT); pending = null; token++;

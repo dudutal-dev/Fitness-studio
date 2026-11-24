@@ -9,6 +9,7 @@ import { PIL_TIPS } from './pil-exercises.js';
 import { YOGA_TIPS } from './yoga-exercises.js';
 import { TAI_SAY } from './tai-exercises.js';
 import { MED_LINES } from './med-lines.js';
+import { STILL_LINES } from './med-still.js';
 
 const NUM = ['', 'One!', 'Two!', 'Three!', 'Four!', 'Five!', 'Six!', 'Seven!', 'Eight!', 'Nine!', 'Ten!',
   'Eleven!', 'Twelve!', 'Thirteen!', 'Fourteen!', 'Fifteen!', 'Sixteen!', 'Seventeen!', 'Eighteen!', 'Nineteen!', 'Twenty!'];
@@ -211,7 +212,7 @@ Object.assign(MOBILITY_TIPS, MOB_TIPS, HIIT_TIPS, PIL_TIPS, YOGA_TIPS);
 for (const [id, text] of Object.entries(MOBILITY_TIPS)) lines[`tip_${id}`] = text;
 
 // מדיטציה בתנועה (אור): המשפטים ב-js/data/med-lines.js; רק אור אומרת אותם, והיא לא אומרת שום דבר אחר
-Object.assign(lines, MED_LINES);
+Object.assign(lines, MED_LINES, STILL_LINES);   // כולל מדיטציות הבוקר והלילה (js/data/med-still.js)
 export const VOICE_LINES = lines;
 
 // משפטים בנוסח של מאמן מסוים (גוברים על הנוסח הכללי). מאיה מדברת על שליטה, סבלנות וטכניקה.
