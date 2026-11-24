@@ -142,3 +142,14 @@ export function journeySetup(onStart) {
   on(root, 'click', '[data-jstart]', () => { close(); onStart({ medJ: { path: c.path, weeks: c.weeks, level: c.level, time: c.time }, days: c.days, medMin: c.medMin }); });
   document.body.append(root);
 }
+
+// מפת המסע במסך הבית (25.11.2026): הדרך, ארבעת השלבים, ואיפה נמצאים עכשיו. לחיצה פותחת את לשונית התוכנית
+export function mjCardHtml(s) {
+  const mj = s.plan?.week?.mj; if (!mj || !mjOf(s.profile)) return '';
+  const P = MJ_PATHS[mj.path], st = MJ_STAGES[mj.stage];
+  return html`<a class="mj-map" href="#/plan" style="background-image:linear-gradient(100deg, rgba(20,12,40,.35), rgba(20,12,40,.9) 58%), url(${medArt(P.art)})">
+    <div class="row between"><span class="eyebrow">המסע שלי · ${esc(P.name)}</span><span class="mm-week num">${mj.done ? 'הושלם' : `שבוע ${mj.week + 1} / ${mj.weeks}`}</span></div>
+    <b>${mj.done ? 'המסע הושלם' : `שלב ${mj.stage + 1} מתוך 4 · ${esc(st.name)}`}</b>
+    <small>${mj.done ? 'אפשר להתחיל מסע חדש בהגדרות.' : esc(st.desc)}${mj.light ? ' השבוע קל יותר.' : ''}</small>
+    <div class="mm-bar">${MJ_STAGES.map((x, si) => `<div class="${si === mj.stage && !mj.done ? 'on' : ''}"><div>${Array.from({ length: mj.per }, (_, w) => `<i class="${mj.done || si < mj.stage || (si === mj.stage && w < mj.inStage) ? 'f' : si === mj.stage && w === mj.inStage ? 'c' : ''}"></i>`).join('')}</div><span>${x.name}</span></div>`).join('')}</div></a>`;
+}

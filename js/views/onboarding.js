@@ -3,6 +3,7 @@ import { OTHER, setLang } from '../lang.js';
 import { html, esc, on, $, toast, icon } from '../ui/dom.js';
 import { defaultReminderSettings } from '../reminders.js';
 import { COACHES, coachesFor } from '../data/coaches.js';
+import { MJ_PATHS, MJ_WEEKS, MJ_STAGES } from '../engine/med-journey.js';
 import { GOALS, INJURIES, estimateLevel, LEVEL_NAMES, goalsFor, goalForTrack } from '../engine/program.js';
 import { newCali, caliLevel, mixCaliCount, recommendTrack } from '../engine/cali.js';
 import { newMob, mobLevel, mobScore } from '../engine/mob.js';
@@ -70,7 +71,7 @@ export function renderOnboarding(root, done) {
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1, walkMin: 30, walkLevel: 1,
+    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1, walkMin: 30, walkLevel: 1, medMin: 30, mjPath: 'full', mjWeeks: 8, mjLevel: 1,
   };
   let step = 0;
   const STEPS = 11;
@@ -87,6 +88,8 @@ export function renderOnboarding(root, done) {
   const yoga = () => !undecided() && d.track === 'yoga';                              // יוגה בלבד
   const tai = () => !undecided() && d.track === 'tai';                                // טאי צ'י בלבד
   const walk = () => !undecided() && d.track === 'walk';                              // הליכה בלבד
+  const med = () => !undecided() && d.track === 'med';                                // מדיטציה בתנועה: מסע רוחני בשלבים (25.11.2026)
+  const mjTime = () => { const h = Number(String(d.schedTime || '18:00').split(':')[0]); return h < 11 ? 'morning' : h >= 17 ? 'evening' : 'day'; };   // מתי הולכים — לפי השעה שנבחרה בשלב הזמנים
   const cls = () => pil() || yoga() || tai();                                                  // מסלולי שיעורים: רמה, אורך שיעור ושאלון בטיחות
   const mob = () => !undecided() && d.track === 'mob';                                // מוביליטי בלבד
   // כמה אימוני מוביליטי אפשר לשלב בשבוע של מסלול אחר (נשאר לפחות אימון אחד לכל חלק אחר)
@@ -101,7 +104,7 @@ export function renderOnboarding(root, done) {
   const decide = (track, mixCali) => {
     d.decided = true; d.track = track; d.goal = goalForTrack(d.goalWanted || d.goal, track);
     if (track === 'mix') d.mixCali = mixCali ?? rec().mixCali ?? undefined; else delete d.mixCali;
-    d.coach = track === 'cali' ? 'maya' : track === 'mob' ? 'tamar' : track === 'run' ? (d.runCoach || 'guy') : track === 'hiit' || track === 'pil' ? 'lia' : track === 'yoga' ? 'yael' : track === 'tai' ? 'mei' : track === 'walk' ? 'shira' : (d.gymCoach || 'ori');
+    d.coach = track === 'cali' ? 'maya' : track === 'mob' ? 'tamar' : track === 'run' ? (d.runCoach || 'guy') : track === 'hiit' || track === 'pil' ? 'lia' : track === 'yoga' ? 'yael' : track === 'tai' ? 'mei' : track === 'walk' ? 'shira' : track === 'med' ? 'or' : (d.gymCoach || 'ori');
   };
   const fem = () => !!COACHES[d.coach].f;
   const recMix = () => { const r = recommendTrack({ gymAccess: 'yes', goal: d.goal, days: d.days - mobN(), injuries: d.injuries }); return r.track === 'mix' ? r.mixCali : Math.floor((d.days - mobN()) / 2); };
@@ -122,7 +125,7 @@ export function renderOnboarding(root, done) {
     // 1 — מסלול
     () => html`<div class="eyebrow">שלב 1 · המסלול</div><div class="q">איך ${d.sex === 'f' ? 'את מתאמנת' : 'אתה מתאמן'}?</div>
       <p class="sub">אפשר לבחור מסלול אחד או לשלב. מחליפים בהגדרות בכל רגע, בלי לאבד היסטוריה.</p>
-      ${['gym', 'cali', 'run', 'walk', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
+      ${['gym', 'cali', 'run', 'walk', 'med', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((id) => [id, TRACKS[id]]).map(([id, t]) => html`<button class="track-card ${!d.auto && d.track === id ? 'on' : ''}" data-track="${id}">
         <div class="tc-img">${(id === 'mix' ? ['ori', 'noa', 'maya', 'tamar'].map((c) => COACHES[c]) : coachesFor(id)).map((c) => `<img src="${c.face}" alt="">`).join('')}</div>
         <div><b>${t.name}</b><span class="tc-sub">${t.sub}</span><span>${t.desc}</span></div></button>`)}
       <button class="track-card auto ${d.auto ? 'on' : ''}" data-track="auto"><div class="tc-ico">${icon('sparkle')}</div>
@@ -143,6 +146,11 @@ export function renderOnboarding(root, done) {
           <div class="cap"><b>${c.name}</b><span>${c.title}</span></div></button>`)}</div>
       <p class="sub" style="margin-top:14px">${esc(COACHES[d.coach].bio)}</p>
       <div class="card tight" style="margin-top:6px"><b>מה צריך?</b><div class="sub">נעלי ריצה וטלפון. המרחק והקצב נמדדים ב-GPS של הטלפון; שעון דופק הוא תוספת, לא חובה.</div></div>`
+      : med() ? html`<div class="eyebrow">שלב 2 · המלווה</div><div class="q">${esc(COACHES.or.name)} תלווה את המסע</div>
+      <div class="coach-solo"><img src="${COACHES.or.img}" alt="${COACHES.or.name}"><div><b>${COACHES.or.name}</b><span>${COACHES.or.title}</span><p class="sub">${esc(COACHES.or.bio)}</p>
+        <button class="btn sm teal" data-coach="or">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
+      <div class="card tight" style="margin-top:16px"><b>מה צריך?</b><div class="sub">נעליים נוחות, אוזניות, ומסלול שנעים ללכת בו. העיניים פקוחות והמבט על הדרך.</div></div>
+      <div class="card tight" style="margin-top:10px"><b>איך נראה המסע?</b><div class="sub">מסע של כמה שבועות בארבעה שלבים: ${MJ_STAGES.map((x) => x.name).join(', ')}. בכל הליכה רעיון אחד, דיבור קצר והרבה שקט, עם מוזיקה שמשתנה עם הקצב — ובדרך נבנה גם כושר ההליכה.</div></div>`
       : walk() ? html`<div class="eyebrow">שלב 2 · המאמנת</div><div class="q">${esc(COACHES.shira.name)} תלך איתך</div>
       <div class="coach-solo"><img src="${COACHES.shira.img}" alt="${COACHES.shira.name}"><div><b>${COACHES.shira.name}</b><span>${COACHES.shira.title}</span><p class="sub">${esc(COACHES.shira.bio)}</p>
         <button class="btn sm teal" data-coach="shira">${icon('play', 'width="16" height="16"')} לשמוע אותה</button></div></div>
@@ -203,11 +211,17 @@ export function renderOnboarding(root, done) {
         <label class="field"><span>משקל יעד (ק״ג)</span><input class="input num" name="targetWeight" type="number" inputmode="decimal" step="0.1" value="${d.targetWeight}"></label>
       </div>`,
     // 4 — מטרה
-    () => html`<div class="eyebrow">שלב 4 · המטרה</div><div class="q">על מה עובדים?</div>
+    () => (med() ? html`<div class="eyebrow">שלב 4 · הדרך</div><div class="q">איזו דרך?</div>
+      <p class="sub">הדרך קובעת אילו מסעות פוגשים בכל שלב. אפשר להתחיל מסע חדש בכל רגע, בהגדרות.</p>
+      ${Object.entries(MJ_PATHS).map(([id, x]) => html`<button class="goal-card ${d.mjPath === id ? 'on' : ''}" data-mjpath="${id}"><div class="gi"><img src="assets/med/${x.art}_sq.webp" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></div><div><b>${x.name}</b><span>${x.desc}</span></div></button>`)}`
+    : html`<div class="eyebrow">שלב 4 · המטרה</div><div class="q">על מה עובדים?</div>
       ${(undecided() ? ['combat', 'muscle', 'strength', 'cut', 'skill'] : goalsFor(d.track)).map((id) => html`<button class="goal-card ${d.goal === id ? 'on' : ''}" data-goal="${id}">
-        <div class="gi">${icon(GOALS[id].icon)}</div><div><b>${GOALS[id].name}</b><span>${goalDesc(id, d.track)}</span></div></button>`)}`,
+        <div class="gi">${icon(GOALS[id].icon)}</div><div><b>${GOALS[id].name}</b><span>${goalDesc(id, d.track)}</span></div></button>`)}`),
     // 5 — מבדק רמה
-    () => (walk() ? html`<div class="eyebrow">שלב 5 · נקודת הפתיחה</div><div class="q">כמה ${d.sex === 'f' ? 'את הולכת' : 'אתה הולך'} היום?</div>
+    () => (med() ? html`<div class="eyebrow">שלב 5 · נקודת הפתיחה</div><div class="q">כמה ${d.sex === 'f' ? 'את הולכת' : 'אתה הולך'} היום?</div>
+      <p class="sub">לפי זה נקבע כמה מההליכות יהיו בקצב מהיר. המסע מתחיל רגוע, והקצב עולה משלב לשלב.</p>
+      <div class="mt-opts" data-mjlevel>${[[1, 'בתחילת הדרך', 'כמעט לא הולכים, או חוזרים אחרי הפסקה ארוכה'], [2, 'הליכה קבועה', 'חצי שעה ברצף בלי קושי, כמה פעמים בשבוע'], [3, 'כושר הליכה טוב', 'שעה ברצף בקצב מהיר']].map(([v, n, x]) => `<button data-v="${v}" class="${d.mjLevel === v ? 'on' : ''}"><span style="display:grid"><b>${n}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
+      : walk() ? html`<div class="eyebrow">שלב 5 · נקודת הפתיחה</div><div class="q">כמה ${d.sex === 'f' ? 'את הולכת' : 'אתה הולך'} היום?</div>
       <p class="sub">לפי זה נקבע כמה מההליכה תהיה בקצב מהיר. מי שמתמיד עולה רמה אחרי ארבעה שבועות.</p>
       <div class="mt-opts" data-walklevel>${[[1, 'מתחילים', 'כמעט לא הולכים, או חוזרים אחרי הפסקה ארוכה'], [2, 'הולכים קבוע', 'חצי שעה ברצף בלי קושי, כמה פעמים בשבוע'], [3, 'הולכים מהר', 'שעה ברצף בקצב מהיר; רוצים אתגר']].map(([v, t, x]) => `<button data-v="${v}" class="${d.walkLevel === v ? 'on' : ''}"><span style="display:grid"><b>${t}</b><span class="sub" style="font-size:12px">${x}</span></span></button>`).join('')}</div>`
       : tai() ? html`<div class="eyebrow">שלב 5 · נקודת הפתיחה</div><div class="q">כמה טאי צ'י כבר עשית?</div>
@@ -264,7 +278,7 @@ export function renderOnboarding(root, done) {
           <i>×</i><input class="input num" name="lift_${k}_r" type="number" inputmode="numeric" placeholder="חזרות" value="${d[`lift_${k}_r`] || ''}" aria-label="${name} — חזרות"></div>`).join('')}</div></details>`),
     // 6 — לו"ז
     () => html`<div class="eyebrow">שלב 6 · זמנים</div><div class="q">כמה ${d.sex === 'f' ? 'את יכולה' : 'אתה יכול'} להתאמן?</div>
-      <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${(cls() ? [2, 3, 4, 5] : [3, 4, 5, 6]).map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
+      <label class="field"><span>אימונים בשבוע</span><div class="seg" data-seg="days">${(med() ? [2, 3, 4, 5, 6] : cls() ? [2, 3, 4, 5] : [3, 4, 5, 6]).map((v) => `<button data-v="${v}" class="${d.days == v ? 'on' : ''}">${v}</button>`)}</div></label>
       <label class="field"><span>באילו ימים?</span><div class="chips wd-chips">${WD_NAMES.map((n, i) => `<button type="button" class="chip ${wdays().includes(i) ? 'on' : ''}" data-wd="${i}">${n}</button>`).join('')}</div></label>
       <label class="field"><span>באיזו שעה בדרך כלל?</span><input class="input num" type="time" name="schedTime" value="${d.schedTime || '18:00'}" style="max-width:150px"></label>
       <div class="sub" style="font-size:12px;margin:-4px 0 10px">לפי זה נבנה יומן האימונים. אחר כך אפשר לשנות, לקבוע שעה אחרת לכל יום, להזיז אימון או לבטל.</div>
@@ -272,10 +286,14 @@ export function renderOnboarding(root, done) {
         <div class="sub" style="font-size:12px;margin-top:4px">★ המלצת המערכת לפי המטרה שלך. אפשר לבחור אחרת.</div></label>` : ''}
       ${mob() ? `<label class="field"><span>אורך אימון רגיל (דקות)</span><div class="seg" data-seg="mobMin">${[10, 20, 30].map((v) => `<button data-v="${v}" class="${d.mobMin == v ? 'on' : ''}">${v}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">זו רק ברירת המחדל — לפני כל אימון אפשר לבחור אחרת.</div></label>`
+    : med() ? `<label class="field"><span>אורך הליכה רגילה (דקות)</span><div class="seg" data-seg="medMin">${[20, 30, 45].map((v) => `<button data-v="${v}" class="${d.medMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
+      <label class="field"><span>אורך המסע</span><div class="seg" data-seg="mjWeeks">${MJ_WEEKS.map((v) => `<button data-v="${v}" class="${d.mjWeeks == v ? 'on' : ''}">${v} שבועות</button>`).join('')}</div>
+        <div class="sub" style="font-size:12px;margin-top:4px">ארבעה שלבים שווים. מי שהולך בבוקר פותח כל שבוע במסע הבוקר.</div></label>`
     : html`${walk() ? `<label class="field"><span>אורך הליכה רגילה (דקות)</span><div class="seg" data-seg="walkMin">${[20, 30, 45, 60].map((v) => `<button data-v="${v}" class="${d.walkMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : tai() ? `<label class="field"><span>אורך שיעור (דקות)</span><div class="seg" data-seg="taiMin">${[15, 20, 30].map((v) => `<button data-v="${v}" class="${d.taiMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : yoga() ? `<label class="field"><span>אורך שיעור (דקות)</span><div class="seg" data-seg="yogaMin">${[20, 30, 45].map((v) => `<button data-v="${v}" class="${d.yogaMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : pil() ? `<label class="field"><span>אורך שיעור (דקות)</span><div class="seg" data-seg="pilMin">${[20, 30, 40].map((v) => `<button data-v="${v}" class="${d.pilMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : hiit() ? `<label class="field"><span>אורך אימון (דקות)</span><div class="seg" data-seg="hiitMin">${[15, 20, 25].map((v) => `<button data-v="${v}" class="${d.hiitMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>` : run() || cls() ? '' : `<label class="field"><span>משך אימון (דקות)</span><div class="seg" data-seg="sessionMin">${[45, 60, 75, 90].map((v) => `<button data-v="${v}" class="${d.sessionMin == v ? 'on' : ''}">${v}</button>`).join('')}</div></label>`}
       <label class="field"><span>לשלב אימוני מוביליטי וגמישות עם ${COACHES.tamar.name}?</span><div class="seg" data-seg="mobN">${Array.from({ length: mobMax() + 1 }, (_, i) => `<button data-v="${i}" class="${mobN() === i ? 'on' : ''}">${i === 0 ? 'בלי' : i}</button>`).join('')}</div>
         <div class="sub" style="font-size:12px;margin-top:4px">${mobN() ? `${mobN() === 1 ? 'אימון אחד' : `${mobN()} אימונים`} מתוך ${d.days} בשבוע ${mobN() === 1 ? 'יהיה' : 'יהיו'} מוביליטי (10–30 דקות), והשאר במסלול שבחרת.` : 'אפשר להוסיף גם אחר כך, בהגדרות.'}</div></label>`}
       ${mob() ? `<div class="card tight" style="margin-top:8px"><b>קצר ותכוף עדיף על ארוך ונדיר.</b><div class="sub">עשר דקות ארבע פעמים בשבוע משפרות טווח תנועה יותר מאימון ארוך אחד. היעד הוא כעשר דקות בשבוע לכל אזור בגוף.</div></div>`
+    : med() ? `<div class="card tight" style="margin-top:8px"><b>שלוש הליכות בשבוע הן התחלה טובה.</b><div class="sub">ההליכה האחרונה בשבוע היא הארוכה, והיא מתארכת בחמש דקות בכל שבוע. השבוע האחרון של כל שלב קל יותר.</div></div>`
     : walk() ? `<div class="card tight" style="margin-top:8px"><b>חמש הליכות בשבוע הן היעד; שלוש הן התחלה טובה.</b><div class="sub">ההמלצה לבריאות היא 150 דקות של הליכה מהירה בשבוע. ההליכה הארוכה נבנית בנפרד, וגדלה בחמש דקות בכל שבוע.</div></div>`
     : tai() ? `<div class="card tight" style="margin-top:8px"><b>שלושה שיעורים קצרים בשבוע, ואפשר יותר.</b><div class="sub">בטאי צ'י ההתמדה חשובה מהאורך: עשרים דקות כמה פעמים בשבוע בונות שיווי משקל וכוח ברגליים.</div></div>`
     : yoga() ? `<div class="card tight" style="margin-top:8px"><b>שניים־שלושה שיעורים בשבוע.</b><div class="sub">תרגול קצר וקבוע עדיף על שיעור ארוך פעם בשבוע. אפשר גם יותר — השיעורים מתחלפים בין עמידה, ירכיים, גב ושיעור רגוע.</div></div>`
@@ -292,13 +310,15 @@ export function renderOnboarding(root, done) {
       ${withFlags() ? `<div class="q" style="font-size:20px;margin-top:8px">${cls() ? 'ועוד שאלה — יש אחד מאלה?' : 'ולפני מתיחות — יש אחד מאלה?'}</div>
         <p class="sub">תרגילים שלא מתאימים למצב לא ייכנסו ${cls() ? 'לשיעורים' : 'לאימוני המוביליטי'}.</p>${flagChips(d.flags)}${flagNotes(d.flags)}` : ''}`,
     // 8 — תזונה
-    () => html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">רוצים גם ליווי תזונה?</div>
+    () => (med() ? html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">במסלול הזה אין תפריט</div>
+      <p class="sub">מדיטציה בתנועה היא הליכה ושקט, בלי יעדי קלוריות ובלי יומן אכילה. מי שרוצה ליווי תזונה יכול לבחור מסלול אחר בהגדרות, ולהפעיל אותו שם.</p>`
+    : html`<div class="eyebrow">שלב 8 · תזונה</div><div class="q">רוצים גם ליווי תזונה?</div>
       <p class="sub">תפריט יומי מותאם, יעדי קלוריות וחלבון ויומן אכילה. זה לא חובה, ואפשר להפעיל או לכבות בכל רגע במסך התזונה.</p>
       <button class="nut-choice ${d.nutrition === true ? 'on' : ''}" data-nut="1"><div class="nc-ico">${icon('food')}</div><div><b>כן, עם תזונה</b><span>עוד כמה שאלות קצרות, והתפריט ייבנה לפיהן.</span></div></button>
       <button class="nut-choice ${d.nutrition === false ? 'on' : ''}" data-nut="0"><div class="nc-ico">${icon('dumbbell')}</div><div><b>לא עכשיו — רק אימונים</b><span>מדלגים על השאלות. מסך התזונה נשאר כבוי עד שמפעילים אותו.</span></div></button>
       ${d.nutrition ? html`${nutPrefsHtml(d)}
         <div class="h2 np-h">מה לא אוכלים?</div>
-        <div class="chips">${Object.entries(DISLIKE_TAGS).map(([id, t]) => `<button class="chip no ${d.dislikes.includes(id) ? 'on' : ''}" data-dis="${id}">${t}</button>`)}</div>` : ''}`,
+        <div class="chips">${Object.entries(DISLIKE_TAGS).map(([id, t]) => `<button class="chip no ${d.dislikes.includes(id) ? 'on' : ''}" data-dis="${id}">${t}</button>`)}</div>` : ''}`),
     // 9 — המלצת המערכת (רק במצב "תמליצו לי")
     () => {
       const r = rec();
@@ -309,17 +329,18 @@ export function renderOnboarding(root, done) {
         ${isRec ? r.why.map((w) => `<span class="why">${icon('check', 'width="14" height="14"')} ${esc(w)}</span>`).join('') : `<span>ההמלצה הייתה: ${TRACKS[r.track].name}${r.track === 'mix' ? ` (${splitText(d.days - r.mixCali, r.mixCali)})` : ''}.</span>`}</div></div>
       ${isRec ? '' : `<button class="btn sm teal" data-rec>${icon('sparkle', 'width="16" height="16"')} חזרה להמלצת המערכת</button>`}
       ${d.track === 'mix' ? `<label class="field" style="margin-top:14px"><span>כמה מהאימונים קליסתניקס?</span><div class="seg" data-seg="mixCali">${Array.from({ length: d.days - mobN() - 1 }, (_, i) => i + 1).map((v) => `<button data-v="${v}" class="${mixCaliCount(dm()) === v ? 'on' : ''}">${v}${r.track === 'mix' && r.mixCali === v ? ' ★' : ''}</button>`).join('')}</div></label>` : ''}
-      ${!['cali', 'mob', 'hiit', 'pil', 'yoga', 'tai', 'walk'].includes(d.track) ? html`<div style="font-weight:700;margin:14px 0 8px">${d.track === 'run' ? 'מי ירוץ איתך?' : 'מי יאמן אותך בחדר הכושר?'}</div>
+      ${!['cali', 'mob', 'hiit', 'pil', 'yoga', 'tai', 'walk', 'med'].includes(d.track) ? html`<div style="font-weight:700;margin:14px 0 8px">${d.track === 'run' ? 'מי ירוץ איתך?' : 'מי יאמן אותך בחדר הכושר?'}</div>
         <div class="coach-pick mini">${coachesFor(d.track === 'run' ? 'run' : 'gym').map((c) => `<button class="coach-card ${d.coach === c.id ? 'on' : ''}" data-coach="${c.id}"><img src="${c.img}" alt="${c.name}"><span class="check">✓</span><div class="cap"><b>${c.name}</b></div></button>`).join('')}</div>` : ''}
       <div style="font-weight:700;margin:16px 0 8px">${d.sex === 'f' ? 'מעדיפה' : 'מעדיף'} אחרת?</div>
-      <div class="seg" data-pick-track>${['gym', 'cali', 'run', 'walk', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
+      <div class="seg" data-pick-track>${['gym', 'cali', 'run', 'walk', 'med', 'hiit', 'pil', 'yoga', 'tai', 'mob', 'mix'].map((k) => `<button data-v="${k}" class="${d.track === k ? 'on' : ''}">${TRACKS[k].name}</button>`).join('')}</div>
       <p class="sub" style="font-size:12px;margin-top:8px">ההמלצה היא נקודת פתיחה. אפשר לשנות מסלול וחלוקה בכל רגע בהגדרות.</p>`;
     },
     // 10 — בנייה
     () => html`<div class="build-anim"><div class="core"></div>
       <div class="h1" style="font-size:24px">${esc(COACHES[d.coach].name)} ${fem() ? 'בונה' : 'בונה'} לך תוכנית…</div>
       <ul id="buildList">
-        ${walk() ? '<li>קובעת כמה מההליכה בקצב מהיר</li><li>בונה הליכה ארוכה שגדלה כל שבוע</li><li>משבצת אינטרוולים בהליכה</li><li>מחשבת יעדי תזונה ותפריט</li>'
+        ${med() ? '<li>בוחרת את המסעות של כל שלב</li><li>קובעת כמה מההליכות בקצב מהיר</li><li>בונה הליכה ארוכה שגדלה כל שבוע</li><li>פורסת את המסע על השבועות</li>'
+    : walk() ? '<li>קובעת כמה מההליכה בקצב מהיר</li><li>בונה הליכה ארוכה שגדלה כל שבוע</li><li>משבצת אינטרוולים בהליכה</li><li>מחשבת יעדי תזונה ותפריט</li>'
     : tai() ? '<li>בוחרת תנועות לפי הרמה</li><li>מתאימה לפציעות ולמצב</li><li>בונה שיעורים לשבוע</li><li>מחשבת יעדי תזונה ותפריט</li>'
     : yoga() ? '<li>בוחרת תנוחות לפי הרמה</li><li>מתאימה לפציעות ולמצב</li><li>בונה שיעורים לשבוע</li><li>מחשבת יעדי תזונה ותפריט</li>'
     : pil() ? '<li>בוחרת תרגילים לפי הרמה</li><li>מתאימה לפציעות ולמצב</li><li>בונה שיעורים לשבוע</li><li>מחשבת יעדי תזונה ותפריט</li>'
@@ -411,7 +432,7 @@ export function renderOnboarding(root, done) {
     if (d.auto) { d.goalWanted = d.goal; paint(); return; }
     delete d.goalWanted;
     d.track = t.dataset.track;
-    d.coach = cali() ? 'maya' : mob() ? 'tamar' : run() ? (d.runCoach || 'guy') : hiit() || pil() ? 'lia' : yoga() ? 'yael' : tai() ? 'mei' : walk() ? 'shira' : (d.gymCoach || 'ori');
+    d.coach = cali() ? 'maya' : mob() ? 'tamar' : run() ? (d.runCoach || 'guy') : hiit() || pil() ? 'lia' : yoga() ? 'yael' : tai() ? 'mei' : walk() ? 'shira' : med() ? 'or' : (d.gymCoach || 'ori');
     d.goal = goalForTrack(d.goal, d.track);
     if (cls() && d.days > 3 && !d.daysTouched) d.days = 3;
     if (hiit() && d.days > 3 && !d.daysTouched) d.days = 3;
@@ -446,6 +467,8 @@ export function renderOnboarding(root, done) {
   on(root, 'click', '[data-pillevel] button', (e, t) => { d.pilLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-yogalevel] button', (e, t) => { d.yogaLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-walklevel] button', (e, t) => { d.walkLevel = Number(t.dataset.v); paint(); });
+  on(root, 'click', '[data-mjlevel] button', (e, t) => { d.mjLevel = Number(t.dataset.v); paint(); });
+  on(root, 'click', '[data-mjpath]', (e, t) => { d.mjPath = t.dataset.mjpath; paint(); });
   on(root, 'click', '[data-tailevel] button', (e, t) => { d.taiLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-hiitlevel] button', (e, t) => { d.hiitLevel = Number(t.dataset.v); paint(); });
   on(root, 'click', '[data-flag]', (e, t) => { toggle(d.flags, t.dataset.flag); paint(); });
@@ -463,12 +486,12 @@ export function renderOnboarding(root, done) {
       const caliState = anyCali() ? newCali({ pushups: d.pushups, pullups: mix() || d.equip.includes('bar') || d.equip.includes('rings') ? d.pullups : 0, squats: d.squats,
         dips: d.equip.includes('pbars') || d.equip.includes('rings') ? d.dips : 0, plankSec: d.plankSec, bmi: d.weightKg / (hM * hM) }, d.equip) : null;
       const mobState = withMob() ? { ...newMob(testDone() ? d.mobTest : null, d.flags), minutes: d.mobMin } : null;
-      const level = walk() ? d.walkLevel : tai() ? d.taiLevel : yoga() ? d.yogaLevel : pil() ? d.pilLevel : hiit() ? d.hiitLevel : run() ? runLevelFrom3k(run3k) : mob() ? mobLevel(mobState) : caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
+      const level = med() ? d.mjLevel : walk() ? d.walkLevel : tai() ? d.taiLevel : yoga() ? d.yogaLevel : pil() ? d.pilLevel : hiit() ? d.hiitLevel : run() ? runLevelFrom3k(run3k) : mob() ? mobLevel(mobState) : caliState && cali() ? caliLevel(caliState) : estimateLevel({ years: d.years, pushups: d.pushups, pullups: d.pullups, run3k });
       const profile = {
-        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}), ...(tai() ? { taiMin: d.taiMin, taiFlags: [...d.flags] } : {}), ...(walk() ? { walkMin: d.walkMin } : {}),
+        track: d.track, ...(d.auto ? { gymAccess: d.gymAccess } : {}), ...(caliState ? { cali: caliState } : {}), ...(mobState ? { mob: mobState, mobN: mobN() } : {}), ...(mix() ? { mixCali: mixCaliCount(dm()) } : {}), gymCoach: d.gymCoach || 'ori', ...(run() ? { runBase: d.runBase, runCoach: d.coach } : {}), ...(hiit() ? { hiitMin: d.hiitMin, hiitLow: d.hiitLow } : {}), ...(pil() ? { pilMin: d.pilMin, pilFlags: [...d.flags] } : {}), ...(yoga() ? { yogaMin: d.yogaMin, yogaFlags: [...d.flags] } : {}), ...(tai() ? { taiMin: d.taiMin, taiFlags: [...d.flags] } : {}), ...(walk() ? { walkMin: d.walkMin } : {}), ...(med() ? { medMin: d.medMin, medPace: 'calm', medJ: { path: d.mjPath, weeks: d.mjWeeks, level: d.mjLevel, time: mjTime() } } : {}),
         coach: d.coach, name: d.name, age: d.age, sex: d.sex, heightCm: d.heightCm, weightKg: d.weightKg, targetWeight: d.targetWeight,
         goal: d.goal, level, days: d.days, sessionMin: d.sessionMin, run3k, runLevel: runLevelFrom3k(run3k), injuries: d.injuries,
-        nutrition: d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies, health: d.health, ...(d.eatAt === 'service' ? { eatAt: 'service' } : {}) } : {}),
+        nutrition: med() ? false : d.nutrition !== false, ...(d.nutrition ? { diet: d.diet, kosher: d.kosher, mealsN: d.mealsN, allergies: d.allergies, health: d.health, ...(d.eatAt === 'service' ? { eatAt: 'service' } : {}) } : {}),
         dislikes: d.nutrition ? d.dislikes : [], dislikedFoods: [], createdAt: new Date().toISOString(),
         lifts: liftsFrom((k, f) => d[`lift_${k}_${f}`]),
       };
@@ -478,7 +501,7 @@ export function renderOnboarding(root, done) {
         s.reminders = { enabled: false, id: null, ...(s.reminders || {}), settings: { ...defaultReminderSettings(profile), ...(s.reminders?.settings || {}), workout: { on: true, days: [...wdays()], time: d.schedTime || '18:00' } } };
         s.planSeen = false; // המסך הבא: הצגת התוכנית (views/plan-intro.js)
         s.weights = [{ date: today(), kg: d.weightKg }];
-        s.events = [{ type: 'coach', text: walk() ? `תוכנית ההליכה מוכנה! ${d.days} הליכות בשבוע, ${d.walkMin} דקות להליכה רגילה.` : tai() ? `תוכנית הטאי צ'י מוכנה! ${d.days} שיעורים בשבוע, ${d.taiMin} דקות כל אחד.` : yoga() ? `תוכנית היוגה מוכנה! ${d.days} שיעורים בשבוע, ${d.yogaMin} דקות כל אחד.` : pil() ? `תוכנית הפילאטיס מוכנה! ${d.days} שיעורים בשבוע, ${d.pilMin} דקות כל אחד.` : hiit() ? `תוכנית ה-HIIT מוכנה! ${d.hiitMin} דקות לאימון, ${d.days} פעמים בשבוע.` : run() ? `תוכנית הריצה מוכנה! היעד: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'מתחילים בריצה־הליכה.' : 'מתחילים בריצות רצופות.'}` : mob() ? `התוכנית מוכנה! ${GOALS[d.goal].name}.${testDone() ? ` ציון טווחים: ${mobScore(mobState)} מתוך 100.` : ' מבחן הטווחים מחכה במסך התוכנית.'}` : mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
+        s.events = [{ type: 'coach', text: med() ? `המסע מוכן! ${MJ_PATHS[d.mjPath].name}, ${d.mjWeeks} שבועות, ${d.days} הליכות בשבוע.` : walk() ? `תוכנית ההליכה מוכנה! ${d.days} הליכות בשבוע, ${d.walkMin} דקות להליכה רגילה.` : tai() ? `תוכנית הטאי צ'י מוכנה! ${d.days} שיעורים בשבוע, ${d.taiMin} דקות כל אחד.` : yoga() ? `תוכנית היוגה מוכנה! ${d.days} שיעורים בשבוע, ${d.yogaMin} דקות כל אחד.` : pil() ? `תוכנית הפילאטיס מוכנה! ${d.days} שיעורים בשבוע, ${d.pilMin} דקות כל אחד.` : hiit() ? `תוכנית ה-HIIT מוכנה! ${d.hiitMin} דקות לאימון, ${d.days} פעמים בשבוע.` : run() ? `תוכנית הריצה מוכנה! היעד: ${GOALS[d.goal].name}. ${d.runBase < 30 ? 'מתחילים בריצה־הליכה.' : 'מתחילים בריצות רצופות.'}` : mob() ? `התוכנית מוכנה! ${GOALS[d.goal].name}.${testDone() ? ` ציון טווחים: ${mobScore(mobState)} מתוך 100.` : ' מבחן הטווחים מחכה במסך התוכנית.'}` : mix() ? `התוכנית המשולבת מוכנה! ${splitText(d.days - mobN() - mixCaliCount(dm()), mixCaliCount(dm()))} בשבוע.` : caliState ? `התוכנית מוכנה! ${GOALS[d.goal].name}. נקבע שלב התחלתי בכל סולם — אפשר לראות ולשנות במסך התוכנית.` : `התוכנית מוכנה! רמה ${level} — ${LEVEL_NAMES[level]}. ${GOALS[d.goal].name}.`, date: new Date().toISOString() }];
         return s;
       });
       done();

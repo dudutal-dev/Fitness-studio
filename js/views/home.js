@@ -22,7 +22,7 @@ import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
 import { isWalk, isMed } from '../engine/walking.js';
-import { medCardHtml, medSheet } from './med-ui.js';
+import { medCardHtml, medSheet, mjCardHtml } from './med-ui.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { homeNextHtml, bindCalendar } from './calendar-ui.js';
 import { nextPlanned, trainedToday } from '../engine/schedule.js';
@@ -154,6 +154,7 @@ export function renderHome(root) {
     : `<button class="btn sm" data-act="field" ${ns?.run || hasMob(p) ? '' : 'style="grid-column:1/-1"'}>${icon('pack', 'width="18" height="18"')} אימון בלי ציוד</button>${hasMob(p) && !ns?.run ? `<button class="btn sm" data-act="quick-mob">${icon('sparkle', 'width="18" height="18"')} מוביליטי קצר</button>` : ''}`}</div></div></div>`}
 
     <div class="free-row"><button class="btn sm" data-act="free-walk">${icon('leaf', 'width="18" height="18"')} הליכה חופשית</button><button class="btn sm" data-act="free-run">${icon('run', 'width="18" height="18"')} ריצה חופשית</button></div>
+    ${mjCardHtml(s)}
     ${medCardHtml()}
 
     ${homeNextHtml()}
