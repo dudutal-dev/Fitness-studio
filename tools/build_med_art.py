@@ -5,7 +5,7 @@ from PIL import Image
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 SRC, OUT = f"{ROOT}/assets/_src/med", f"{ROOT}/assets/med"
 os.makedirs(OUT, exist_ok=True)
-for k in sys.argv[1:] or ["wake", "intent", "sleep", "quiet", "morning", "release", "heal", "connect", "reset", "thanks", "presence"]:
+for k in sys.argv[1:] or ["energy", "joy", "wake", "intent", "sleep", "quiet", "morning", "release", "heal", "connect", "reset", "thanks", "presence"]:
     im = Image.open(f"{SRC}/{k}.png").convert("RGB"); w, h = im.size
     im.resize((720, 1290), Image.LANCZOS).save(f"{OUT}/{k}.webp", quality=80)
     top = int(h * 0.10); im.crop((0, top, w, top + w)).resize((480, 480), Image.LANCZOS).save(f"{OUT}/{k}_sq.webp", quality=80)

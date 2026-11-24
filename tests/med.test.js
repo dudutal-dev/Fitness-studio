@@ -14,7 +14,7 @@ import { wantsNutrition } from '../js/engine/nutrition.js';
 const has = (p) => existsSync(new URL(`../${p}`, import.meta.url));
 
 test('שישה מסעות בסבב השבועי ומדיטציית בוקר; לכל אחד שישה קטעי דיבור, איור ורקע נע', () => {
-  assert.deepEqual(MED_ORDER, ['release', 'heal', 'connect', 'reset', 'thanks', 'presence']); assert.deepEqual(MED_ALL, ['morning', ...MED_ORDER]);
+  assert.deepEqual(MED_ORDER, ['release', 'heal', 'connect', 'reset', 'thanks', 'presence']); assert.deepEqual(MED_ALL, ['morning', 'energy', 'joy', ...MED_ORDER]);
   for (const j of MED_ALL) {
     assert.ok(MED_JOURNEYS[j].name && MED_JOURNEYS[j].desc, j);
     for (let i = 0; i < 6; i++) { const k = medLine(j, i); assert.ok(MED_LINES[k] && VOICE_LINES[k], k); assert.ok(has(`assets/voice/or/${k}.mp3`), `${k}.mp3`); }
@@ -53,7 +53,9 @@ test('הליכה מדיטטיבית: תמיד שישה מקטעים באורך �
   for (const j of MED_ALL) for (const minutes of MED_MINUTES) { const fast = (r) => r.segs.filter((s) => s.kind === 'brisk' || s.kind === 'power');
     const rf = buildMedSession(j, { minutes, pace: 'fast' }), rc = buildMedSession(j, { minutes, pace: 'calm' });
     assert.ok(fast(rf).length >= 2, `${j}: ${fast(rf).length} חלקים מהירים`); assert.ok(fast(rf).reduce((a, s) => a + s.sec, 0) >= rf.totalSec / 3, `${j} ${minutes}`);
-    assert.ok(fast(rc).reduce((a, s) => a + s.sec, 0) <= rc.totalSec * 0.45, `${j} רגועה`); }
+    assert.ok(fast(rc).reduce((a, s) => a + s.sec, 0) <= rc.totalSec * (j === 'energy' ? 0.65 : 0.45), `${j} רגועה`); }
+  // המעוררות: "אנרגיה" נמרצת גם ברגועה, ושתיהן לא בסבב השבועי
+  assert.equal(medEffort('energy', 'calm'), 3); assert.equal(medEffort('energy', 'fast'), 3); assert.ok(medEffort('joy', 'fast') >= 2); assert.ok(!MED_ORDER.includes('energy') && !MED_ORDER.includes('joy'));
   assert.ok(new Set(MED_ORDER.map((j) => medShape(j, 'calm').join() + medShape(j, 'fast').join())).size >= 5, 'המסעות שונים זה מזה במבנה');
   assert.equal(buildMedSession('nope').med, 'release');
 });

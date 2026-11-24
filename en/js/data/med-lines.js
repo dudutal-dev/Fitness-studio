@@ -5,6 +5,9 @@
 export const MED_JOURNEYS = {
   // מדיטציית בוקר (בקשת בעל המוצר, 25.11.2026): לפתוח את היום — מוצעת ראשונה בבוקר, ולא חלק מהסבב השבועי
   morning: { name: 'Morning', icon: 'bolt', desc: 'Wake up, breathe, and choose one thing for today' },
+  // שתי הליכות מעוררות ואנרגטיות (בקשת בעל המוצר, 25.11.2026) — הקצב כמעט כולו מהיר; לא בסבב השבועי
+  energy: { name: 'Energy', icon: 'bolt', desc: 'Wake the body, and feel the power in it' },
+  joy: { name: 'Joy', icon: 'star', desc: 'A light step, a small smile, and an open heart' },
   release: { name: 'Release', icon: 'leaf', desc: 'What\'s heavy drops away with every exhale and every step' },
   heal: { name: 'Healing', icon: 'heart', desc: 'Gentle attention to the body, one place at a time' },
   connect: { name: 'Connection', icon: 'sparkle', desc: 'To the ground, to what\'s around you, and to the people who matter' },
@@ -15,6 +18,8 @@ export const MED_JOURNEYS = {
 // "הנקודות" של כל מסע — שם קצר לכל אחד מארבעת חלקי ההליכה (הרעיון שאור מדברת עליו שם). מופיעות בשם המקטע, ובסיום — על מפת המסלול.
 export const MED_POINTS = {
   morning: ['Wake the body', 'First light', 'What matters today', 'A first step'],
+  energy: ['A waking breath', 'A strong step', 'Warmth in the belly', 'Where the power goes'],
+  joy: ['A small smile', 'In rhythm', 'A good moment', 'Pass it on'],
   release: ['A long exhale', 'The hand opens', 'Leave it on the trail', 'Lightness'],
   heal: ['From the soles of the feet', 'Breathe into the place', 'A hand on the heart', 'Trust the body'],
   connect: ['Lift your gaze', 'Someone you love', 'Wish them well', 'Connecting inward'],
@@ -26,6 +31,10 @@ export const MED_POINTS = {
 export const MED_ABOUT = {
   morning: ['A walk that opens the day. You start slowly, while the body is still waking, and the pace builds gradually. By the end you have one thing in mind that matters today, and the first step toward it.',
     ['Roll the shoulders, open the chest, a first deep breath.', 'Lift your gaze. This day hasn\'t been written yet.', 'One question as you walk: what is today\'s one thing?', 'See the small step you can take this very morning.']],
+  energy: ['A walk that wakes and recharges. Deep, strong breathing, a long, determined stride, and a pace that is brisk almost all the way. Good for a slow morning, a tired hour, or before something that takes strength.',
+    ['A breath in that widens the chest, and a strong breath out through the mouth.', 'A long, determined stride, a tall back and eyes ahead.', 'Feel the warmth that builds and spreads from the belly.', 'Choose one thing this power goes to today.']],
+  joy: ['A light, uplifting walk. Start with a small smile, fall into the rhythm of the music, recall one good moment, and choose who to pass it on to. The pace is brisk and cheerful.',
+    ['A small smile, even for no reason, and the step grows light.', 'The steps move with the music, and the arms are free.', 'One good moment, filling the chest again.', 'Choose one person to pass it on to today.']],
   release: ['A walk for unloading what you\'ve been carrying today. The pace rises to let the body release, then comes down. You come back lighter, with empty hands.',
     ['A long breath out through the mouth, and the shoulders drop.', 'Name one thing that weighs on you, and open your hand.', 'What\'s out of your hands stays on the trail.', 'Notice how much lighter the body and the breath feel.']],
   heal: ['The gentlest walk. You move through the body one place at a time, and breathe into whatever is tired or sore. No rush: healing happens at walking pace.',
@@ -40,7 +49,7 @@ export const MED_ABOUT = {
     ['Feet on the ground, air on the face.', 'A soft, wide gaze: colour, shape, light and shadow.', 'The farthest sound, and then the nearest.', 'Touch, sight, sound and breath — in a single moment.']],
 };
 export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];   // הסבב השבועי
-export const MED_ALL = ['morning', ...MED_ORDER];   // כל המסעות, לפי הסדר שבחלונית הבחירה
+export const MED_ALL = ['morning', 'energy', 'joy', ...MED_ORDER];   // כל המסעות, לפי הסדר שבחלונית הבחירה
 
 const L = {
   // כללי
@@ -57,6 +66,20 @@ const L = {
   med_pace_good: 'This pace is good. ... Stay in it, without effort.',
   med_no_gps: 'I can\'t see your pace right now. ... Keep walking by feel, and that is perfectly fine.',
 
+  // אנרגיה
+  med_energy_open: 'This walk wakes you up. ... We start slowly, but not for long. ... There is far more power in this body than it seems right now. ... On this walk, we switch it on.',
+  med_energy_p1: 'A breath that wakes. ... A deep breath in through the nose, until the chest widens. ... And a strong breath out through the mouth. ... Again. ... With every breath in, energy comes in. ... With every breath out, tiredness leaves.',
+  med_energy_p2: 'Now the step. ... A little longer, a little more determined. ... The legs push the ground back. ... The arms are working. ... The back is tall, and the eyes look ahead. ... This is how someone walks who knows where they are going.',
+  med_energy_p3: 'Feel the warmth building in the body. ... It starts in the belly, and spreads. ... This is the power. ... It does not come from outside. ... It was here all along, waiting for movement.',
+  med_energy_p4: 'And now, ask: where does this power go today? ... One thing that takes energy. ... See it getting done, with ease. ... And keep walking, at full pace.',
+  med_energy_close: 'Slowing down, but the energy stays. ... A deep breath. ... The body is awake, warm, and ready. ... Leave here with strength.',
+  // שמחה
+  med_joy_open: 'This is a walk of joy. ... Not a big joy. ... A small joy, of movement. ... Start walking, and let the body lead.',
+  med_joy_p1: 'Begin with a small smile. ... Even for no reason. ... The face softens, and the eyes open. ... The body takes the hint. ... The step grows lighter, almost by itself.',
+  med_joy_p2: 'Now fall into the rhythm. ... The steps move with the music. ... The arms swing freely. ... The shoulders move a little. ... No one is watching. ... It is fine to enjoy walking.',
+  med_joy_p3: 'Recall one good moment. ... A laugh, a meeting, a small win. ... See it again, in detail. ... And let its feeling fill the chest. ... It belongs to this moment too.',
+  med_joy_p4: 'This joy wants out. ... Who can it be passed on to today? ... A kind word, a short message, a smile to a stranger. ... Choose one. ... And keep walking, light and quick.',
+  med_joy_close: 'Slowing down. ... A deep breath, and the smile stays. ... A small joy, built step by step. ... It goes on from here.',
   // בוקר
   med_morning_open: 'Good morning. ... This walk opens the day. ... Start slowly, the body is still waking up. ... No need to hurry into the day. ... It will wait.',
   med_morning_p1: 'Wake the body, part by part. ... Roll your shoulders. ... Open your chest. ... One deep breath, all the way down. ... The body wakes at its own pace.',

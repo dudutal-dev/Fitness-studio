@@ -446,3 +446,7 @@ or/med_morning_open.mp3
 or/med_morning_p4.mp3
 or/med_s_intent_1.mp3
 or/med_s_quiet_4.mp3
+or/med_energy_p2.mp3
+or/med_joy_open.mp3
+or/med_joy_p4.mp3
+or/med_joy_close.mp3
