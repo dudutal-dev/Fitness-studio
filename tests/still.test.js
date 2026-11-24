@@ -11,10 +11,11 @@ const src = readFileSync(new URL('../js/views/still.js', import.meta.url), 'utf8
 const fn = (name) => { const m = new RegExp(`export (function ${name}\\([\\s\\S]*?\\n}|const ${name} = [\\s\\S]*?;\\n)`).exec(src); return m[1]; };
 const { breathAt, stillStarts } = new Function('STILL_FRAC', `${fn('breathAt')}\n${fn('stillStarts').replace('const stillStarts', 'var stillStarts')}\nreturn { breathAt, stillStarts };`)(STILL_FRAC);
 
-test('שתי מדיטציות בוקר בישיבה ואחת ללילה בשכיבה; לכל אחת חמישה קטעי דיבור, איור ומוזיקה', () => {
-  assert.deepEqual(STILL_ALL, ['wake', 'intent', 'sleep']); assert.deepEqual(STILL_MINUTES, [15, 20, 30]); assert.equal(STILL_STAGES.length, 5);
+test('שתי מדיטציות בוקר בישיבה ושתיים ללילה בשכיבה; לכל אחת חמישה קטעי דיבור, איור ומוזיקה', () => {
+  assert.deepEqual(STILL_ALL, ['wake', 'intent', 'sleep', 'quiet']); assert.deepEqual(STILL_MINUTES, [15, 20, 30]); assert.equal(STILL_STAGES.length, 5);
   assert.deepEqual(STILL_ALL.filter((id) => STILL[id].when === 'morning'), ['wake', 'intent']); assert.ok(['wake', 'intent'].every((id) => STILL[id].posture === 'sit'));
-  assert.equal(STILL.sleep.when, 'night'); assert.equal(STILL.sleep.posture, 'lie'); assert.equal(STILL.sleep.tail, 600, 'בלילה המוזיקה ממשיכה עשר דקות');
+  assert.deepEqual(STILL_ALL.filter((id) => STILL[id].when === 'night'), ['sleep', 'quiet']);
+  for (const id of ['sleep', 'quiet']) { assert.equal(STILL[id].posture, 'lie'); assert.equal(STILL[id].tail, 600, 'בלילה המוזיקה ממשיכה עשר דקות'); assert.equal(STILL[id].mood, 'medsleep'); }
   for (const id of STILL_ALL) {
     assert.ok(STILL[id].about.length > 60 && STILL[id].desc && STILL[id].breathName, id);
     for (let i = 0; i < 5; i++) { const k = stillLine(id, i); assert.ok(STILL_LINES[k] && VOICE_LINES[k], k); assert.equal(coachSays(k, 'or'), true); assert.equal(coachSays(k, 'yael'), false); assert.ok(has(`assets/voice/or/${k}.mp3`), `${k}.mp3`); }

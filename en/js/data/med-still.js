@@ -1,5 +1,5 @@
 // מדיטציות בוקר ולילה עם אור (בקשת בעל המוצר, 25.11.2026; רק ב-MOVA) — בלי הליכה: בבוקר יושבים, בלילה שוכבים.
-// שתיים לבוקר — "התעוררות" ו"כוונה ליום" — ואחת ללילה, "שינה רגועה". 15 / 20 / 30 דקות; הדיבור זהה בכל אורך, והשקט שביניהם מתארך.
+// שתיים לבוקר — "התעוררות" ו"כוונה ליום" — ושתיים ללילה — "שינה רגועה" (מרפה את הגוף) ו"ראש שקט" (משקיטה מחשבות). 15 / 20 / 30 דקות; הדיבור זהה בכל אורך, והשקט שביניהם מתארך.
 // חמישה שלבים בכל מדיטציה: התמקמות · נשימה מונחית · סריקת גוף · לב המדיטציה · סיום. אור מדריכה את הנשימה כמה סבבים, ואז ממשיכים עם העיגול שעל המסך.
 // breath: [שאיפה, החזקה, נשיפה, מנוחה] בשניות. tail: כמה שניות המוזיקה ממשיכה אחרי הסיום ודועכת (בלילה — למי שנרדם באמצע).
 // הטקסטים ניטרליים למין (בלי פנייה ביחיד), כמו בהליכות. משפט חדש: כאן, תרגום, וצינור הקולות (עברית ואנגלית).
@@ -10,8 +10,11 @@ export const STILL = {
     about: 'A sitting morning meditation, before the day starts running. Box breathing focuses the head, and then one question: what is the one thing that matters today. You leave with a short sentence of intention.' },
   sleep: { name: 'Peaceful sleep', when: 'night', posture: 'lie', icon: 'leaf', desc: 'Put the day down, and fall asleep calmly', breath: [4, 0, 6, 0], breathName: 'Four in, six out', mood: 'medsleep', tail: 600,
     about: 'A night meditation, lying down. Long exhales settle the body, a slow release moves through it part by part, and the day is set aside. At the end Or goes quiet, and the music stays for ten more minutes and fades out on its own.' },
+  // מדיטציית לילה שנייה (בקשת בעל המוצר, 25.11.2026): למי שהראש שלו לא מפסיק לרוץ. "שינה רגועה" מרפה את הגוף; זאת משקיטה את המחשבות
+  quiet: { name: 'A quiet head', when: 'night', posture: 'lie', icon: 'target', desc: 'Quiet the racing thoughts, and fall asleep', breath: [4, 0, 6, 0], breathName: 'Four in, six out', mood: 'medsleep', tail: 600,
+    about: 'A night meditation, lying down, for when your head is still working. You don\'t stop the thoughts, you just stop chasing them: long exhales, releasing the face and neck, and a still lake where every thought fades like a ripple. At the end Or goes quiet, and the music stays for ten more minutes and fades out on its own.' },
 };
-export const STILL_ALL = ['wake', 'intent', 'sleep'];
+export const STILL_ALL = ['wake', 'intent', 'sleep', 'quiet'];
 export const STILL_MINUTES = [15, 20, 30];
 export const STILL_STAGES = ['Settling in', 'Guided breathing', 'Body scan', 'The heart of the meditation', 'Closing'];
 export const STILL_FRAC = [0.12, 0.22, 0.26, 0.3, 0.1];   // החלק של כל שלב מהזמן
@@ -36,4 +39,10 @@ export const STILL_LINES = {
   med_s_sleep_3: 'Now let the body go, part by part. ... The feet are heavy. ... The calves. ... The knees. ... The thighs sink into the mattress. ... The belly is soft. ... The back spreads wide. ... The shoulders drop. ... The arms are heavy. ... The neck is loose. ... The jaw lets go. ... The forehead is smooth. ... The whole body is heavy, and warm.',
   med_s_sleep_4: 'What happened today, happened. ... You can put it down. ... Every thought that comes is placed on a cloud, and drifts slowly away. ... No need to follow it. ... Just breath. ... In. ... And out. ... Each exhale, a little deeper.',
   med_s_sleep_5: 'From here I\'ll be quiet. ... The music will stay a little longer, and fade on its own. ... There is nothing you need to do. ... Good night.',
+  // ראש שקט (לילה, בשכיבה)
+  med_s_quiet_1: 'Good evening. ... Lie comfortably, on your back or on your side. ... Your eyes close. ... The head is still full of the day. That\'s fine. ... You don\'t need to stop the thoughts. ... Just stop chasing them.',
+  med_s_quiet_2: 'Breathe slowly. ... In through the nose, to four. ... And a long breath out, to six. ... Again. Breathe in. ... And a long breath out. ... With every exhale, the thoughts slow a little. ... Carry on like this, without effort.',
+  med_s_quiet_3: 'Now let the face go. ... The forehead smooths out. ... The eyes are heavy. ... The jaw opens a little. ... The tongue is loose. ... The neck lets go. ... The shoulders sink. ... And the ease moves slowly down, to the chest, to the belly, to the legs.',
+  med_s_quiet_4: 'Picture a still lake, at night. ... The water is completely smooth. ... Every thought is a small ripple on the water. ... It spreads, and disappears. ... Count backward, with each exhale. ... Ten. ... Nine. ... Eight. ... And if you lose count, that\'s a good sign. ... Just keep breathing.',
+  med_s_quiet_5: 'From here I\'ll be quiet. ... The water is still. ... The music will stay a little longer, and fade on its own. ... Good night.',
 };
