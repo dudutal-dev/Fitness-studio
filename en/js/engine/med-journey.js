@@ -58,3 +58,17 @@ export function buildMjWeek(profile, { blockIndex = 0, weekInBlock = 0, days = n
     phase: { id: 'med', name: `${MJ_PATHS[mj.path].name} · ${st.name}`, desc: at.done ? 'The journey is complete. Keep walking at the same pace until you choose a new journey.' : st.desc },
     week: { name: at.done ? 'After the journey' : `Week ${at.week + 1} of ${at.weeks}${at.light ? ' · easy week' : ''}`, rpe: at.light ? 2 : 3, volume: 1, load: 1 }, sessions };
 }
+
+// מה קרה כשהשבוע w הושלם: שלב שהסתיים, המסע כולו, או כלום (25.11.2026 — סיכום ומשפט של אור בסוף כל שלב ובסוף המסע)
+export function mjStep(mj, w) {
+  const a = mjAt(mj, w), b = mjAt(mj, w + 1);
+  if (a.done) return null;
+  if (b.done) return { kind: 'journey', stage: 3 };
+  return b.stage > a.stage ? { kind: 'stage', stage: a.stage } : null;
+}
+// מה נעשה מאז תאריך: הליכות מדיטטיביות, דקות וקילומטרים — לסיכום שלב ולסיכום המסע
+export function mjStats(runs, since) {
+  const t0 = since ? new Date(since).getTime() : 0, list = (runs || []).filter((r) => r.med && new Date(r.date).getTime() > t0);
+  return { walks: list.length, minutes: Math.round(list.reduce((a, r) => a + (r.durationSec || 0), 0) / 60), km: Math.round(list.reduce((a, r) => a + (r.distanceKm || 0), 0) * 10) / 10 };
+}
+export const MJ_STAGE_LINES = ['med_j_s1', 'med_j_s2', 'med_j_s3'];

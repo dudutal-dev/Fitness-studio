@@ -5,7 +5,8 @@ import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
 import { MED_JOURNEYS, MED_ALL, MED_ABOUT } from '../data/med-lines.js';
 import { buildMedSession, weekJourney, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
-import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, mjOf, mjAt, mjWeekPlan } from '../engine/med-journey.js';
+import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, MJ_STAGE_LINES, mjOf, mjAt, mjWeekPlan, mjStats } from '../engine/med-journey.js';
+import { say, stop, unlock, useCoach } from '../coach/voice.js';
 import { startRun } from './run.js';
 import { STILL, STILL_ALL, STILL_MINUTES, STILL_STAGES, STILL_FRAC } from '../data/med-still.js';
 import { startStill } from './still.js';
@@ -106,9 +107,9 @@ export function journeyScreen(journey, closeSheet) {
 
 // הגדרת המסע (25.11.2026): כשמדיטציה בתנועה נבחרת כמסלול ראשי — בוחרים דרך רוחנית, אורך מסע, ימים בשבוע, אורך הליכה, כושר הליכה ומתי הולכים,
 // ורואים את ארבעת השלבים לפני שמתחילים. onStart מקבל { medJ, days, medMin } — מי שקרא שומר ובונה את התוכנית.
-export function journeySetup(onStart) {
+export function journeySetup(onStart, preset = {}) {
   const p = get().profile, cur = mjOf(p);
-  const c = { ...MJ_DEFAULT, ...(p.medJ || {}), days: Math.min(6, Math.max(2, p.days || 3)), medMin: MED_MINUTES.includes(p.medMin) ? p.medMin : 30 };
+  const c = { ...MJ_DEFAULT, ...(p.medJ || {}), ...preset, days: Math.min(6, Math.max(2, p.days || 3)), medMin: MED_MINUTES.includes(p.medMin) ? p.medMin : 30 };
   if (!MJ_PATHS[c.path]) c.path = MJ_DEFAULT.path;
   const names = (pool) => pool.map((j) => MED_JOURNEYS[j].name).join(' · ');
   const stages = () => { const per = c.weeks / 4;
@@ -152,4 +153,31 @@ export function mjCardHtml(s) {
     <b>${mj.done ? 'Journey complete' : `Stage ${mj.stage + 1} of 4 · ${esc(st.name)}`}</b>
     <small>${mj.done ? 'You can start a new journey in Settings.' : esc(st.desc)}${mj.light ? ' This week is easier.' : ''}</small>
     <div class="mm-bar">${MJ_STAGES.map((x, si) => `<div class="${si === mj.stage && !mj.done ? 'on' : ''}"><div>${Array.from({ length: mj.per }, (_, w) => `<i class="${mj.done || si < mj.stage || (si === mj.stage && w < mj.inStage) ? 'f' : si === mj.stage && w === mj.inStage ? 'c' : ''}"></i>`).join('')}</div><span>${x.name}</span></div>`).join('')}</div></a>`;
+}
+
+// סיכום בסוף שלב ובסוף המסע (25.11.2026): מסך מלא עם מה שנעשה (הליכות, דקות, קילומטרים), מה מחכה בשלב הבא, ומשפט של אור.
+// נפתח ממסך הבית כשיש state.mjNote (נשמר ב-maybeAdvanceWeek) ונמחק בסגירה. בסוף המסע: מסע חדש (עם הצעה לעלות רמה) או להמשיך ללכת.
+export function mjNoteScreen(onNew) {
+  const s = get(), n = s.mjNote; if (!n || !MJ_PATHS[n.path]) return false;
+  if (document.querySelector('.med-screen.mj-note')) return true;
+  const P = MJ_PATHS[n.path], st = MJ_STAGES[n.stage], nx = MJ_STAGES[n.stage + 1], end = n.kind === 'journey', x = mjStats(s.runs, n.since), up = end && (n.level || 1) < 3;
+  const root = el(html`<div class="med-screen mj-note" role="dialog" aria-modal="true" aria-label="${end ? 'Journey complete' : 'Stage complete'}">
+    <div class="mj-scroll">
+      <div class="mj-hero short" style="background-image:url(${medArt(end ? 'thanks' : P.art, false)})"><div class="mj-title"><div class="eyebrow">${esc(P.name)} · ${end ? `${n.weeks} weeks` : `Stage ${n.stage + 1} of 4`}</div>
+        <div class="mj-name">${end ? 'Journey complete' : `${esc(st.name)} — complete`}</div><div class="mj-desc">${end ? 'All four stages are behind you: arriving, release, deepening and integration.' : esc(st.desc)}</div></div></div>
+      <div class="mj-body">
+        <div class="mjn-stats"><div><b class="num">${x.walks}</b><span>walks</span></div><div><b class="num">${x.minutes}</b><span>minutes</span></div>${x.km ? `<div><b class="num">${x.km}</b><span>km</span></div>` : ''}</div>
+        ${end ? `<div class="mj-card"><b>What now?</b><p class="mj-about" style="margin:8px 0 0">${up ? `You can set out on a new journey at a higher walking level (${MJ_LEVELS[(n.level || 1) + 1]}), on a different path or the same one.` : 'You can set out on a new journey, on a different path or the same one.'} Or simply keep walking at the same pace.</p></div>`
+    : `<div class="mj-card"><div class="mj-top"><b>Next stage: ${esc(nx.name)}</b><span class="ms-eff">Stage ${n.stage + 2} of 4</span></div><p class="mj-about" style="margin:0">${esc(nx.desc)}</p></div>`}
+      </div>
+    </div>
+    <div class="mj-go">${end ? `<button class="btn primary block xl" data-nnew>New journey</button><button class="btn ghost block" style="margin-top:8px" data-nok>Keep walking</button>` : '<button class="btn primary block xl" data-nok>Continue</button>'}</div></div>`);
+  const close = () => { set((z) => { delete z.mjNote; return z; }); stop(); useCoach(null); root.remove(); };
+  on(root, 'click', '[data-nok]', close);
+  on(root, 'click', '[data-nnew]', () => { close(); onNew?.(up ? { level: (n.level || 1) + 1 } : {}); });
+  document.body.append(root);
+  // אור אומרת את משפט הסיכום
+  const speak = () => { unlock(); useCoach('or'); say(end ? 'med_j_done' : MJ_STAGE_LINES[n.stage], { priority: true, keep: true }); };
+  speak();
+  return true;
 }

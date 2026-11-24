@@ -66,6 +66,12 @@ const L = {
   med_pace_good: 'This pace is good. ... Stay in it, without effort.',
   med_no_gps: 'I can\'t see your pace right now. ... Keep walking by feel, and that is perfectly fine.',
 
+  // המסע בשלבים: פתיחה, סוף כל שלב, וסוף המסע
+  med_j_begin: 'The journey begins. ... Four stages lie ahead: arriving, release, deepening, and integration. ... There is no need to hurry. ... Every walk is one step in the journey. ... We begin from wherever we are today.',
+  med_j_s1: 'The arriving stage is complete. ... The body knows the path now, and the breath has found its rhythm. ... Now it is possible to start putting things down. ... The next stage is release.',
+  med_j_s2: 'The release stage is complete. ... Something heavy was left behind, on the path. ... There is more room inside now. ... The next stage goes deeper. ... Deepening.',
+  med_j_s3: 'The deepening stage is complete. ... The walks grew longer, and the step grew stronger. ... What was found on the way already belongs to life itself. ... One stage remains. ... Integration.',
+  med_j_done: 'The journey is complete. ... One moment to stop, and look back at the path. ... All those steps were taken, one by one. ... The body is stronger, and the mind is quieter. ... What was built here stays. ... And a new journey can begin.',
   // אנרגיה
   med_energy_open: 'This walk wakes you up. ... We start slowly, but not for long. ... There is far more power in this body than it seems right now. ... On this walk, we switch it on.',
   med_energy_p1: 'A breath that wakes. ... A deep breath in through the nose, until the chest widens. ... And a strong breath out through the mouth. ... Again. ... With every breath in, energy comes in. ... With every breath out, tiredness leaves.',

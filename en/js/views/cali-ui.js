@@ -86,7 +86,7 @@ export const equipChips = (equip) => `<div class="chips">${Object.entries(EQUIP)
 // ההיסטוריה, השקילות והתזונה נשמרות. התוכנית נבנית מחדש, והמאמן מתחלף: מאיה בקליסתניקס, אורי/נועה בחדר הכושר,
 // ובמסלול המשולב — כל אימון עם המאמן של המסלול שלו.
 const NO_GYM = ['cali', 'mob', 'run', 'hiit', 'pil', 'yoga', 'tai', 'walk', 'med'];   // מסלולים בלי מאמן ורמה של חדר כושר
-export function switchTrack(track, rerender) {
+export function switchTrack(track, rerender, preset) {
   const p = get().profile;
   // יוצאים מ-HIIT: זוכרים את הרמה שלו לפעם הבאה
   if (p.track === 'hiit' && track !== 'hiit') set((s) => { s.profile.hiitLevel = s.profile.level; return s; });
@@ -101,13 +101,13 @@ export function switchTrack(track, rerender) {
       set((s) => {
         const q = s.profile;
         if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
-        q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin = cfg.medMin; q.medPace ??= 'calm'; q.days = cfg.days; q.medJ = cfg.medJ;
+        q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin = cfg.medMin; q.medPace ??= 'calm'; q.days = cfg.days; q.medJ = { ...cfg.medJ, start: new Date().toISOString() };
         if (q.extras) delete q.extras.med;
         s.plan = createPlan(q);
         return s;
       });
       after('med', rerender);
-    });
+    }, preset);
     return;
   }
   if (track === 'walk') {
@@ -259,7 +259,7 @@ function toCali(track, cali, rerender) {
 
 function after(track, rerender) {
   const p = get().profile;
-  unlock(); stop(); say(track === 'med' ? 'med_hello' : track === 'pil' ? 'pil_hello' : track === 'walk' ? 'walk_hello' : `hello_${p.coach}`, { priority: true });
+  unlock(); stop(); say(track === 'med' ? 'med_j_begin' : track === 'pil' ? 'pil_hello' : track === 'walk' ? 'walk_hello' : `hello_${p.coach}`, { priority: true });
   toast(track === 'med' ? `You switched to the Moving meditation track with  ${COACHES.or.name}. This track has no nutrition menu.` : track === 'walk' ? `Switched to the walking track with ${COACHES.shira.name}` : track === 'tai' ? `You've switched to the tai chi track with ${COACHES.mei.name}` : track === 'yoga' ? `You've switched to the yoga track with ${COACHES.yael.name}` : track === 'pil' ? `You've switched to the Pilates track with ${COACHES.lia.name}` : track === 'hiit' ? `You've switched to the HIIT track with ${COACHES.lia.name}` : track === 'run' ? `You've switched to the running track with ${COACHES[p.coach].name}` : track === 'mob' ? `You've switched to the mobility & flexibility track with ${COACHES.tamar.name}` : track === 'cali' ? `You've switched to the calisthenics track with ${COACHES.maya.name}` : track === 'mix' ? `Combined track: ${COACHES[p.coach].name} in the gym, ${COACHES.maya.name} for calisthenics` : `You've switched to the gym track with ${COACHES[p.coach].name}`, 3600);
   rerender();
 }

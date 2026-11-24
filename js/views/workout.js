@@ -29,6 +29,7 @@ import { isPil, pilLevelUp, PIL_LEVELS } from '../engine/pil.js';
 import { isYoga, yogaLevelUp, YOGA_LEVELS } from '../engine/yoga.js';
 import { isTai, taiLevelUp, TAI_LEVELS } from '../engine/tai.js';
 import { isWalk, isMed, walkLevelUp, WALK_LEVELS } from '../engine/walking.js';
+import { mjOf, mjStep, MJ_STAGES } from '../engine/med-journey.js';
 import { taiClip } from '../data/tai-exercises.js';
 
 const WARM_CHEER = ['m2', 'm5', 'm6', 'm9', 'm10'];
@@ -851,9 +852,14 @@ export function maybeAdvanceWeek() {
   if (!weekClosed(s.plan)) return '';
   const full = s.plan.completedDays.length >= s.plan.week.sessions.length;   // false: חלק מהאימונים בוטלו השבוע
   let msg = 'שבוע הושלם! השבוע הבא נבנה לפי הביצועים שלך.';
+  // מסע מדיטטיבי בשלבים: בסוף שלב ובסוף המסע נשמרת הודעה (mjNote) שמסך הבית מציג כסיכום, עם משפט של אור
+  const mj = mjOf(s.profile), step = mj ? mjStep(mj, s.plan.blockIndex * 4 + s.plan.weekInBlock) : null;
+  if (mj) msg = step?.kind === 'journey' ? 'המסע הושלם! הסיכום מחכה במסך הבית.' : step ? `שלב "${MJ_STAGES[step.stage].name}" הושלם. מתחילים את שלב "${MJ_STAGES[step.stage + 1].name}".` : 'שבוע הושלם. המסע ממשיך.';
   set((s2) => {
     s2.plan.weekInBlock += 1;
-    if (s2.plan.weekInBlock >= 4) {
+    if (step) { const now = new Date().toISOString(), J = s2.profile.medJ; s2.mjNote = { ...step, path: mj.path, weeks: mj.weeks, level: mj.level, since: step.kind === 'journey' ? J.start || null : J.stageAt || J.start || null, date: now }; J.stageAt = now; }
+    if (s2.plan.weekInBlock >= 4 && mj) { s2.plan.weekInBlock = 0; s2.plan.blockIndex += 1; }
+    else if (s2.plan.weekInBlock >= 4) {
       s2.plan.weekInBlock = 0;
       s2.plan.blockIndex += 1;
       const ev = isCali(s2.profile) ? { change: 0, msg: 'ממשיכים בסולמות — כל סולם מתקדם בקצב שלו.' } : isMed(s2.profile) ? { change: 0, msg: 'בלוק של ארבעה שבועות הושלם. ממשיכים ללכת — המסעות חוזרים, וכל פעם פוגשים בהם משהו אחר.' } : isWalk(s2.profile) ? (walkLevelUp(s2.profile, s2.runs) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב ההליכות — עולים רמה: יותר זמן בקצב מהיר.' } : { change: 0, msg: 'ממשיכים באותה רמה. התמדה לפני מהירות.' }) : isTai(s2.profile) ? (taiLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב השיעורים — עולים רמה, ונפתחות תנועות חדשות.' } : { change: 0, msg: 'ממשיכים באותה רמה. קודם יציבות, ואחר כך תנועות חדשות.' }) : isYoga(s2.profile) ? (yogaLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב השיעורים — עולים רמה, ונפתחות תנוחות חדשות.' } : { change: 0, msg: 'ממשיכים באותה רמה. נשימה רגועה לפני תנוחות חדשות.' }) : isPil(s2.profile) ? (pilLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב השיעורים — עולים רמה, ונפתחים תרגילים חדשים.' } : { change: 0, msg: 'ממשיכים באותה רמה. דיוק לפני קושי.' }) : isHiit(s2.profile) ? (hiitLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'השלמת את רוב האימונים — עולים רמה: יותר עבודה, פחות מנוחה.' } : { change: 0, msg: 'נשארים באותה רמה עוד בלוק. התמדה לפני עצימות.' }) : s2.profile.track === 'run' ? { change: 0, msg: 'ארבעה שבועות של ריצה מאחוריך. הריצה הארוכה ממשיכה לגדול.' } : isMob(s2.profile) ? { change: 0, msg: 'ארבעה שבועות עברו — זה הזמן למבחן טווחים חוזר (מסך ההתקדמות).' } : evaluateLevel(s2.profile.level, blockStats(s2));

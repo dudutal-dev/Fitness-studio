@@ -49,3 +49,17 @@ test('השבוע נבנה דרך התוכנית הרגילה, עם שם השלב
   const old = buildWeek(prof(null), { blockIndex: 0, weekInBlock: 0 }); assert.equal(old.mj, undefined); assert.equal(old.phase.name, 'מדיטציה בתנועה');
   const after = buildMjWeek(p, { blockIndex: 2, weekInBlock: 0 }); assert.ok(after.mj.done); assert.equal(after.mj.stage, 3);
 });
+
+test('סוף שלב וסוף מסע: mjStep, וסיכום ההליכות', async () => {
+  const { mjStep, mjStats } = await import('../js/engine/med-journey.js');
+  const mj = { path: 'full', weeks: 8, level: 1, time: 'day' };
+  assert.equal(mjStep(mj, 0), null);                                   // אמצע שלב
+  assert.deepEqual(mjStep(mj, 1), { kind: 'stage', stage: 0 });        // סוף שלב ההגעה
+  assert.deepEqual(mjStep(mj, 5), { kind: 'stage', stage: 2 });
+  assert.deepEqual(mjStep(mj, 7), { kind: 'journey', stage: 3 });      // סוף המסע
+  assert.equal(mjStep(mj, 8), null); assert.equal(mjStep(mj, 12), null);   // אחרי המסע אין עוד הודעות
+  const m4 = { ...mj, weeks: 4 }; assert.deepEqual([0, 1, 2, 3].map((w) => mjStep(m4, w)?.kind), ['stage', 'stage', 'stage', 'journey']);
+  const runs = [{ med: 'heal', date: '2026-11-01T08:00:00Z', durationSec: 1800, distanceKm: 2.04 }, { med: 'reset', date: '2026-11-10T08:00:00Z', durationSec: 2100, distanceKm: 2.5 }, { date: '2026-11-11T08:00:00Z', durationSec: 900, distanceKm: 3 }];
+  assert.deepEqual(mjStats(runs, '2026-11-05T00:00:00Z'), { walks: 1, minutes: 35, km: 2.5 });
+  assert.deepEqual(mjStats(runs, null), { walks: 2, minutes: 65, km: 4.5 });
+});

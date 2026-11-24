@@ -29,6 +29,7 @@ import { isPil, pilLevelUp, PIL_LEVELS } from '../engine/pil.js';
 import { isYoga, yogaLevelUp, YOGA_LEVELS } from '../engine/yoga.js';
 import { isTai, taiLevelUp, TAI_LEVELS } from '../engine/tai.js';
 import { isWalk, isMed, walkLevelUp, WALK_LEVELS } from '../engine/walking.js';
+import { mjOf, mjStep, MJ_STAGES } from '../engine/med-journey.js';
 import { taiClip } from '../data/tai-exercises.js';
 
 const WARM_CHEER = ['m2', 'm5', 'm6', 'm9', 'm10'];
@@ -851,9 +852,14 @@ export function maybeAdvanceWeek() {
   if (!weekClosed(s.plan)) return '';
   const full = s.plan.completedDays.length >= s.plan.week.sessions.length;   // false: חלק מהאימונים בוטלו השבוע
   let msg = 'Week complete! Next week is built around your performance.';
+  // מסע מדיטטיבי בשלבים: בסוף שלב ובסוף המסע נשמרת הודעה (mjNote) שמסך הבית מציג כסיכום, עם משפט של אור
+  const mj = mjOf(s.profile), step = mj ? mjStep(mj, s.plan.blockIndex * 4 + s.plan.weekInBlock) : null;
+  if (mj) msg = step?.kind === 'journey' ? 'The journey is complete! The summary is waiting on the Home screen.' : step ? `Stage "${MJ_STAGES[step.stage].name}" complete. Starting stage "${MJ_STAGES[step.stage + 1].name}".` : 'Week complete. The journey continues.';
   set((s2) => {
     s2.plan.weekInBlock += 1;
-    if (s2.plan.weekInBlock >= 4) {
+    if (step) { const now = new Date().toISOString(), J = s2.profile.medJ; s2.mjNote = { ...step, path: mj.path, weeks: mj.weeks, level: mj.level, since: step.kind === 'journey' ? J.start || null : J.stageAt || J.start || null, date: now }; J.stageAt = now; }
+    if (s2.plan.weekInBlock >= 4 && mj) { s2.plan.weekInBlock = 0; s2.plan.blockIndex += 1; }
+    else if (s2.plan.weekInBlock >= 4) {
       s2.plan.weekInBlock = 0;
       s2.plan.blockIndex += 1;
       const ev = isCali(s2.profile) ? { change: 0, msg: 'The ladders continue — each ladder progresses at its own pace.' } : isMed(s2.profile) ? { change: 0, msg: 'A four-week block is complete. Keep walking — the journeys come round again, and each time you meet something different in them.' } : isWalk(s2.profile) ? (walkLevelUp(s2.profile, s2.runs) ? { change: 1, level: s2.profile.level + 1, msg: 'You completed most of your walks — moving up a level: more time at a brisk pace.' } : { change: 0, msg: 'Staying at the same level. Consistency before speed.' }) : isTai(s2.profile) ? (taiLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'You completed most of the classes — moving up a level, and new movements unlock.' } : { change: 0, msg: 'Staying at the same level. Stability first, then new movements.' }) : isYoga(s2.profile) ? (yogaLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'You completed most of the classes — moving up a level, and new poses unlock.' } : { change: 0, msg: 'Staying at the same level. Calm breathing before new poses.' }) : isPil(s2.profile) ? (pilLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'You completed most of the classes — moving up a level, and new exercises unlock.' } : { change: 0, msg: 'Staying at the same level. Precision before difficulty.' }) : isHiit(s2.profile) ? (hiitLevelUp(s2.profile, s2.sessions) ? { change: 1, level: s2.profile.level + 1, msg: 'You completed most of the workouts — moving up a level: more work, less rest.' } : { change: 0, msg: 'Staying at the same level for another block. Consistency before intensity.' }) : s2.profile.track === 'run' ? { change: 0, msg: 'Four weeks of running behind you. The long run keeps growing.' } : isMob(s2.profile) ? { change: 0, msg: 'Four weeks have passed — time to repeat the range-of-motion test (Progress screen).' } : evaluateLevel(s2.profile.level, blockStats(s2));

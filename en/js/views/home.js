@@ -22,12 +22,13 @@ import { isPil } from '../engine/pil.js';
 import { isYoga } from '../engine/yoga.js';
 import { isTai } from '../engine/tai.js';
 import { isWalk, isMed } from '../engine/walking.js';
-import { medCardHtml, medSheet, mjCardHtml } from './med-ui.js';
+import { medCardHtml, medSheet, mjCardHtml, mjNoteScreen } from './med-ui.js';
 import { reminderPromptHtml, bindReminderPrompt } from './reminders-ui.js';
 import { homeNextHtml, bindCalendar } from './calendar-ui.js';
 import { nextPlanned, trainedToday } from '../engine/schedule.js';
 import { reminders } from '../reminders.js';
 import { trackSheet, trackLabel } from './track-sheet.js';
+import { switchTrack } from './cali-ui.js';
 import { backupDue, backupNow, snoozeBackup } from '../backup.js';
 
 export function nextSession(s) {
@@ -211,6 +212,8 @@ export function renderHome(root) {
   };
   bindCalendar(root, () => renderHome(root));
   on(root, 'click', '[data-act]', (e, el) => act(el.dataset.act, el));
+  // מסע מדיטטיבי: סיכום שלב / מסע שמחכה (נשמר כשהשבוע התקדם) נפתח כאן
+  if (s.mjNote) setTimeout(() => mjNoteScreen((preset) => switchTrack('med', () => renderHome(root), preset)), 500);
 }
 
 // רכיב שעוד לא נמדד מוצג בלי מספר, עם הסבר מתי יופיע
