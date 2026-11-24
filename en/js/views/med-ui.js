@@ -2,23 +2,24 @@
 import { html, esc, on, sheet, icon } from '../ui/dom.js';
 import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
-import { MED_JOURNEYS, MED_ORDER } from '../data/med-lines.js';
+import { MED_JOURNEYS, MED_ALL } from '../data/med-lines.js';
 import { buildMedSession, weekJourney, medEffort, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
 import { startRun } from './run.js';
 
 export const medArt = (id, sq = true) => `../assets/med/${id}${sq ? '_sq' : ''}.webp`;
 export const medCardHtml = () => html`<button class="med-card" data-act="med" style="background-image:linear-gradient(100deg, rgba(30,18,60,.25), rgba(30,18,60,.86) 62%), url(${medArt('thanks')})"><img src="${COACHES.or.face}" alt="" loading="lazy">
-  <span><b>Meditative walk with  ${esc(COACHES.or.name)}</b><small>Release · Healing · Connection · Reset · Gratitude · Presence</small></span>${icon('play', 'width="20" height="20"')}</button>`;
+  <span><b>Meditative walk with  ${esc(COACHES.or.name)}</b><small>Morning · Release · Healing · Connection · Reset · Gratitude · Presence</small></span>${icon('play', 'width="20" height="20"')}</button>`;
 
 export function medSheet() {
   const s = get(), p = s.profile;
-  let journey = weekJourney((s.plan?.blockIndex || 0) * 4 + (s.plan?.weekInBlock || 0)), minutes = MED_MINUTES.includes(p.medMin) ? p.medMin : 30, pace = p.medPace === 'fast' ? 'fast' : 'calm';
+  // בבוקר (עד עשר) מוצעת מדיטציית הבוקר; אחרת — המסע של השבוע
+  let journey = new Date().getHours() < 10 ? 'morning' : weekJourney((s.plan?.blockIndex || 0) * 4 + (s.plan?.weekInBlock || 0)), minutes = MED_MINUTES.includes(p.medMin) ? p.medMin : 30, pace = p.medPace === 'fast' ? 'fast' : 'calm';
   // מבנה ההליכה של המסע שנבחר: שישה חלקים באורך יחסי, צבע לפי הקצב, ושם הנקודה של כל חלק
   const shapeHtml = () => { const r = buildMedSession(journey, { minutes, pace });
     return `<div class="med-shape"><div class="ms-top"><b>How this walk is built</b><span class="ms-eff e${r.effort}">${MED_EFFORT[medEffort(journey, pace)]}</span></div>
       <div class="ms-bar">${r.segs.map((x) => `<i class="${x.kind}" style="flex:${x.sec}"></i>`).join('')}</div>
       <ol class="ms-list">${r.segs.map((x) => `<li><span class="dot ${x.kind}"></span><b>${esc(x.point || '')}</b><small>${x.kind === 'brisk' ? 'brisk walk' : x.kind === 'power' ? 'power walk' : x.kind === 'stroll' ? 'calm walk' : 'slow walk'} · ${Math.round(x.sec / 60)} min</small></li>`).join('')}</ol></div>`; };
-  const body = () => html`<div class="med-journeys">${MED_ORDER.map((id) => `<button type="button" class="med-j ${id === journey ? 'on' : ''}" data-mj="${id}" style="background-image:linear-gradient(180deg, rgba(20,12,40,0) 30%, rgba(20,12,40,.92) 78%), url(${medArt(id)})"><b>${MED_JOURNEYS[id].name}</b><small>${esc(MED_JOURNEYS[id].desc)}</small></button>`).join('')}</div>
+  const body = () => html`<div class="med-journeys">${MED_ALL.map((id) => `<button type="button" class="med-j ${id === 'morning' ? 'wide' : ''} ${id === journey ? 'on' : ''}" data-mj="${id}" style="background-image:linear-gradient(180deg, rgba(20,12,40,0) 30%, rgba(20,12,40,.92) 78%), url(${medArt(id)})"><b>${MED_JOURNEYS[id].name}</b><small>${esc(MED_JOURNEYS[id].desc)}</small></button>`).join('')}</div>
     <label class="field"><span>How long? (minutes)</span><div class="seg" data-mmin>${MED_MINUTES.map((v) => `<button type="button" data-v="${v}" class="${minutes === v ? 'on' : ''}">${v}</button>`).join('')}</div></label>
     <label class="field"><span>Which walk?</span><div class="seg" data-mpace>${Object.entries(MED_PACES).map(([k, v]) => `<button type="button" data-v="${k}" class="${pace === k ? 'on' : ''}">${v}</button>`).join('')}</div></label>
     ${shapeHtml()}

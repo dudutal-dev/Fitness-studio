@@ -3,7 +3,7 @@
 import { html, esc, on, sheet, toast, confetti, vibrate, icon, fmtTime, el, emi } from '../ui/dom.js';
 import { get, set, addXP, XP, pushEvent } from '../store.js';
 import { isWalk, walkTarget, paceVerdict } from '../engine/walking.js';
-import { medLine, MED_ANCHORS } from '../data/med-lines.js';
+import { medLine, MED_ANCHORS, MED_PACE } from '../data/med-lines.js';
 import { COACHES, demoVideo, demoPoster } from '../data/coaches.js';
 import { shareCard } from '../share-card.js';
 import { SEG_LABEL, fmtPace, runLevelFrom3k, next3kTarget, isRun } from '../engine/running.js';
@@ -47,7 +47,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const walkS = !!run.walk;   // הליכה מודרכת: אותו מסך, עם הניסוחים, הקולות והמוזיקה של ההליכה
   const runCoach = COACHES[coach].track === 'run', demo = walkS ? 'outdoor_walk' : runCoach ? 'outdoor_run' : 'treadmill_run';
   preload(['run_warm', 'run_fast', 'run_easy', 'run_walk', 'run_steady', 'run_tempo', 'run_half', 'run_min', 'run_last', 'run_done', 'run_cool', 'run_km', 'run_3k', 'run_long', 'run_form', 'run_breathe', 'zone_up', 'zone_down', 'watch_on', 'n1', 'n2', 'n3',
-    ...(medS ? ['med_hello', 'med_done', ...MED_ANCHORS, ...[0, 1, 2, 3, 4, 5].map((n) => medLine(medS, n))] : []),
+    ...(medS ? ['med_hello', 'med_done', ...MED_ANCHORS, ...Object.values(MED_PACE), ...[0, 1, 2, 3, 4, 5].map((n) => medLine(medS, n))] : []),
     ...(walkS && !medS ? ['walk_hello', 'walk_warm', 'walk_stroll', 'walk_brisk', 'walk_power', 'walk_last', 'walk_cool', 'walk_half', 'walk_form', 'walk_talk', 'walk_done', 'walk_pace_up', 'walk_pace_good', 'walk_pace_easy', 'walk_pace_hold', 'walk_no_gps', 'walk_count', 'walk_km', 'walk_free'] : [])].filter((k) => coachSays(k, coach)));
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
@@ -245,22 +245,25 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (walkS && !medS && !tipped && inSeg > 90 && sg.sec >= 300 && ['stroll', 'brisk'].includes(sg.kind)) { tipped = true; say(sg.kind === 'brisk' ? 'walk_talk' : 'walk_form'); }
     const left = sg.sec - inSeg;
     // הליכה לפי הקצב מה-GPS: לאט מדי במקטע מהיר — מגבירים; מהר מדי במקטע רגוע — מאטים; ועל קצב טוב שנשמר — מילה טובה
-    if (walkS && !medS && !paused) {
-      const v = gps.status.ok ? paceVerdict(walkTarget(profile, sg.kind), pc && pc < 2400 ? pc : null) : null;
+    // במדיטציה (25.11.2026): אותה הכוונה במשפטים רגועים של אור, ולעיתים רחוקות יותר — רק אחרי שקטע הדיבור של המקטע הסתיים, ולא יותר מפעם בשתי דקות וחצי
+    if (walkS && !paused) {
+      const tgt = medS ? walkTarget({ level: profile.medLevel || profile.walkLevel || 1 }, sg.kind) : walkTarget(profile, sg.kind);
+      const v = gps.status.ok ? paceVerdict(tgt, pc && pc < 2400 ? pc : null) : null;
       if (v !== paceWas) { paceWas = v; paceSince = now; }
+      const K = medS ? MED_PACE : { up: 'walk_pace_up', easy: 'walk_pace_easy', hold: 'walk_pace_hold', good: 'walk_pace_good' }, slowDown = medS ? 2.5 : 1;
       // תגובה מהירה יותר (24.11.2026): אחרי חצי דקה במקטע, סטייה שנמשכת רבע דקה, ולא יותר מפעם בדקה
-      if (v && inSeg > 30 && left > 15 && now > paceCooldown) {
-        const held = now - paceSince;
-        if (v === 'slow' && held > 15000) { say('walk_pace_up'); paceCooldown = now + 60000; paceSince = now; }
-        else if (v === 'fast' && held > 15000) { say('walk_pace_easy'); paceCooldown = now + 75000; paceSince = now; }
-        else if (v === 'over' && held > 20000) { say('walk_pace_hold'); paceCooldown = now + 90000; paceSince = now; }
-        else if (v === 'ok' && held > 90000 && !praised && segPace?.max) { praised = true; say('walk_pace_good'); paceCooldown = now + 60000; }
+      if (v && inSeg > (medS ? 75 : 30) && left > (medS ? 40 : 15) && now > paceCooldown) {
+        const held = now - paceSince, need = medS ? 25000 : 15000;
+        if (v === 'slow' && held > need) { say(K.up); paceCooldown = now + 60000 * slowDown; paceSince = now; }
+        else if (v === 'fast' && held > need) { say(K.easy); paceCooldown = now + 75000 * slowDown; paceSince = now; }
+        else if (v === 'over' && held > need + 5000) { say(K.hold); paceCooldown = now + 90000 * slowDown; paceSince = now; }
+        else if (v === 'ok' && held > 90000 && !praised && tgt?.max) { praised = true; say(K.good); paceCooldown = now + 60000 * slowDown; }
       }
     }
     // אין קליטת מיקום (מסך נעול, או בלי הרשאה): שירה לא רואה את הקצב — אומרת זאת פעם אחת, כדי שיהיה ברור למה אין הכוונה
-    if (walkS && !medS && !blindSaid) {
+    if (walkS && !blindSaid) {
       if (paused || gps.status.ok) blindSince = 0; else if (!blindSince) blindSince = now;
-      else if (now - blindSince > 75000 && inSeg > 20 && left > 20) { blindSaid = true; say('walk_no_gps'); }
+      else if (now - blindSince > 75000 && inSeg > 20 && left > 20) { blindSaid = true; say(medS ? MED_PACE.blind : 'walk_no_gps'); }
     }
     $('#big').textContent = fmtTime(left);
     // סוף מקטע בהליכה: ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים), שמסתיימת עם סוף המקטע

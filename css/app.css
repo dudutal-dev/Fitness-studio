@@ -1347,3 +1347,6 @@ button.mi .tag { margin-inline-end: 4px; }
 .med-points ol { margin: 8px 0 4px; padding-inline-start: 22px; display: grid; gap: 4px; } .med-points li::marker { color: #f3c97a; font-weight: 800; } .med-points li.nopos { opacity: .7; }
 
 .hero.med-hero img.bg { object-position: 50% 22%; }
+
+/* מדיטציית הבוקר: כרטיס רחב בראש חלונית הבחירה */
+.med-j.wide { grid-column: 1 / -1; aspect-ratio: auto; min-height: 92px; background-position: center 38%; }

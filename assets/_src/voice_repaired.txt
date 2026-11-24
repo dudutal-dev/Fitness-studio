@@ -440,3 +440,7 @@ noa/kg/17.mp3
 noa/w_up.mp3
 ori/w_record.mp3
 shira/walk_no_gps.mp3
+or/med_pace_easy.mp3
+or/med_no_gps.mp3
+or/med_morning_open.mp3
+or/med_morning_p4.mp3

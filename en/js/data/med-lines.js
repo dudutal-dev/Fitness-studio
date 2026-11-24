@@ -3,6 +3,8 @@
 // הכללים: דיבור קצר על רעיון אחד ואחריו שתיקה ארוכה עם המוזיקה; הכול בלשון ניטרלית ("הולכים", "נושמים") — בלי גרסאות נקבה ובלי שמות;
 // מדיטציה בעיניים פקוחות — הולכים בחוץ, והמבט נשאר על הדרך. משפט חדש: מוסיפים כאן, ואז צינור הקולות.
 export const MED_JOURNEYS = {
+  // מדיטציית בוקר (בקשת בעל המוצר, 25.11.2026): לפתוח את היום — מוצעת ראשונה בבוקר, ולא חלק מהסבב השבועי
+  morning: { name: 'Morning', icon: 'bolt', desc: 'Wake up, breathe, and choose one thing for today' },
   release: { name: 'Release', icon: 'leaf', desc: 'What\'s heavy drops away with every exhale and every step' },
   heal: { name: 'Healing', icon: 'heart', desc: 'Gentle attention to the body, one place at a time' },
   connect: { name: 'Connection', icon: 'sparkle', desc: 'To the ground, to what\'s around you, and to the people who matter' },
@@ -12,6 +14,7 @@ export const MED_JOURNEYS = {
 };
 // "הנקודות" של כל מסע — שם קצר לכל אחד מארבעת חלקי ההליכה (הרעיון שאור מדברת עליו שם). מופיעות בשם המקטע, ובסיום — על מפת המסלול.
 export const MED_POINTS = {
+  morning: ['Wake the body', 'First light', 'What matters today', 'A first step'],
   release: ['A long exhale', 'The hand opens', 'Leave it on the trail', 'Lightness'],
   heal: ['From the soles of the feet', 'Breathe into the place', 'A hand on the heart', 'Trust the body'],
   connect: ['Lift your gaze', 'Someone you love', 'Wish them well', 'Connecting inward'],
@@ -19,7 +22,8 @@ export const MED_POINTS = {
   thanks: ['Thanks to the body', 'Thanks to a person', 'Thanks for the moment', 'Three good things'],
   presence: ['Touch', 'Sight', 'Hearing', 'All together'],
 };
-export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];
+export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];   // הסבב השבועי
+export const MED_ALL = ['morning', ...MED_ORDER];   // כל המסעות, לפי הסדר שבחלונית הבחירה
 
 const L = {
   // כללי
@@ -29,6 +33,20 @@ const L = {
   med_a2: 'If your thoughts wandered off, that\'s fine. ... Come back gently to the breath.',
   med_a3: 'Soft shoulders. ... A loose jaw. ... Keep going.',
   med_a4: 'One deep breath in. ... And a long breath out.',
+  // הכוונת קצב (25.11.2026): גם במדיטציה שומרים על קצב ההליכה — במשפטים מנחים ומרגיעים, ולעיתים רחוקות (לפי ה-GPS; views/run.js)
+  med_pace_up: 'You can pick it up a little. ... A slightly longer step, and the breath stays calm.',
+  med_pace_easy: 'Now slow down. ... There is nowhere to rush to. ... Let the step soften.',
+  med_pace_hold: 'That\'s too fast for this part. ... Ease off a little, and keep the breath comfortable.',
+  med_pace_good: 'This pace is good. ... Stay in it, without effort.',
+  med_no_gps: 'I can\'t see your pace right now. ... Keep walking by feel, and that is perfectly fine.',
+
+  // בוקר
+  med_morning_open: 'Good morning. ... This walk opens the day. ... Start slowly, the body is still waking up. ... No need to hurry into the day. ... It will wait.',
+  med_morning_p1: 'Wake the body, part by part. ... Roll your shoulders. ... Open your chest. ... One deep breath, all the way down. ... The body wakes at its own pace.',
+  med_morning_p2: 'Lift your gaze to the light. ... Morning is a clean start. ... What happened yesterday stays in yesterday. ... This day hasn\'t been written yet.',
+  med_morning_p3: 'Now a little faster. ... And as you walk, one question: what is the one thing that matters today? ... Not a list. ... One thing. ... Let it come up on its own.',
+  med_morning_p4: 'And now see the first step toward that thing. ... A small step, one you can take this morning. ... Your legs are already walking. ... The day can start walking too.',
+  med_morning_close: 'Slow down. ... A deep morning breath. ... The body is awake, the head is clear, and the intention is set. ... Have a good day.',
 
   // שחרור
   med_release_open: 'This walk is about release. ... Start slowly, at an easy pace. ... Notice what your body is holding right now. The shoulders, the jaw, the belly. ... Don\'t change anything. Just notice.',
@@ -80,5 +98,6 @@ const L = {
 };
 export const MED_LINES = L;
 export const MED_ANCHORS = ['med_a1', 'med_a2', 'med_a3', 'med_a4'];
+export const MED_PACE = { up: 'med_pace_up', easy: 'med_pace_easy', hold: 'med_pace_hold', good: 'med_pace_good', blind: 'med_no_gps' };
 // המשפט של כל מקטע במסע: i = מספר המקטע (0 = חימום, 1–4 = חלקי ההליכה, 5 = סיום)
 export const medLine = (journey, i) => `med_${journey}_${['open', 'p1', 'p2', 'p3', 'p4', 'close'][i]}`;
