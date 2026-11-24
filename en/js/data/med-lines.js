@@ -22,6 +22,23 @@ export const MED_POINTS = {
   thanks: ['Thanks to the body', 'Thanks to a person', 'Thanks for the moment', 'Three good things'],
   presence: ['Touch', 'Sight', 'Hearing', 'All together'],
 };
+// מסך המסע (בקשת בעל המוצר, 25.11.2026): מה מצפה במסע — פסקה אחת, ומשפט קצר לכל אחת מארבע הנקודות. מוצג לפני היציאה להליכה (views/med-ui.js)
+export const MED_ABOUT = {
+  morning: ['A walk that opens the day. You start slowly, while the body is still waking, and the pace builds gradually. By the end you have one thing in mind that matters today, and the first step toward it.',
+    ['Roll the shoulders, open the chest, a first deep breath.', 'Lift your gaze. This day hasn\'t been written yet.', 'One question as you walk: what is today\'s one thing?', 'See the small step you can take this very morning.']],
+  release: ['A walk for unloading what you\'ve been carrying today. The pace rises to let the body release, then comes down. You come back lighter, with empty hands.',
+    ['A long breath out through the mouth, and the shoulders drop.', 'Name one thing that weighs on you, and open your hand.', 'What\'s out of your hands stays on the trail.', 'Notice how much lighter the body and the breath feel.']],
+  heal: ['The gentlest walk. You move through the body one place at a time, and breathe into whatever is tired or sore. No rush: healing happens at walking pace.',
+    ['Feel your feet meet the ground, and move slowly up the body.', 'Find one place that asks for more, and breathe into it.', 'A few steps with a hand on your chest.', 'Every step moves blood, every breath brings air.']],
+  connect: ['A walk that brings back a sense of belonging: to the ground under your feet, to what\'s around you, to people, and finally inward. You come back a little less alone.',
+    ['The sky, the trees, the people — you walk within it all, as part of it.', 'A few steps beside someone it feels good to be with.', 'A kind wish for someone you\'ve grown distant from.', 'One kind sentence for the one walking here, too.']],
+  reset: ['A walk to clear the head. Counting steps and breathing in time with them quiets the thoughts, and in that quiet you choose one intention for the rest of the day.',
+    ['Count to ten, and start again. That\'s the whole practice.', 'Breathe in for four steps, out for six.', 'Watch the thoughts pass, and don\'t get in.', 'A word or a short sentence, three times, silently.']],
+  thanks: ['A walk that looks for the good that\'s already here. Three things, one in each part of the way: something in the body, one person, and a simple moment from today. The ending is lighter and quicker.',
+    ['One thing in the body that works without being asked.', 'One moment with someone who did some good.', 'Something small from today that almost slipped by.', 'Walk with all three, and the step gets lighter.']],
+  presence: ['A slow walk that brings you back to here and now, through the senses: touch, sight and hearing, one by one, and then all together.',
+    ['Feet on the ground, air on the face.', 'A soft, wide gaze: colour, shape, light and shadow.', 'The farthest sound, and then the nearest.', 'Touch, sight, sound and breath — in a single moment.']],
+};
 export const MED_ORDER = ['release', 'heal', 'connect', 'reset', 'thanks', 'presence'];   // הסבב השבועי
 export const MED_ALL = ['morning', ...MED_ORDER];   // כל המסעות, לפי הסדר שבחלונית הבחירה
 

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { MED_JOURNEYS, MED_ORDER, MED_ALL, MED_LINES, MED_ANCHORS, MED_POINTS, MED_PACE, medLine } from '../js/data/med-lines.js';
+import { MED_JOURNEYS, MED_ORDER, MED_ALL, MED_LINES, MED_ANCHORS, MED_POINTS, MED_PACE, MED_ABOUT, medLine } from '../js/data/med-lines.js';
 import { buildMedSession, buildMedSessions, weekJourney, medShape, medEffort, MED_MINUTES } from '../js/engine/meditation.js';
 import { coachSays, VOICE_LINES } from '../js/data/voice-lines.js';
 import { COACHES, coachesFor } from '../js/data/coaches.js';
@@ -20,10 +20,12 @@ test('שישה מסעות בסבב השבועי ומדיטציית בוקר; ל�
     for (let i = 0; i < 6; i++) { const k = medLine(j, i); assert.ok(MED_LINES[k] && VOICE_LINES[k], k); assert.ok(has(`assets/voice/or/${k}.mp3`), `${k}.mp3`); }
     for (const f of [`${j}.webp`, `${j}_sq.webp`, `${j}.mp4`]) assert.ok(has(`assets/med/${f}`), f);
   }
+  // מסך המסע: פסקה על המסע ומשפט לכל אחת מארבע הנקודות
+  for (const j of MED_ALL) { const [about, pts] = MED_ABOUT[j]; assert.ok(about.length > 60, j); assert.equal(pts.length, 4); assert.ok(pts.every((x) => x.length > 12), j); }
   for (const k of ['med_hello', 'med_done', ...MED_ANCHORS, ...Object.values(MED_PACE)]) { assert.ok(MED_LINES[k], k); assert.ok(has(`assets/voice/or/${k}.mp3`), k); }
 });
 test('הטקסטים ניטרליים: בלי פנייה ביחיד (שלך, איתך, אותך…), כי היא נשמעת אחרת לגבר ולאישה', () => {
-  for (const [k, t] of Object.entries(MED_LINES)) assert.ok(!/(^|[\s,.])(שלך|איתך|אותך|לך|עצמך|אליך|ממך|בך)([\s,.]|$)/.test(t), `${k}: ${t}`);
+  for (const [k, t] of [...Object.entries(MED_LINES), ...MED_ALL.flatMap((j) => [[`about_${j}`, MED_ABOUT[j][0]], ...MED_ABOUT[j][1].map((x, i) => [`about_${j}_${i}`, x])])]) assert.ok(!/(^|[\s,.])(שלך|איתך|אותך|לך|עצמך|אליך|ממך|בך)([\s,.]|$)/.test(t), `${k}: ${t}`);
 });
 test('אור אומרת רק את משפטי המדיטציה, ואף מאמן אחר לא אומר אותם', () => {
   assert.equal(COACHES.or.track, 'med'); assert.deepEqual(coachesFor('med').map((c) => c.id), ['or']);
