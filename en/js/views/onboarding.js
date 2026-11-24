@@ -23,7 +23,7 @@ const WD_SPREAD = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4]
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
 const GATE_TILES = {
   gym: ['Gym', 'with Ori and Noa', ['ori', 'noa']], cali: ['Calisthenics', 'with Maya', ['maya']], run: ['Running', 'with Guy and Shira', ['guy', 'shira']],
-  hiit: ['HIIT', 'with Lia', ['lia']], pil: ['Pilates', 'with Lia', ['lia']], yoga: ['Yoga', 'with Yael', ['yael']], tai: ['Tai chi', 'with Mei', ['mei']], walk: ['Walking', 'with Shira', ['shira']], mob: ['Mobility', 'with Tamar', ['tamar']],
+  hiit: ['HIIT', 'with Lia', ['lia']], pil: ['Pilates', 'with Lia', ['lia']], yoga: ['Yoga', 'with Yael', ['yael']], tai: ['Tai chi', 'with Mei', ['mei']], walk: ['Walking', 'with Shira', ['shira']], med: ['Moving meditation', 'with Or', ['or']], mob: ['Mobility', 'with Tamar', ['tamar']],
   mix: ['Combined', 'Several tracks a week', []],
 };
 
@@ -115,10 +115,10 @@ export function renderOnboarding(root, done) {
       const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids, ...ids, ...ids].map(tile).join('')}</div></div>`;
       return html`<div class="gate">
         <div class="gate-top"><div class="gate-logo">${BRAND.name}</div><div class="gate-tag">Your studio. Anywhere.</div></div>
-        <div class="gate-wall" aria-hidden="true">${row(['gym', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit'], 'tall b')}${row(['mob', 'tai', 'walk', 'mix'], 'tall')}${row(['gym', 'yoga', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'walk', 'mob', 'mix'], 'short b')}</div>
+        <div class="gate-wall" aria-hidden="true">${row(['gym', 'med', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit', 'med'], 'tall b')}${row(['mob', 'tai', 'walk', 'mix'], 'tall')}${row(['gym', 'yoga', 'med', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'walk', 'mob', 'mix'], 'short b')}</div>
         <div class="gate-copy">
-          <div class="gate-h">Nine kinds of training.<br><em>One studio.</em></div>
-          <p class="sub">Nine coaches by your side — on one track or a mix of them.</p>
+          <div class="gate-h">Ten kinds of training.<br><em>One studio.</em></div>
+          <p class="sub">Ten coaches by your side — on one track or a mix of them.</p>
           <div class="gate-feats"><span>${icon('target')}A plan that changes with you</span><span>${icon('vol')}Reps counted out loud</span><span>${icon('chart')}Nutrition and tracking</span></div>
           ${lohemData() ? `<button class="btn block" style="margin-top:12px" data-lohem>${icon('download', 'width="18" height="18"')} Continue with my data from "HOD"</button><p class="sub" style="font-size:12px;margin-top:6px">The profile, workouts, weigh-ins and nutrition of ${esc(lohemData().profile.name)} will be copied here. The "HOD" app stays as it is.</p>` : ''}
         </div></div>`; },

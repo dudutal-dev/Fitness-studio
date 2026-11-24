@@ -23,7 +23,7 @@ const WD_SPREAD = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4]
 // שער האפליקציה: התחום של כל מאמן על הכרטיס שלו, ומספר המאמנים במילים
 const GATE_TILES = {
   gym: ['חדר כושר', 'עם אורי ונועה', ['ori', 'noa']], cali: ['קליסתניקס', 'עם מאיה', ['maya']], run: ['ריצה', 'עם גיא ושירה', ['guy', 'shira']],
-  hiit: ['HIIT', 'עם ליה', ['lia']], pil: ['פילאטיס', 'עם ליה', ['lia']], yoga: ['יוגה', 'עם יעל', ['yael']], tai: ['טאי צ\'י', 'עם מיי', ['mei']], walk: ['הליכה', 'עם שירה', ['shira']], mob: ['מוביליטי', 'עם תמר', ['tamar']],
+  hiit: ['HIIT', 'עם ליה', ['lia']], pil: ['פילאטיס', 'עם ליה', ['lia']], yoga: ['יוגה', 'עם יעל', ['yael']], tai: ['טאי צ\'י', 'עם מיי', ['mei']], walk: ['הליכה', 'עם שירה', ['shira']], med: ['מדיטציה בתנועה', 'עם אור', ['or']], mob: ['מוביליטי', 'עם תמר', ['tamar']],
   mix: ['משולב', 'כמה מסלולים בשבוע', []],
 };
 
@@ -115,10 +115,10 @@ export function renderOnboarding(root, done) {
       const row = (ids, cls) => `<div class="gate-row ${cls}"><div class="gate-track">${[...ids, ...ids, ...ids, ...ids].map(tile).join('')}</div></div>`;
       return html`<div class="gate">
         <div class="gate-top"><div class="gate-logo">${BRAND.name}</div><div class="gate-tag">הסטודיו שלך. בכל מקום.</div></div>
-        <div class="gate-wall" aria-hidden="true">${row(['gym', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit'], 'tall b')}${row(['mob', 'tai', 'walk', 'mix'], 'tall')}${row(['gym', 'yoga', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'walk', 'mob', 'mix'], 'short b')}</div>
+        <div class="gate-wall" aria-hidden="true">${row(['gym', 'med', 'yoga', 'run'], 'tall')}${row(['cali', 'pil', 'hiit', 'med'], 'tall b')}${row(['mob', 'tai', 'walk', 'mix'], 'tall')}${row(['gym', 'yoga', 'med', 'run', 'pil'], 'short')}${row(['cali', 'hiit', 'tai', 'walk', 'mob', 'mix'], 'short b')}</div>
         <div class="gate-copy">
-          <div class="gate-h">תשעה סוגי אימון.<br><em>סטודיו אחד.</em></div>
-          <p class="sub">תשעה מאמנים מלווים אותך — במסלול אחד או בשילוב ביניהם.</p>
+          <div class="gate-h">עשרה סוגי אימון.<br><em>סטודיו אחד.</em></div>
+          <p class="sub">עשרה מאמנים מלווים אותך — במסלול אחד או בשילוב ביניהם.</p>
           <div class="gate-feats"><span>${icon('target')}תוכנית שמשתנה איתך</span><span>${icon('vol')}ספירת חזרות בקול</span><span>${icon('chart')}תזונה ומעקב</span></div>
           ${lohemData() ? `<button class="btn block" style="margin-top:12px" data-lohem>${icon('download', 'width="18" height="18"')} להמשיך עם הנתונים שלי מ"חוד"</button><p class="sub" style="font-size:12px;margin-top:6px">הפרופיל, האימונים, השקילות והתזונה של ${esc(lohemData().profile.name)} יועתקו לכאן. אפליקציית "חוד" נשארת כמו שהיא.</p>` : ''}
         </div></div>`; },
