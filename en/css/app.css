@@ -1327,7 +1327,8 @@ button.mi .tag { margin-inline-end: 4px; }
   background-color: #1d1238; background-size: cover; background-position: center; border: 2px solid transparent; opacity: .82; transition: opacity .2s, transform .2s; }
 .med-j b { font-size: 15px; } .med-j small { font-size: 10.5px; line-height: 1.25; opacity: .88; }
 .med-j.on { opacity: 1; border-color: #f3c97a; box-shadow: 0 0 0 3px rgba(243, 201, 122, .25), 0 8px 20px rgba(60, 30, 110, .4); transform: translateY(-2px); }
-.live.med-live .stage.run-stage { flex: 0 0 50% !important; }
+/* האיור מקבל את כל הגובה שנשאר מעל לוח הנתונים — כך הכפתורים שבתחתית אף פעם לא נחתכים, בכל גודל מסך (תיקון 25.11.2026: קודם היה 50% קבוע) */
+.live.med-live .stage.run-stage { flex: 1 1 0 !important; min-height: 30%; }
 .live.med-live .stage.run-stage video, .live.med-live .stage.run-stage img.poster { object-position: 50% 26%; }
 
 /* נקודות ממוספרות על מפת המסלול */

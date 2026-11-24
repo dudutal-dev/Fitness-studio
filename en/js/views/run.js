@@ -166,7 +166,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     root.querySelectorAll('.segs i').forEach((n, j) => { n.classList.toggle('cur', j === i); n.classList.toggle('past', j < i); });
     $('#kind').className = `run-kind ${sg.kind}`;
     setMusicMood(runMood(sg.kind, walkS, medS));
-    $('#kind').textContent = SEG_LABEL[sg.kind];
+    $('#kind').textContent = medS && (sg.kind === 'warm' || sg.kind === 'cool') ? sg.point : SEG_LABEL[sg.kind];   // במדיטציה: "פתיחה" ו"סיום", לא "חימום" ו"שחרור"
     $('#lbl').textContent = sg.label + (TARGET_Z[sg.kind] && !medS ? ` · heart rate target Z${TARGET_Z[sg.kind].join('–Z')}` : '');
     const p = run.pace;
     const pace = sg.kind === 'fast' ? p.fast : sg.kind === 'tempo' ? p.tempo : sg.kind === 'test' ? p.test : ['steady', 'easy'].includes(sg.kind) ? p.easy : null;
