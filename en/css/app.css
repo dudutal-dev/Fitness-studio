@@ -1435,3 +1435,9 @@ button.mi .tag { margin-inline-end: 4px; }
 .mjs i { position: absolute; top: 10px; inset-inline-end: 10px; font-style: normal; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(12,10,26,.6); }
 .mjs b { font-size: 17px; } .mjs small { font-size: 12px; opacity: .88; }
 .mjs.done { border-color: #6fd3b6; } .mjs.done i { background: #6fd3b6; color: #0c2a22; text-shadow: none; }
+
+/* סיכום הריצה / ההליכה (25.11.2026): המסך נגלל עד הסוף. קודם החלונית לא נגללה, וכשהסיכום היה ארוך מהמסך — הכפתורים שבתחתית נחתכו */
+@media (orientation: portrait) {
+  .live.run-ended .stage.run-stage { flex: 0 0 28% !important; min-height: 0 !important; }
+  .live.run-ended .panel { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+}
