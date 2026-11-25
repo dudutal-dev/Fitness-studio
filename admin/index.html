@@ -355,15 +355,29 @@ $('#authForm').onsubmit = async e => { e.preventDefault(); pw = $('#pw').value;
 const lock = on => { $('#auth').hidden = !on; $('#panel').hidden = on; for (const id of ['#refresh', '#settings', '#fab']) $(id).hidden = on; };
 function open() { lock(false); load(); }
 // ───── זיהוי פנים (מפתח גישה): הטלפון מאמת את הפנים, והשרת מאמת את החתימה של הטלפון ─────
+// ההפעלה מההגדרות (25.11.2026, "עדיין נחסם"): גם כאן האתגר מוכן מראש — כשנפתחות ההגדרות (regPrep) — כדי שחלון הזיהוי ייפתח מיד בלחיצה,
+// וכשזה נכשל מוצג הסבר שנשאר על המסך, עם שם התקלה שהטלפון החזיר, במקום "ההפעלה בוטלה" לכל מקרה.
+let regPre = null;
+async function regPrep() { try { const st = await call('wa-reg-start'); regPre = st.ok ? { st, at: Date.now() } : null; } catch { regPre = null; } }
+function faceWhy(e, ms) {
+  const n = (e && e.name) || '', code = n ? ` (${n})` : '';
+  if (n === 'NotAllowedError' && ms < 2500) return ['הטלפון חסם את ההפעלה', 'חלון הזיהוי לא נפתח. בדרך כלל זה אומר ששמירת מפתחות גישה כבויה בטלפון. באייפון: הגדרות ← כללי ← מילוי אוטומטי וסיסמאות (בגרסה ישנה: הגדרות ← סיסמאות ← אפשרויות סיסמה) ← להפעיל "מילוי אוטומטי של סיסמאות ומפתחות גישה" ולסמן את "סיסמאות" (צרור המפתחות של iCloud). צריך גם קוד נעילה וזיהוי פנים פעילים בטלפון. אחר כך לנסות שוב.' + code];
+  if (n === 'NotAllowedError') return ['ההפעלה לא הושלמה', 'חלון הזיהוי נסגר בלי אישור, או שעבר הזמן. אפשר לנסות שוב.' + code];
+  if (n === 'InvalidStateError') return ['כבר קיים מפתח בטלפון הזה', 'בטלפון כבר שמור מפתח גישה לניהול. למחוק אותו בסיסמאות של הטלפון (dudutal-dev.github.io) ולנסות שוב.' + code];
+  if (n === 'SecurityError') return ['לא זמין בכתובת הזאת', 'זיהוי פנים עובד רק בכתובת הרגילה של אפליקציית הניהול.' + code];
+  return ['ההפעלה לא הצליחה', 'הטלפון החזיר תקלה' + (code || ' לא מזוהה') + (e && e.message ? ': ' + String(e.message).slice(0, 140) : '') + '. הכניסה עם סיסמה ממשיכה לעבוד.'];
+}
 async function faceEnable() {
-  try { const st = await call('wa-reg-start'); if (!st.ok) return say('ההפעלה נכשלה');
+  let t0 = Date.now();
+  try { const st = regPre && Date.now() - regPre.at < 150e3 ? regPre.st : await call('wa-reg-start'); regPre = null; if (!st.ok) return say('ההפעלה נכשלה: הכניסה פגה. לצאת ולהיכנס שוב עם הסיסמה');
+    t0 = Date.now();
     const cred = await navigator.credentials.create({ publicKey: { challenge: unb64u(st.challenge), rp: { name: 'ניהול קישורי הפעלה', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'admin', displayName: 'מנהל' },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' }, timeout: 60000 } });
     const spki = cred.response.getPublicKey && cred.response.getPublicKey(); if (!spki) return say('הדפדפן הזה לא תומך בזה');
     const r = await call('wa-reg-finish', { id: cred.id, spki: b64u(spki), clientData: b64u(cred.response.clientDataJSON), n: navigator.platform || '' });
-    if (!r.ok) return say('ההפעלה נכשלה');
+    if (!r.ok) return ask('ההפעלה לא נשמרה', 'הטלפון יצר מפתח, אבל השרת לא קיבל אותו' + (r.why ? ` (${r.why})` : '') + '. לנסות שוב בעוד רגע.', 'הבנתי');
     mem.set('fitlicwa', '1'); mem.set('fitlicpw', ''); say('זיהוי הפנים הופעל');
-  } catch { say('ההפעלה בוטלה'); } }
+  } catch (e) { const [t, x] = faceWhy(e, Date.now() - t0); ask(t, x, 'הבנתי'); } }
 async function faceDisable() { if (!await ask('לכבות זיהוי פנים?', 'הכניסה תחזור להיות עם סיסמה.', 'כיבוי', true)) return; await call('wa-clear').catch(() => {}); mem.set('fitlicwa', ''); say('זיהוי הפנים כובה'); }
 // אימות בזיהוי פנים. מחזיר true כשהשרת אישר (ואז sess תקף לחצי שעה מהפעולה האחרונה)
 // 25.11.2026 — "זיהוי הפנים נחסם": האייפון מאשר זיהוי פנים רק מיד אחרי לחיצה. קודם, בין הלחיצה לזיהוי חיכינו לתשובה מהשרת (האתגר),
@@ -535,7 +549,7 @@ function renameSheet(p) {
 }
 // ───── הגדרות ─────
 function settingsSheet() {
-  const on = faceOn();
+  const on = faceOn(); if (canFace && !on) regPrep();
   sheet(`<h3>הגדרות</h3><div class="menu">
     ${canFace ? `<button type="button" data-do="face"><span class="mi">${I.face}</span><span>${on ? 'כיבוי זיהוי פנים' : 'כניסה בזיהוי פנים'}<small>${on ? 'פעיל בטלפון הזה. הסיסמה לא נשמרת בטלפון.' : 'הטלפון יאמת פנים או טביעת אצבע בכל פתיחה. הסיסמה נשארת כגיבוי.'}</small></span></button>` : ''}
     <button type="button" data-do="out" class="bad"><span class="mi">${I.out}</span><span>יציאה<small>הסיסמה תימחק מהטלפון הזה</small></span></button></div>
@@ -568,7 +582,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261125.212913';
+const ADMIN_V = '20261125.213305';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
