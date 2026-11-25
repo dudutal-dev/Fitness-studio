@@ -8,6 +8,8 @@ import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, rungState, ladderLock, ladder
 import { newMob, mobLevel, mobTested } from '../engine/mob.js';
 import { mobTestSheet } from './mob-ui.js';
 import { journeySetup } from './med-ui.js';
+import { mjFitWorkout } from '../engine/med-journey.js';
+import { reminders, saveReminderSettings } from '../reminders.js';
 import { goalOnSwitch } from '../engine/program.js';   // 25.11.2026: המעבר זוכר את המטרה הקודמת ומחזיר אותה (profile.goalBack)
 import { runLevelFrom3k } from '../engine/running.js';
 import { infoSheet } from './workout.js';
@@ -106,6 +108,9 @@ export function switchTrack(track, rerender, preset) {
         s.plan = createPlan(q);
         return s;
       });
+      // שעות האימון ביומן ובתזכורות לפי "מתי הולכים" (25.11.2026) — רק שעה שלא מתאימה לבחירה משתנה
+      const rs = reminders().settings, w = mjFitWorkout(cfg.medJ.time, rs?.workout);
+      if (w) saveReminderSettings({ ...rs, workout: w });
       after('med', rerender);
     }, preset);
     return;

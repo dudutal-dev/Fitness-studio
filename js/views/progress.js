@@ -152,8 +152,8 @@ const sessionParts = (x) => (x.exercises?.length && x.exercises.every((e) => e.u
 
 function history(s) {
   const items = [
-    ...s.sessions.map((x, i) => ({ key: `s:${i}`, date: x.date, ico: x.field ? 'pack' : 'dumbbell', t: x.name, sub: `${fmtTime(x.durationSec)}${sessionParts(x)}${x.prs?.length ? ` · ${x.prs.length === 1 ? 'שיא אחד' : `${x.prs.length} שיאים`}` : ''}${x.hr ? ` · ❤ ${x.hr.avg}` : ''}${x.source === 'garmin' ? ' · ⌚' : ''}` })),
-    ...s.runs.map((r, i) => ({ key: `r:${i}`, date: r.date, ico: 'run', t: r.name, sub: `${fmtTime(r.durationSec)}${r.distanceKm ? ` · ${r.distanceKm} ק״מ` : ''}${r.timeSec ? ` · 3 ק״מ ב-${fmtTime(r.timeSec)}` : ''}${r.hr ? ` · ❤ ${r.hr.avg}` : ''}${r.source === 'garmin' ? ' · ⌚' : ''}` })),
+    ...s.sessions.map((x, i) => ({ key: `s:${i}`, date: x.date, ico: x.field ? 'pack' : 'dumbbell', t: x.name, sub: `${fmtTime(x.durationSec)}${sessionParts(x)}${x.partial ? ' · חלקי' : ''}${x.prs?.length ? ` · ${x.prs.length === 1 ? 'שיא אחד' : `${x.prs.length} שיאים`}` : ''}${x.hr ? ` · ❤ ${x.hr.avg}` : ''}${x.source === 'garmin' ? ' · ⌚' : ''}` })),
+    ...s.runs.map((r, i) => ({ key: `r:${i}`, date: r.date, ico: 'run', t: r.name, sub: `${fmtTime(r.durationSec)}${r.distanceKm ? ` · ${r.distanceKm} ק״מ` : ''}${r.timeSec ? ` · 3 ק״מ ב-${fmtTime(r.timeSec)}` : ''}${r.partial ? ' · חלקי' : ''}${r.hr ? ` · ❤ ${r.hr.avg}` : ''}${r.source === 'garmin' ? ' · ⌚' : ''}` })),
   ].sort((a, b) => b.date.localeCompare(a.date));
   const shown = showAll ? items : items.slice(0, 15);
   if (!items.length) return `<div class="empty"><div class="e">${ib('plan', 'pri', 'xl')}</div>עוד אין אימונים. הראשון מחכה לך!</div>`;

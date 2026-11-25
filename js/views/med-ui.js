@@ -5,7 +5,7 @@ import { get, set } from '../store.js';
 import { COACHES } from '../data/coaches.js';
 import { MED_JOURNEYS, MED_ALL, MED_ABOUT } from '../data/med-lines.js';
 import { buildMedSession, weekJourney, MED_EFFORT, MED_MINUTES, MED_PACES } from '../engine/meditation.js';
-import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, MJ_STAGE_LINES, mjOf, mjAt, mjWeekPlan, mjStats, mjStillsDone, mjStills } from '../engine/med-journey.js';
+import { MJ_PATHS, MJ_STAGES, MJ_WEEKS, MJ_LEVELS, MJ_TIMES, MJ_DEFAULT, MJ_STAGE_LINES, mjTimeOf, mjOf, mjAt, mjWeekPlan, mjStats, mjStillsDone, mjStills } from '../engine/med-journey.js';
 import { say, stop, unlock, useCoach } from '../coach/voice.js';
 import { startRun } from './run.js';
 import { STILL, STILL_ALL, STILL_MINUTES, STILL_STAGES, STILL_FRAC } from '../data/med-still.js';
@@ -109,7 +109,7 @@ export function journeyScreen(journey, closeSheet) {
 // ורואים את ארבעת השלבים לפני שמתחילים. onStart מקבל { medJ, days, medMin } — מי שקרא שומר ובונה את התוכנית.
 export function journeySetup(onStart, preset = {}) {
   const p = get().profile, cur = mjOf(p);
-  const c = { ...MJ_DEFAULT, ...(p.medJ || {}), ...preset, days: Math.min(6, Math.max(2, p.days || 3)), medMin: MED_MINUTES.includes(p.medMin) ? p.medMin : 30 };
+  const c = { ...MJ_DEFAULT, ...(p.medJ ? {} : { time: mjTimeOf(get().reminders?.settings?.workout?.time) }), ...(p.medJ || {}), ...preset, days: Math.min(6, Math.max(2, p.days || 3)), medMin: MED_MINUTES.includes(p.medMin) ? p.medMin : 30 };
   if (!MJ_PATHS[c.path]) c.path = MJ_DEFAULT.path;
   const names = (pool) => pool.map((j) => MED_JOURNEYS[j].name).join(' · ');
   const stages = () => { const per = c.weeks / 4;

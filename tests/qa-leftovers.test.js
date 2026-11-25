@@ -142,3 +142,39 @@ test('מוביליטי לצד המסלול: הוספה והסרה מחזירות
   assert.match(src, /setMob\(v\);/); assert.match(src, /setMob\(Math\.max\(1, get\(\)\.profile\.mobN \|\| 0\), true\)/);
   assert.ok(!/q\.days = Math\.min\(6, \(q\.days \|\| 3\) \+ 1\)/.test(src));
 });
+
+// ───── הדברים הקטנים (25.11.2026) ─────
+test('מחיקת ריצה מהשבוע הנוכחי פותחת מחדש את היום בתוכנית', async () => {
+  const { deleteRun } = await import('../js/engine/history-edit.js');
+  const today = new Date().toISOString();
+  const mk = (track, runs, sessions = []) => ({ profile: { track }, xp: 500, plan: { weekStart: today.slice(0, 10), completedDays: [1, 2] }, runs, sessions });
+  let s = deleteRun(mk('run', [{ type: 'easy', name: 'r', date: today, day: 2, durationSec: 1800, xp: 90 }]), 0);
+  assert.deepEqual(s.plan.completedDays, [1]);
+  // חלקית / חופשית / מסלול שבו ריצה לא מסמנת יום — היום נשאר
+  s = deleteRun(mk('run', [{ type: 'easy', name: 'r', date: today, day: 2, partial: true }]), 0); assert.deepEqual(s.plan.completedDays, [1, 2]);
+  s = deleteRun(mk('run', [{ type: 'free', name: 'r', date: today, day: 2 }]), 0); assert.deepEqual(s.plan.completedDays, [1, 2]);
+  s = deleteRun(mk('gym', [{ type: 'easy', name: 'r', date: today, day: 2 }]), 0); assert.deepEqual(s.plan.completedDays, [1, 2]);
+  s = deleteRun(mk('gym', [{ type: 'easy', name: 'r', date: today, day: 2, planDay: true }]), 0); assert.deepEqual(s.plan.completedDays, [1]);
+  // נשארה ריצה אחרת על אותו יום — היום נשאר סגור
+  s = deleteRun(mk('run', [{ type: 'easy', name: 'a', date: today, day: 2 }, { type: 'easy', name: 'b', date: today, day: 2 }]), 0); assert.deepEqual(s.plan.completedDays, [1, 2]);
+  // ריצה משבוע קודם
+  s = deleteRun(mk('run', [{ type: 'easy', name: 'r', date: '2020-01-01T10:00:00.000Z', day: 2 }]), 0); assert.deepEqual(s.plan.completedDays, [1, 2]);
+});
+
+test('מזון אישי: שם באנגלית ומנה ממרכיבים נבדקים בקבוצות "לא אוכל"', async () => {
+  const n = await import('../js/engine/nutrition.js');
+  const c = (name, extra = {}) => ({ id: 'c_x', name, custom: true, ...extra });
+  assert.ok(n.inDislikeGroup(c('Chocolate cake'), 'sugar'));
+  assert.ok(n.inDislikeGroup(c('Chocolate cake'), 'wheat'));
+  assert.ok(!n.inDislikeGroup(c('Sugar-free yogurt'), 'sugar'));
+  assert.ok(n.inDislikeGroup(c('Fried chicken'), 'seed_oils'));
+  assert.ok(!n.inDislikeGroup(c('Chicken in olive oil, fried'), 'seed_oils'));
+  assert.ok(!n.inDislikeGroup(c('Rice noodles'), 'wheat'));
+  assert.ok(n.inDislikeGroup(c('Hot dog'), 'processed'));
+  assert.ok(!n.inDislikeGroup(c('Grilled salmon'), 'processed'));
+  assert.ok(!n.allowed(c('Pasta bolognese'), ['wheat']));
+  // מנה ממרכיבים: המרכיב קובע
+  const wheatId = n.RAW_FOOD_RULES && Object.keys((await import('../js/data/food-groups.js')).FOOD_GROUPS).length && (await import('../js/data/food-groups.js')).FOOD_GROUPS.wheat[0];
+  assert.ok(n.inDislikeGroup(c('המנה שלי', { parts: [{ id: wheatId, qty: 1 }] }), 'wheat'));
+  assert.ok(!n.inDislikeGroup(c('המנה שלי', { parts: [{ id: 'cucumber', qty: 1 }] }), 'wheat'));
+});

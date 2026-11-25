@@ -90,6 +90,13 @@ export function deleteRun(state, index) {
   if (!state.runs[index]) return state;
   const [r] = state.runs.splice(index, 1);
   syncRunLevel(state);
+  // ריצה / הליכה מהשבוע הנוכחי שסימנה יום בתוכנית (25.11.2026): היום חוזר להיות "לא בוצע", כמו במחיקת אימון —
+  // אלא אם נשאר אימון אחר מהשבוע הזה על אותו יום. אימון חופשי ואימון שנשמר חלקית לא סימנו יום, ולכן לא נוגעים.
+  const wk = state.plan?.weekStart || '', inWk = (x) => x.day === r.day && !x.partial && dayKey(x.date) >= wk;
+  const marked = r.planDay || ['run', 'walk', 'med'].includes(state.profile?.track);   // רק במסלולי ריצה / הליכה, או כתחום נוסף, ריצה מסמנת יום
+  if (marked && r.day != null && state.plan && r.type !== 'free' && !r.partial && dayKey(r.date) >= wk && !state.runs.some((x) => x.type !== 'free' && inWk(x)) && !(state.sessions || []).some(inWk)) {
+    state.plan.completedDays = (state.plan.completedDays || []).filter((d) => d !== r.day);
+  }
   // הנקודות שהריצה נתנה (25.11.2026): מה שנשמר עליה (xp — כולל שיא במבדק); ברשומה ישנה בלי השדה — 90, כמו קודם
   state.xp = Math.max(0, (state.xp || 0) - (r.xp ?? RUN_XP));
   return state;

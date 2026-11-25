@@ -22,6 +22,16 @@ export const MJ_STAGES = [
 export const MJ_WEEKS = [4, 8, 12];
 export const MJ_LEVELS = { 1: 'Just starting', 2: 'Walking regularly', 3: 'Good walking fitness' };
 export const MJ_TIMES = { morning: 'Morning', day: 'During the day', evening: 'Evening' };
+// "מתי הולכים" מול שעות האימון שביומן (25.11.2026): לפני 11 — בוקר, מ-17 — ערב. קודם הבחירה במסך המסע לא נגעה בשעות, ומי שבחר "בבוקר"
+// נשאר עם תזכורת ב-18:00. שעה שכבר מתאימה לבחירה נשארת כמו שהיא; שעה שלא מתאימה עוברת לשעת ברירת המחדל של אותו חלק ביום.
+export const mjTimeOf = (hhmm) => { const h = Number(String(hhmm || '18:00').split(':')[0]); return h < 11 ? 'morning' : h >= 17 ? 'evening' : 'day'; };
+const MJ_HOUR = { morning: '07:00', day: '13:00', evening: '19:00' };
+export const mjFitTime = (time, hhmm) => (MJ_HOUR[time] && mjTimeOf(hhmm) !== time ? MJ_HOUR[time] : hhmm);
+export function mjFitWorkout(time, w) {
+  if (!w || !MJ_HOUR[time]) return null;
+  const next = { ...w, time: mjFitTime(time, w.time || '18:00'), times: Object.fromEntries(Object.entries(w.times || {}).map(([d, t]) => [d, mjFitTime(time, t)])) };
+  return JSON.stringify(next) === JSON.stringify({ ...w, time: w.time || '18:00', times: w.times || {} }) ? null : next;
+}
 export const MJ_DEFAULT = { path: 'full', weeks: 8, level: 1, time: 'day' };
 
 export const mjOf = (profile) => (profile?.track === 'med' && profile.medJ && MJ_PATHS[profile.medJ.path] ? { ...MJ_DEFAULT, ...profile.medJ } : null);

@@ -169,9 +169,20 @@ const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_sch
 const SEED_SRC_RX = /שמן (סויה|קנולה|חמניות|תירס)|מרגרינה|מיונז|מטוג|טיגון|בשמן/, SEED_SRC_KEEP = /שמן זית|ללא שמן|ללא תוספת שמן|בלי שמן/;
 const seedOilSrc = (food) => (food.src || []).some((x) => SEED_SRC_RX.test(x.name) && !SEED_SRC_KEEP.test(x.name));
 // הכללים הגולמיים (לפי שם המאכל ותיאור המקור בעברית). משמשים את tools/food_groups.mjs, ומאכלים שאינם במאגר (מזון שהמתאמן יצר).
+// מזון שהמתאמן יצר (25.11.2026): שם שהוקלד באנגלית נבדק גם בתבנית אנגלית (קודם רק עברית, ו-"Chocolate cake" עבר את "בלי סוכר"),
+// ומנה שנבנתה ממרכיבים שייכת לכל קבוצה שאחד המרכיבים שלה שייך אליה. על מאכלי המאגר זה לא משפיע: הם נענים מהטבלה.
+const GROUP_EN = {
+  wheat: /\b(wheat|bread|pita|bagel|baguette|toast|pasta|spaghetti|macaroni|lasagna|noodles?|couscous|bulgur|pizza|crackers?|pretzels?|croissant|cakes?|cookies?|biscuits?|wafers?|tortilla|wrap|buns?|sandwich|burger|flour|semolina|seitan|schnitzel|nuggets|burekas|challah|pastry|pastries|pancakes?|waffles?|muffins?|donuts?|doughnuts?|cereal|breadcrumbs|croutons)\b/i,
+  processed: /\b(sausages?|hot ?dogs?|salami|pastrami|bacon|ham|nuggets|chips|crisps|snacks?|instant|canned|frozen|processed|ready[- ]made|fast food|ketchup|mayo|mayonnaise|margarine|soda|cola|soft drink|energy drink|candy|candies|chocolate|wafers?|cookies?|ice ?cream|cereal|protein (bar|powder|shake)|pizza|burekas)\b/i,
+  sugar: /\b(sugar|chocolate|candy|candies|sweets|jam|honey|syrup|cakes?|cookies?|biscuits?|wafers?|ice ?cream|soda|cola|soft drink|energy drink|juice|dessert|donuts?|doughnuts?|muffins?|brownies?|pudding|granola|cereal|lemonade|ketchup|nutella|halva|halvah)\b/i,
+  seed_oils: /\b(canola|sunflower oil|soy(bean)? oil|corn oil|vegetable oil|margarine|mayo|mayonnaise|fried|fries|chips|crisps|schnitzel|nuggets|tempura|falafel|donuts?|doughnuts?|burekas)\b/i,
+};
+const GROUP_EN_KEEP = { wheat: /\b(rice|corn|buckwheat|quinoa)\b|gluten[- ]free/i, processed: /home[- ]?made/i, sugar: /sugar[- ]free|no sugar|without sugar|unsweetened|\bdiet\b|\bzero\b/i, seed_oils: /olive oil|air[- ]?fr|\bbaked\b|no oil|without oil/i };
 function rawInGroup(food, g) {
   const d = DISLIKE_GROUPS[g]; if (!d || !food) return false;
   if (GROUP_OK[g].includes(food.id)) return false;
+  if ((food.parts || []).some((x) => FOOD[x.id] && GROUP_IDS[g]?.has(x.id))) return true;
+  if (GROUP_EN[g].test(food.name || '') && !GROUP_EN_KEEP[g].test(food.name || '')) return true;
   if (d.ids.includes(food.id) || (food.tags || []).some((t) => d.tags.includes(t))) return true;
   if (g === 'seed_oils' && seedOilSrc(food)) return true;
   return d.re.test(food.name) && !GROUP_KEEP[g].test(food.name);
@@ -225,14 +236,15 @@ const PLANT_ANYWHERE = new Set(['pea_protein', 'soy_protein', 'soy_milk', 'roast
 const GLUTEN_RX = /קרואסון|עוגת|עוגה|עוגי|בבקה|גביניה|וופל|בראוניז|בייגל|אוראו|לוטוס|קמיש|קרקר|לחמית|כיף כף|טוויקס|קינדר|טורטית|טאבולה|וויטביקס|סולת|שניצל|קוסקוס|נאגטס|קובה|בורקס|פיצה|פסטה|לחם|פיתה|לחמני|חלה|מאפה|מאפינ|רוגלך|סופגני|מלוואח|ג.חנון|טורטיה|לאפה|פתיתים|אטריות|נודלס|ניוקי|קרוטונים|שקדי מרק|פנקייק|בלינצ|קרפ|שעורה|גריסים|בירה|כוסמין|סובין|ברנפלקס|דגני|כריות עם|קורנפלקס|גרנולה|מצופות|קבוקים|בבלילה|סיגרים/;
 const GLUTEN_FREE_RX = /אטריות אורז|פסטה ללא גלוטן|לחם ללא גלוטן|ללא גלוטן|מקופלת/;
 let glutenIds = null;
-const rawGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && (rawInGroup(food, 'wheat') || GLUTEN_RX.test(food.name || ''));
+const GLUTEN_EN = /\b(barley|rye|spelt|malt|beer|oats?|oatmeal|granola|bran)\b/i;   // 25.11.2026: למזון אישי ששמו באנגלית
+const rawGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && !/gluten[- ]free/i.test(food.name || '') && (rawInGroup(food, 'wheat') || GLUTEN_RX.test(food.name || '') || GLUTEN_EN.test(food.name || '') || (food.parts || []).some((x) => FOOD[x.id] && GROUP_IDS.gluten?.has(x.id)));
 const hasGluten = byTable('gluten', rawGluten);
 const glutenExtra = () => (glutenIds ||= new Set(FOODS.filter(hasGluten).map((x) => x.id)));
 // שומשום (25.11.2026): התגיות (טחינה / חומוס) והמזהה של חלבה לא תפסו מאכל שהשומשום נזכר רק בשמו או בתיאור המקור שלו —
 // "לחמנייה" היא במאגר "לחמניה להמבורגר, עם שומשום", והיא הוגשה בתפריט של מי שסימן אלרגיה לשומשום ולא סומנה בחיפוש.
-const SESAME_RX = /שומשום|sesame/i;   // גם באנגלית: למזון שהמתאמן יצר והקליד את שמו באנגלית (מאכלי המאגר נענים מהטבלה)
+const SESAME_RX = /שומשום|sesame|tahini|halva|hummus/i;   // גם באנגלית: למזון שהמתאמן יצר והקליד את שמו באנגלית (מאכלי המאגר נענים מהטבלה)
 let sesameIds = null;
-const rawSesame = (food) => !!food && (SESAME_RX.test(food.name || '') || (food.src || []).some((x) => SESAME_RX.test(x.name)));
+const rawSesame = (food) => !!food && (SESAME_RX.test(food.name || '') || (food.src || []).some((x) => SESAME_RX.test(x.name)) || (food.parts || []).some((x) => FOOD[x.id] && GROUP_IDS.sesame?.has(x.id)));
 const hasSesame = byTable('sesame', rawSesame);
 // הכללים הגולמיים לפי שם הקבוצה — מהם נבנית הטבלה (tools/food_groups.mjs), והבדיקה משווה אותה אליהם (tests/qa-foodgroups.test.js)
 export const RAW_FOOD_RULES = { ...Object.fromEntries(Object.keys(DISLIKE_GROUPS).map((g) => [g, (f) => rawInGroup(f, g)])), gluten: rawGluten, sesame: rawSesame };

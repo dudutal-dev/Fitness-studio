@@ -76,3 +76,12 @@ test('מדיטציות הבוקר והלילה של השבוע: בנוסף לה�
   assert.deepEqual([...mjStillsDone(sessions, '2026-11-22')], ['wake']);
   assert.equal(mjStats([], '2026-11-01T00:00:00', sessions).stills, 2);
 });
+
+test('"מתי הולכים" מתאים את שעות האימון רק כשהן לא מתאימות לבחירה', async () => {
+  const { mjFitWorkout, mjTimeOf } = await import('../js/engine/med-journey.js');
+  assert.equal(mjTimeOf('06:30'), 'morning'); assert.equal(mjTimeOf('12:00'), 'day'); assert.equal(mjTimeOf('17:00'), 'evening');
+  assert.equal(mjFitWorkout('evening', { on: true, days: [0, 2], time: '18:30' }), null);
+  const w = mjFitWorkout('morning', { on: true, days: [0, 2], time: '18:00', times: { 0: '06:15', 2: '20:00' } });
+  assert.equal(w.time, '07:00'); assert.deepEqual(w.times, { 0: '06:15', 2: '07:00' }); assert.deepEqual(w.days, [0, 2]);
+  assert.equal(mjFitWorkout('morning', undefined), null);
+});
