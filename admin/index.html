@@ -288,7 +288,9 @@ const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\
 try { const k = JSON.parse(sessionStorage.getItem('fitlicsess') || 'null'); sessionStorage.removeItem('fitlicsess'); if (k && k.s && Date.now() - k.t < 25 * 60e3) { sess = k.s; sessAt = k.t; } } catch {}   // כניסה שעברה טעינה מחדש של עדכון גרסה
 const canFace = !!(window.PublicKeyCredential && navigator.credentials), faceOn = () => mem.get('fitlicwa') === '1';
 const say = t => { const m = $('#msg'); m.textContent = t; m.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => m.hidden = true, 3200); };
-const call = async (op, o = {}) => { const r = await fetch(API, { method: 'POST', body: JSON.stringify({ pw, sess, op, ...o }) }); return r.json(); };
+// why: 'busy' — השרת לא הצליח לשמור (בדרך כלל: מכסת הכתיבות היומית שלו נגמרה). ההודעה מוצגת אחרי ההודעה הכללית של הפעולה, כדי שתישאר
+const BUSY = 'השרת לא שומר כרגע. מתחדש ב-02:00 (03:00 בקיץ)';
+const call = async (op, o = {}) => { const r = await fetch(API, { method: 'POST', body: JSON.stringify({ pw, sess, op, ...o }) }); const j = await r.json(); if (j && j.why === 'busy') setTimeout(() => say(BUSY), 80); return j; };
 const ic = d => `<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const I = { share: ic('<path d="M12 15V4M8 8l4-4 4 4M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>'), copy: ic('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>'), more: ic('<circle cx="5" cy="12" r="1.300"/><circle cx="12" cy="12" r="1.300"/><circle cx="19" cy="12" r="1.300"/>'),
   chev: '<svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>', clock: ic('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'), edit: ic('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>'), phone: ic('<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>'),
@@ -582,7 +584,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261125.213818';
+const ADMIN_V = '20261125.214311';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה

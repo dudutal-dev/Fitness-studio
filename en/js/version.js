@@ -1,2 +1,2 @@
 // נוצר ע״י tools/release.mjs
-export const APP_VERSION = '20261125.213818';
+export const APP_VERSION = '20261125.214311';

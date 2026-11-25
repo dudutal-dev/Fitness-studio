@@ -39,9 +39,13 @@ async function pwHash(pw, salt) {
   const km = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveBits']);
   return b64u(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: te.encode(salt), iterations: 60000, hash: 'SHA-256' }, km, 256));
 }
+export const SESS_TTL = 2400;
 export async function admin(env, pw, sess) {   // סיסמה, או כניסה שאושרה בזיהוי פנים (מפתח גישה) בחצי השעה האחרונה
   // הכניסה תקפה לחצי שעה מהפעולה האחרונה (כל פעולת ניהול מאריכה אותה), ולא לחצי שעה מרגע הזיהוי
-  if (typeof sess === 'string' && /^[A-Za-z0-9_-]{30,60}$/.test(sess) && await env.SUBS.get('lic:sess:' + sess)) { await env.SUBS.put('lic:sess:' + sess, '1', { expirationTtl: 1800 }); return true; }
+  // חיסכון בכתיבות (25.11.2026): האישור נכתב מחדש רק כשעברו עשר דקות מהכתיבה הקודמת, ולא בכל פעולת ניהול — לאחסון יש מכסה של 1,000 כתיבות ביום,
+  // וב-25.11 היא נגמרה. האישור נשמר 40 דקות, כך שהוא תקף לפחות חצי שעה מהפעולה האחרונה. כתיבה שנכשלת לא מפילה את הפעולה.
+  if (typeof sess === 'string' && /^[A-Za-z0-9_-]{30,60}$/.test(sess)) { const at = await env.SUBS.get('lic:sess:' + sess);
+    if (at) { if (Date.now() - (Number(at) || 0) > 600e3) { try { await env.SUBS.put('lic:sess:' + sess, String(Date.now()), { expirationTtl: SESS_TTL }); } catch { /* המכסה היומית נגמרה */ } } return true; } }
   const a = await env.SUBS.get('lic:admin', 'json');
   return !!a && typeof pw === 'string' && pw.length >= 6 && (await pwHash(pw, a.salt)) === a.hash;
 }
@@ -125,7 +129,8 @@ export async function lic(req, env, url, json, now = Date.now()) {
     if (p.exp < now) return json({ ok: false, why: 'expired' });
     const me = (p.devs || []).find((x) => x.dev === b.dev);
     if (!me) return json({ ok: false, why: 'gone' });
-    if (now - (me.seen || 0) > 25 * 60e3) { touch(p, me, now); await putPass(env, p); }   // פתיחה חדשה: לא יותר מפעם ב-25 דקות
+    // פתיחה חדשה: לא יותר מפעם ב-25 דקות. רישום הפתיחה שנכשל (המכסה היומית של האחסון נגמרה) לא מכשיל את הבדיקה — הרישיון בתוקף
+    if (now - (me.seen || 0) > 25 * 60e3) { touch(p, me, now); try { await putPass(env, p); } catch { /* בלי רישום הפעם */ } }
     return json(view(p));
   }
   // העברת הקישור מהדפדפן של האייפון לאפליקציה שבמסך הבית (שני אחסונים נפרדים באותו טלפון):
@@ -146,11 +151,11 @@ export async function lic(req, env, url, json, now = Date.now()) {
   if (path === 'use') {        // דיווח שימוש מהאפליקציה: שמות רכיבים ומונים בלבד
     const ev = cleanEv(b.ev); if (!APPS.includes(b.app) || !Object.keys(ev).length) return json({ ok: false, why: 'bad' });
     const p = b.id && okDev(b.dev) ? await getPass(env, String(b.id)) : null;
-    if (p && p.app === b.app && !p.revoked && (p.devs || []).some((x) => x.dev === b.dev)) { p.ev = p.ev || {}; addEv(p.ev, ev, 80); p.evAt = now; await putPass(env, p); }
+    if (p && p.app === b.app && !p.revoked && (p.devs || []).some((x) => x.dev === b.dev)) { p.ev = p.ev || {}; addEv(p.ev, ev, 80); p.evAt = now; try { await putPass(env, p); } catch { /* המכסה היומית נגמרה */ } }
     const sk = 'lic:stats:' + b.app, st = (await env.SUBS.get(sk, 'json')) || { ev: {}, days: {}, since: now }, d = ilDay(now);
     addEv(st.ev, ev, 120); st.days[d] = st.days[d] || {}; addEv(st.days[d], ev, 120);
     const ks = Object.keys(st.days).sort(); for (const k of ks.slice(0, Math.max(0, ks.length - 60))) delete st.days[k];
-    await env.SUBS.put(sk, JSON.stringify(st));
+    try { await env.SUBS.put(sk, JSON.stringify(st)); } catch { return json({ ok: false, why: 'busy' }, 503); }   // הטלפון ישלח שוב בדיווח הבא
     return json({ ok: true });
   }
   if (path === 'admin') {      // מסך הניהול
@@ -165,7 +170,7 @@ export async function lic(req, env, url, json, now = Date.now()) {
     if (b.op === 'wa-finish') {   // כניסה בזיהוי פנים: מחזירה אישור כניסה לחצי שעה
       let good = false; try { good = await waVerify(env, b); } catch { /* חתימה לא תקינה */ }
       if (!good) return json({ ok: false, why: 'auth' }, 401);
-      const sess = b64u(crypto.getRandomValues(new Uint8Array(32))); await env.SUBS.put('lic:sess:' + sess, '1', { expirationTtl: 1800 });
+      const sess = b64u(crypto.getRandomValues(new Uint8Array(32))); await env.SUBS.put('lic:sess:' + sess, String(Date.now()), { expirationTtl: SESS_TTL });
       return json({ ok: true, sess });
     }
     if (!(await admin(env, b.pw, b.sess))) return json({ ok: false, why: 'auth' }, 401);

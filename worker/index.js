@@ -39,6 +39,9 @@ export default {
       if (!rec) return new Response('not found', { status: 404 });
       return new Response(calendarICS(rec), { headers: { 'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'public, max-age=900' } });
     }
+    // מסך הניהול מקבל תשובה מסודרת גם כשהשרת נכשל (25.11.2026: כשמכסת הכתיבות היומית נגמרה הוא קיבל "Load failed" בלי הסבר).
+    // רק /lic/admin: שאר הלקוחות (האפליקציות) מפרשים שגיאת רשת כ"אין תשובה" וממשיכים לפי מה ששמור אצלם — וכך זה נשאר.
+    if (url.pathname === '/lic/admin') { try { return await lic(req, env, url, (data, status) => json(req, data, status)); } catch { return json(req, { ok: false, why: 'busy' }, 503); } }
     if (url.pathname.startsWith('/lic/')) return lic(req, env, url, (data, status) => json(req, data, status));   // קישורי הפעלה
     if (url.pathname.startsWith('/breathe/')) return breathe(req, env, url, (data, status) => json(req, data, status), cors(req));   // המדיה של "נשימה"
     if (req.method !== 'POST') return json(req, { error: 'method' }, 405);

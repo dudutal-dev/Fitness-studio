@@ -47,7 +47,7 @@ export async function breathe(req, env, url, json, corsHeaders, now = Date.now()
   }
   if (path === 'session') {   // כניסת בעל המוצר בסיסמת הניהול: אישור לחצי שעה מהפעולה האחרונה
     if (!(await admin(env, b.pw, null))) return json({ ok: false, why: 'auth' }, 401);
-    const sess = b64u(crypto.getRandomValues(new Uint8Array(32))); await env.SUBS.put('lic:sess:' + sess, '1', { expirationTtl: 1800 });
+    const sess = b64u(crypto.getRandomValues(new Uint8Array(32))); await env.SUBS.put('lic:sess:' + sess, String(Date.now()), { expirationTtl: 2400 });
     return json({ ok: true, sess });
   }
   if (!(await admin(env, null, b.s))) return json({ ok: false, why: 'auth' }, 401);

@@ -194,3 +194,29 @@ test('calendar feed: the schedule is stored and served as a subscribable calenda
   assert.deepEqual(Object.keys(JSON.parse(env.kv.get('cal:' + id))).sort(), ['calName', 'desc', 'mins', 'settings', 'title']);
   assert.equal((await get('00000000-0000-0000-0000-000000000000')).status, 404); assert.equal((await get('nope')).status, 404);
 });
+
+// ───── מכסת הכתיבות של האחסון (25.11.2026) ─────
+test('licences: storage write quota — few writes, and a failed write does not lock anyone out', async () => {
+  const env = makeEnv(); let writes = 0, fail = false; const put0 = env.SUBS.put;
+  env.SUBS.put = async (k, v, o) => { if (fail) throw new Error('KV put() limit exceeded for the day.'); writes++; return put0(k, v, o); };
+  const pw = 'correct horse', admin = (op, o = {}) => post(env, 'admin', { pw, op, ...o });
+  await admin('claim'); const made = await admin('create', { app: 'studio', name: 'x', days: 30 });
+  const dev = 'phonecccc3', act = await post(env, 'activate', { app: 'studio', token: made.token, dev });
+  assert.equal(act.ok, true, JSON.stringify(act));
+  // אישור כניסה (זיהוי פנים): נכתב פעם אחת, ולא בכל פעולת ניהול
+  const sess = 'S'.repeat(40); await env.SUBS.put('lic:sess:' + sess, String(Date.now()), {}); writes = 0;
+  for (let i = 0; i < 5; i++) assert.equal((await post(env, 'admin', { sess, op: 'list' })).ok, true);
+  assert.equal(writes, 0, 'חמש פעולות ניהול בלי כתיבה');
+  env.kv.set('lic:sess:' + sess, String(Date.now() - 11 * 60e3)); await post(env, 'admin', { sess, op: 'list' }); assert.equal(writes, 1, 'אחרי עשר דקות האישור מתחדש');
+  env.kv.set('lic:sess:' + sess, '1'); assert.equal((await post(env, 'admin', { sess, op: 'list' })).ok, true, 'אישור בפורמט הישן עדיין תקף');
+  // המכסה נגמרה: בדיקת רישיון ממשיכה לעבוד, פעולת ניהול שכותבת מחזירה תשובה מסודרת, והאפליקציות לא ננעלות
+  fail = true;
+  const p = JSON.parse(env.kv.get('lic:p:' + made.id)); p.devs[0].seen = Date.now() - 3600e3; env.kv.set('lic:p:' + made.id, JSON.stringify(p));
+  assert.equal((await post(env, 'check', { id: made.id, dev })).ok, true, 'הרישיון בתוקף גם כשרישום הפתיחה נכשל');
+  const r = await worker.fetch(new Request('https://w.dev/lic/admin', { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ pw, op: 'create', app: 'studio', name: 'y', days: 30 }) }), env);
+  assert.equal(r.status, 503); assert.equal(r.headers.get('Access-Control-Allow-Origin'), ORIGIN); assert.deepEqual(await r.json(), { ok: false, why: 'busy' });
+  assert.equal((await post(env, 'admin', { pw, op: 'list' })).ok, true, 'קריאה ממשיכה לעבוד');
+  const u = await worker.fetch(new Request('https://w.dev/lic/use', { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ app: 'studio', ev: { 'screen:home': 1 } }) }), env);
+  assert.equal(u.status, 503, 'דיווח שימוש שלא נשמר — הטלפון ישלח שוב');
+  await assert.rejects(post(env, 'activate', { app: 'studio', token: made.token, dev: 'phonedddd4' }), 'הפעלה חדשה נכשלת כשגיאת שרת, והאפליקציה מפרשת אותה כ"אין תשובה"');
+});
