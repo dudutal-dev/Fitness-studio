@@ -246,8 +246,11 @@ export function mealWindow(state, now = new Date()) {
 const NOT_IN_PLAN = new Set(['bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink',
   'chocolate_spread', 'halva', 'hot_dog', 'salami', 'fries', 'mayo', 'butter', 'jam', 'honey', 'popcorn', 'dairy_pudding', 'chocolate_milk']);
 
+// הזרע (היום בחודש, 1–31) מעורבב לפני השימוש (25.11.2026): זרעים קטנים ועוקבים נתנו הגרלה ראשונה כמעט זהה מיום ליום,
+// וארוחת הבוקר — ההגרלה הראשונה — לא התחלפה חודש שלם; גם ארוחת הביניים ו"אחרי אימון" חזרו ברצפים של ימים.
 function seeded(seed) {
   let s = seed >>> 0 || 1;
+  s = Math.imul(s ^ (s >>> 16), 0x85ebca6b); s = Math.imul(s ^ (s >>> 13), 0xc2b2ae35); s = (s ^ (s >>> 16)) >>> 0 || 1;
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
 }
 
