@@ -579,9 +579,17 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
     let ladderChanges = [];
     const mobilityDone = { warmup: 0, cooldown: 0 };
     items.forEach((it, ii) => {
-      const done = log[ii].sets.filter((x) => x.done);
+      let done = log[ii].sets.filter((x) => x.done);
       if (!done.length) return;
       if (it.role === 'warmup' || it.role === 'cooldown') { mobilityDone[it.role]++; return; }
+      for (const [exId, list] of swappedSets(done, it)) {   // סטים שבוצעו לפני החלפת תרגיל — נרשמים על התרגיל שבו בוצעו
+        const u = list[0].exUnit; setsDone += list.length; list.forEach((x) => (volume += (x.w || 0) * (u === 'sec' ? 0 : x.reps)));
+        if (u !== 'sec') list.forEach((x) => (repsTotal += x.reps || 0));
+        exercises.push({ exId, role: it.role, sets: list.map(cleanSet), target: list[0].exTarget, ...(u === 'sec' ? { unit: 'sec' } : {}) });
+        if (it.role !== 'finisher' && EX[exId].type === 'weight' && isPR(exId, list, st.history[exId])) prs.push(exId);
+      }
+      done = done.filter((x) => !x.ex || x.ex === it.exId).map(cleanSet);
+      if (!done.length) return;
       setsDone += done.length;
       done.forEach((x) => (volume += (x.w || 0) * (it.unit === 'sec' ? 0 : x.reps)));
       exercises.push({ exId: it.exId, role: it.role, sets: done, target: it.reps, ...(it.ladder ? { ladder: it.ladder, planned: it.sets, ...(it.vol ? { vol: true } : {}) } : {}), ...(it.unit === 'sec' ? { unit: 'sec' } : {}) });
@@ -780,6 +788,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       onMount(sh, closeSheet) {
         on(sh, 'click', '[data-sw]', (ev, b) => {
           const id = b.dataset.sw;
+          keepSwapped(log[cur().ii], cur1);
           cur1.exId = id;
           const sg = suggest(id, cur1, get().history[id], profile);
           const L = log[cur().ii];
@@ -805,6 +814,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       onMount(sh, closeSheet) {
         on(sh, 'click', '[data-sw]', (ev, b) => {
           const r = st.list.find((x) => x.id === b.dataset.sw), ex2 = EX[r.id];
+          keepSwapped(log[cur().ii], cur1);
           cur1.exId = r.id; cur1.reps = [r.lo, r.hi];
           if (ex2.hold || ex2.type === 'time') cur1.unit = 'sec'; else delete cur1.unit;
           const sg = suggest(r.id, cur1, get().history[r.id], profile);
@@ -847,6 +857,12 @@ export function infoSheet(exId, coach) {
 }
 
 // ───── התקדמות שבוע / בלוק / רמה ─────
+// החלפת תרגיל באמצע (25.11.2026): הסטים שכבר בוצעו נשארים רשומים על התרגיל שבו בוצעו. קודם הם נשמרו תחת התרגיל החדש —
+// ההיסטוריה, המשקל המומלץ לפעם הבאה והשיא של התרגיל החדש נקבעו לפי משקלים של תרגיל אחר.
+const keepSwapped = (L, it) => L.sets.forEach((x) => { if (x.done && !x.ex) { x.ex = it.exId; x.exTarget = it.reps; if (it.unit) x.exUnit = it.unit; } });
+const swappedSets = (done, it) => { const m = new Map(); for (const x of done) if (x.ex && x.ex !== it.exId) (m.get(x.ex) || m.set(x.ex, []).get(x.ex)).push(x); return m; };
+const cleanSet = ({ ex, exTarget, exUnit, ...x }) => x;
+
 export function maybeAdvanceWeek() {
   const s = get();
   if (!weekClosed(s.plan)) return '';

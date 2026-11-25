@@ -116,7 +116,11 @@ export function trendAdvice(weights = [], profile = {}, now = Date.now()) {
   const mt = pts.reduce((a, x) => a + x.t, 0) / pts.length, mk = pts.reduce((a, x) => a + x.kg, 0) / pts.length;
   const slope = pts.reduce((a, x) => a + (x.t - mt) * (x.kg - mk), 0) / pts.reduce((a, x) => a + (x.t - mt) ** 2, 0); // ק״ג ליום
   const pctWeek = (slope * 7 / mk) * 100;
-  const [lo, hi] = (nutritionGuard(profile).noDeficit && profile.goal === 'cut' ? null : RATE[profile.goal]) || [-0.25, 0.25];
+  const guarded = nutritionGuard(profile).noDeficit;
+  const [lo, hi] = (guarded && profile.goal === 'cut' ? null : RATE[profile.goal]) || [-0.25, 0.25];
+  // מצב רגיש (היריון, הנקה, מצב רפואי, מתחת ל-18, תת־משקל): לא מציעים להוריד קלוריות כשהמשקל עולה (25.11.2026) —
+  // קודם הוצגה ההמלצה "הורד את היעד ב-150", והכפתור שמר הפחתה שחלה אחר כך. ירידה מהירה מדי עדיין מקבלת המלצה להעלות.
+  if (guarded && pctWeek > hi) return null;
   const cur = profile.kcalAdjust || 0;
   let step = 0;
   if (pctWeek < lo) step = 150; else if (pctWeek > hi) step = -150;
@@ -190,9 +194,17 @@ const PLANT_PLAN = new Set(['veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_gro
   'black_beans', 'red_beans', 'lentils_onion', 'ful', 'lupin', 'roasted_chickpeas', 'beans_tomato_canned']);
 // מה שנשמר בלי קירור ובלי מטבח — זמין בתזונה מן הצומח גם בדרכים
 const PLANT_ANYWHERE = new Set(['pea_protein', 'soy_protein', 'soy_milk', 'roasted_chickpeas', 'beans_tomato_canned']);
+// גלוטן במאגר המורחב (25.11.2026): התגיות (לחם / פסטה / שיבולת שועל) והמזהים שלמעלה כיסו את מאכלי התפריט, אבל בחיפוש וביומן
+// עשרות מאכלי חיטה — מאפים, עוגות, עוגיות, שניצלים, קוסקוס, דגני בוקר, בירה — לא סומנו, אף שהמסך מבטיח סימון.
+// מזוהים לפי קבוצת "חיטה" של "לא אוכל" ולפי שם המאכל. עדיף סימון מיותר על סימון חסר; יוצאים מהכלל רק מה שבטוח בלי גלוטן.
+const GLUTEN_RX = /קרואסון|עוגת|עוגה|עוגי|בבקה|גביניה|וופל|בראוניז|בייגל|אוראו|לוטוס|קמיש|קרקר|לחמית|כיף כף|טוויקס|קינדר|טורטית|טאבולה|וויטביקס|סולת|שניצל|קוסקוס|נאגטס|קובה|בורקס|פיצה|פסטה|לחם|פיתה|לחמני|חלה|מאפה|מאפינ|רוגלך|סופגני|מלוואח|ג.חנון|טורטיה|לאפה|פתיתים|אטריות|נודלס|ניוקי|קרוטונים|שקדי מרק|פנקייק|בלינצ|קרפ|שעורה|גריסים|בירה|כוסמין|סובין|ברנפלקס|דגני|כריות עם|קורנפלקס|גרנולה|מצופות|קבוקים|בבלילה|סיגרים/;
+const GLUTEN_FREE_RX = /אטריות אורז|פסטה ללא גלוטן|לחם ללא גלוטן|ללא גלוטן|מקופלת/;
+let glutenIds = null;
+const hasGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && (inDislikeGroup(food, 'wheat') || GLUTEN_RX.test(food.name || ''));
+const glutenExtra = () => (glutenIds ||= new Set(FOODS.filter(hasGluten).map((x) => x.id)));
 export function blockedBy(profile = {}) {
   const tags = new Set(DIET_TAGS[profile.diet] || []), ids = new Set(DIET_IDS[profile.diet] || []);
-  for (const a of profile.allergies || []) { for (const t of ALLERGY_TAGS[a] || []) tags.add(t); for (const id of ALLERGY_IDS[a] || []) ids.add(id); }
+  for (const a of profile.allergies || []) { for (const t of ALLERGY_TAGS[a] || []) tags.add(t); for (const id of ALLERGY_IDS[a] || []) ids.add(id); if (a === 'gluten') for (const id of glutenExtra()) ids.add(id); }
   return { tags, ids };
 }
 export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
@@ -201,7 +213,7 @@ export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
 // אלרגיות שהמאכל נוגע בהן (לפי התגיות והמזהים שבמאגר) — לסימון בחיפוש וביומן
 export function allergyHits(food, profile = {}) {
   const tags = food?.tags || [];
-  return (profile.allergies || []).filter((a) => (ALLERGY_TAGS[a] || []).some((t) => tags.includes(t)) || (ALLERGY_IDS[a] || []).includes(food?.id)).map((a) => ALLERGIES[a]);
+  return (profile.allergies || []).filter((a) => (ALLERGY_TAGS[a] || []).some((t) => tags.includes(t)) || (ALLERGY_IDS[a] || []).includes(food?.id) || (a === 'gluten' && hasGluten(food))).map((a) => ALLERGIES[a]);
 }
 const isMeat = (f) => f.tags.some((t) => MEAT.includes(t));
 const isDairy = (f) => f.tags.some((t) => MILK.includes(t));

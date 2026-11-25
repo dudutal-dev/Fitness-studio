@@ -1,7 +1,7 @@
 // Service Worker: קוד האפליקציה נשמר במטמון לפי גרסה (עובד אופליין). מדיה (קול/וידאו) במטמון קבוע שלא נמחק בעדכון:
 // כשגרסת המדיה משתנה, כל קובץ מוגש מיד מהמטמון ומתרענן ברקע — כך שעדכון לא משאיר את המאמן בלי קול כשאין קליטה.
 // הגרסאות מתעדכנות אוטומטית ע״י tools/release.mjs — כל שינוי כאן גורם לדפדפן להתקין את הגרסה החדשה.
-const VERSION = 'studio-en-20261125.044753';
+const VERSION = 'studio-en-20261125.051831';
 const MEDIA = 'studio-en-media-20261124.231112';
 const MEDIA_CACHE = 'studio-en-media';
 const MEDIA_TAG = 'x-studio-en-media';
@@ -26,7 +26,7 @@ self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
     // מוחקים רק מטמונים ישנים של האפליקציה הזאת (studio-…). באותו דומיין רצות גם אפליקציות אחרות (LOHEM) — לא נוגעים במטמונים שלהן.
-    await Promise.all(keys.filter((k) => k.startsWith('studio-en-') && k !== VERSION && k !== MEDIA_CACHE).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => k.startsWith('studio-en-') && !k.startsWith('studio-en-' + 'en-') && k !== VERSION && k !== MEDIA_CACHE)   /* המטמונים של הגרסה האנגלית (studio-en-…) שייכים ל-worker שלה: קודם הגרסה העברית מחקה אותם בכל עדכון ובכל מעבר שפה (25.11.2026). השם מפוצל כדי שהבנייה לאנגלית לא תהפוך אותו */.map((k) => caches.delete(k)));
     await self.clients.claim();
   })());
 });

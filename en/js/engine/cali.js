@@ -124,9 +124,11 @@ function itemFor(rung, lid, role, { week = 0, level = 2, goal = 'skill', vol = f
   if (vol) sets = 2;
   if (week === DELOAD) sets = Math.max(2, sets - 1);
   // נפח: אותו טווח, כמה חזרות יותר. החזקות ושליליות — לפי היעד של השלב עצמו.
-  const reps = vol && !ex.hold && !ex.neg ? [rung.hi, rung.hi + 6] : [rung.lo, rung.hi];
+  // תרגיל בזמן: החזקות (hold), וגם פלאנק — שמוגדר type: 'time' בלי hold, ועד 25.11.2026 נספר כ-30–60 "חזרות" עם ספירת עלייה וירידה
+  const timed = ex.hold || ex.type === 'time';
+  const reps = vol && !timed && !ex.neg ? [rung.hi, rung.hi + 6] : [rung.lo, rung.hi];
   const it = { exId: rung.id, role: skill ? 'skill' : role, sets, reps, rest: skill ? (ex.straight ? 90 : REST.skill) : REST[role], rpe: week === DELOAD ? 6 : 8, ladder: lid };
-  if (ex.hold) it.unit = 'sec';
+  if (timed) it.unit = 'sec';
   if (vol) it.vol = true;
   return it;
 }

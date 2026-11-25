@@ -132,7 +132,7 @@ export async function voiceCacheStatus() {
   const files = voiceFiles();
   let have = 0;
   try {
-    const cache = await caches.open('studio-media');
+    const cache = await caches.open('studio-en-media');
     const hits = await Promise.all(files.map((f) => cache.match(new URL(f, location.href).href)));
     have = hits.filter(Boolean).length;
   } catch { /* אין מטמון בדפדפן הזה */ }

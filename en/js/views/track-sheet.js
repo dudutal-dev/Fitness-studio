@@ -79,19 +79,24 @@ function askSheet(target, rerender) {
       on(sh, 'click', '[data-ask]', (e, b) => {
         const before = snapshot(), how = b.dataset.ask;
         close();
-        if (how === 'both' && !swap) { setExtra(target, n); toast(`${nameOf(target)} added to the week`); rerender(); }
-        else if (how === 'both') {
+        if (how === 'both' && !swap) { setExtra(target, n); toast(`${nameOf(target)} added to the week`); rerender(); setTimeout(() => summarySheet(before), 350); return; }
+        // המעבר עצמו לא תמיד מיידי (25.11.2026): מדיטציה בתנועה פותחת קודם את "המסע שלי", וקליסתניקס / משולב — מבדק רמה.
+        // לכן ההמשך (תחומים נוספים, ציור מחדש, "התוכנית עודכנה") רץ רק כשהמעבר הושלם. קודם הוא רץ מיד: הפרופיל השתנה לפני האישור,
+        // ביטול השאיר אותו שונה, והסיכום הוצג עם התוכנית הישנה.
+        let switched = false;
+        const whenSwitched = (fn) => () => { if (switched) return; switched = true; fn(); rerender(); setTimeout(() => summarySheet(before), 350); };
+        if (how === 'both') {
           // התחום החדש הוא תוכנית (חדר כושר, ריצה…): הוא נעשה המסלול הראשי, והשיעורים הקודמים נשארים כתוספת
-          switchTrack(target, () => {});
-          set((s) => { const q = s.profile; q.extras = { ...(q.extras || {}) }; delete q.extras[target]; return s; });
-          setExtra(cur, Math.min(n, 3)); rerender();
+          switchTrack(target, whenSwitched(() => {
+            set((s) => { const q = s.profile; q.extras = { ...(q.extras || {}) }; delete q.extras[target]; return s; });
+            setExtra(cur, Math.min(n, 3));
+          }));
         } else {
-          switchTrack(how === 'mix' ? 'mix' : target, () => {});
           // מסלול שהפך לראשי לא נשאר גם כשיעור נוסף
-          set((s) => { const q = s.profile; if (q.extras) { delete q.extras[q.track]; } s.plan.completedDays = []; return regenerateWeek(s); });
-          rerender();
+          switchTrack(how === 'mix' ? 'mix' : target, whenSwitched(() => {
+            set((s) => { const q = s.profile; if (q.extras) { delete q.extras[q.track]; } s.plan.completedDays = []; return regenerateWeek(s); });
+          }));
         }
-        setTimeout(() => summarySheet(before), 350);
       });
     },
   });

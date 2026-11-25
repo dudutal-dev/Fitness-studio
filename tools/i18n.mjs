@@ -89,7 +89,7 @@ const adapt = (file, code) => {
   // אותה אפליקציה בשתי שפות: אותו מפתח אחסון ואותו רישיון. רק קובץ השפה מתהפך
   if (file === 'js/lang.js') code = code.replace("export const LANG = 'he';", "export const LANG = 'en';").replace("{ code: 'en', label: 'English' }", "{ code: 'he', label: 'עברית' }");
   // קולות באנגלית: תיקייה משלהם (assets/voice-en), באותם שמות קבצים
-  if (file === 'js/coach/voice.js') code = code.replace(/assets\/voice\//g, 'assets/voice-en/');
+  if (file === 'js/coach/voice.js') code = code.replace(/assets\/voice\//g, 'assets/voice-en/').replace(/'studio-media'/g, "'studio-en-media'");   // גם ספירת הקבצים השמורים בהגדרות מסתכלת במטמון של הגרסה האנגלית
   if (file === 'sw.js') code = code.replace(/'studio-/g, "'studio-en-").replace(/x-studio-media/g, 'x-studio-en-media').replace(/lang: 'he', dir: 'rtl'/g, "lang: 'en', dir: 'ltr'");
   return code;
 };
