@@ -361,6 +361,7 @@ let regPre = null;
 async function regPrep() { try { const st = await call('wa-reg-start'); regPre = st.ok ? { st, at: Date.now() } : null; } catch { regPre = null; } }
 function faceWhy(e, ms) {
   const n = (e && e.name) || '', code = n ? ` (${n})` : '';
+  if (n === 'TypeError') return ['השרת לא ענה', 'הפעולה הזאת נשמרת בשרת, והשרת לא ענה. אם שאר המסך עובד, כנראה שמכסת הכתיבות היומית של השרת נגמרה; היא מתחדשת בחצות לפי שעון UTC (02:00 בחורף, 03:00 בקיץ). לנסות שוב אחר כך. הכניסה עם סיסמה ממשיכה לעבוד.'];
   if (n === 'NotAllowedError' && ms < 2500) return ['הטלפון חסם את ההפעלה', 'חלון הזיהוי לא נפתח. בדרך כלל זה אומר ששמירת מפתחות גישה כבויה בטלפון. באייפון: הגדרות ← כללי ← מילוי אוטומטי וסיסמאות (בגרסה ישנה: הגדרות ← סיסמאות ← אפשרויות סיסמה) ← להפעיל "מילוי אוטומטי של סיסמאות ומפתחות גישה" ולסמן את "סיסמאות" (צרור המפתחות של iCloud). צריך גם קוד נעילה וזיהוי פנים פעילים בטלפון. אחר כך לנסות שוב.' + code];
   if (n === 'NotAllowedError') return ['ההפעלה לא הושלמה', 'חלון הזיהוי נסגר בלי אישור, או שעבר הזמן. אפשר לנסות שוב.' + code];
   if (n === 'InvalidStateError') return ['כבר קיים מפתח בטלפון הזה', 'בטלפון כבר שמור מפתח גישה לניהול. למחוק אותו בסיסמאות של הטלפון (dudutal-dev.github.io) ולנסות שוב.' + code];
@@ -382,11 +383,10 @@ async function faceDisable() { if (!await ask('לכבות זיהוי פנים?',
 // אימות בזיהוי פנים. מחזיר true כשהשרת אישר (ואז sess תקף לחצי שעה מהפעולה האחרונה)
 // 25.11.2026 — "זיהוי הפנים נחסם": האייפון מאשר זיהוי פנים רק מיד אחרי לחיצה. קודם, בין הלחיצה לזיהוי חיכינו לתשובה מהשרת (האתגר),
 // והזיהוי הופעל גם לבד — בחזרה לאפליקציה אחרי חצי שעה, בלי שום לחיצה — ואז הטלפון חסם אותו. עכשיו האתגר מוכן מראש כשמסך הכניסה מוצג
-// (waPrep; תקף 3 דקות בשרת, מתחדש כל שתי דקות), הזיהוי מתחיל מיד בלחיצה, ובלי לחיצה לא מנסים לזהות אלא מציגים את הכפתור.
+// (waPrep; תקף 3 דקות בשרת, ומתחדש בחזרה לאפליקציה — לא בטיימר, כי כל אתגר הוא כתיבה לאחסון של השרת, שהמכסה היומית שלו מוגבלת), הזיהוי מתחיל מיד בלחיצה, ובלי לחיצה לא מנסים לזהות אלא מציגים את הכפתור.
 let waPre = null;
 async function waPrep() { try { const st = await call('wa-start'); waPre = st.ok ? { st, at: Date.now() } : null; } catch { waPre = null; } }
 const faceShown = () => !$('#auth').hidden && !$('#faceGo').hidden;
-setInterval(() => { if (faceShown() && !document.hidden) waPrep(); }, 120e3);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && faceShown()) waPrep(); });
 const tapped = () => !navigator.userActivation || navigator.userActivation.isActive;   // יש לחיצה טרייה (בדפדפן ישן שלא מדווח — מנסים כמו קודם)
 async function faceAuth() {
@@ -394,7 +394,7 @@ async function faceAuth() {
     const a = await navigator.credentials.get({ publicKey: { challenge: unb64u(st.challenge), rpId: location.hostname, allowCredentials: st.ids.map(id => ({ type: 'public-key', id: unb64u(id) })), userVerification: 'required', timeout: 60000 } });
     const r = await call('wa-finish', { id: a.id, authData: b64u(a.response.authenticatorData), clientData: b64u(a.response.clientDataJSON), sig: b64u(a.response.signature) });
     if (!r.ok) { say('הזיהוי נכשל. לנסות שוב'); if (faceShown()) waPrep(); return false; } sess = r.sess; sessAt = Date.now(); return true;
-  } catch (e) { say(e && e.name === 'NotAllowedError' ? 'הזיהוי בוטל או נחסם. ללחוץ שוב על הכפתור' : e && e.name === 'SecurityError' ? 'זיהוי פנים לא זמין בכתובת הזאת. להיכנס עם סיסמה' : 'הזיהוי לא הצליח. לנסות שוב, או להיכנס עם סיסמה'); if (faceShown()) waPrep(); return false; } }
+  } catch (e) { say(e && e.name === 'TypeError' ? 'השרת לא ענה. לנסות שוב אחר כך, או להיכנס עם סיסמה' : e && e.name === 'NotAllowedError' ? 'הזיהוי בוטל או נחסם. ללחוץ שוב על הכפתור' : e && e.name === 'SecurityError' ? 'זיהוי פנים לא זמין בכתובת הזאת. להיכנס עם סיסמה' : 'הזיהוי לא הצליח. לנסות שוב, או להיכנס עם סיסמה'); if (faceShown()) waPrep(); return false; } }
 // פעולת ניהול. הכניסה בזיהוי פנים תקפה לחצי שעה מהפעולה האחרונה: כשהיא עומדת לפוג או כבר פגה — מאמתים שוב וחוזרים על הפעולה,
 // במקום להיכשל בשקט.
 async function act(op, o = {}) {
@@ -582,7 +582,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261125.213305';
+const ADMIN_V = '20261125.213818';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה

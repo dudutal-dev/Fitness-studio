@@ -19,9 +19,15 @@ export function track(name, n = 1) {
   timer ||= setTimeout(flush, 60000);
 }
 
+// לא יותר מדיווח אחד בשעה מכל טלפון (25.11.2026): כל דיווח הוא שתי כתיבות לאחסון של השרת, ולשרת יש מכסה של 1,000 כתיבות ביום לכל האפליקציות.
+// ב-25.11 המכסה נגמרה (1,263 כתיבות), ומאותו רגע כל פעולה שכותבת נכשלה עד חצות UTC — הפעלת קישור חדש, יצירת קישור וזיהוי הפנים בניהול.
+// המונים ממשיכים להיצבר בטלפון ונשלחים יחד בדיווח הבא, כך ששום דבר לא הולך לאיבוד.
+const GAP = 60 * 60000, AT = `${APP_ID}.useAt`;
 export function flush() {
   clearTimeout(timer); timer = null;
   const ev = buf; if (!Object.keys(ev).length || !enabled() || navigator.onLine === false) return;
+  if (Date.now() - (Number(read(AT)) || 0) < GAP) return;
+  try { localStorage.setItem(AT, String(Date.now())); } catch { /* מצב פרטי */ }
   buf = {}; save();
   const lic = read(`${APP_ID}.lic`), dev = read(`${APP_ID}.dev`);
   // keepalive: הבקשה מסתיימת גם אם האפליקציה נסגרת באמצע. אם נכשלה — המונים חוזרים לתור ויישלחו בפעם הבאה
