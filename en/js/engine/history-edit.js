@@ -2,9 +2,14 @@
 // ימי התוכנית שסומנו כבוצעו, נקודות XP ורמת הריצה.
 import { EX } from '../data/exercises.js';
 import { runLevelFrom3k } from './running.js';
-import { dayKey } from './stats.js';
+import { dayKey, XP } from './stats.js';
 
-const WORKOUT_XP = 120, RUN_XP = 90;
+const RUN_XP = 90;
+// שורה שבוצעה לפי זמן (25.11.2026): לפי היחידה שנשמרה באימון (unit: 'sec' — גם תרגיל חזרות שבוצע בשניות, כמו ב-HIIT); ברשומות ישנות בלי יחידה — לפי סוג התרגיל
+export const isTimed = (e) => e.unit === 'sec' || ['time', 'cardio'].includes(EX[e.exId]?.type);
+// כמה XP נתנה הרשומה (25.11.2026): מה שנשמר עליה (xp); ברשומה ישנה בלי השדה — לפי מה שידוע ממנה:
+// מדיטציית בוקר / לילה נתנה 60% כשהושלמה (האורך אז בדיוק 15 / 20 / 30 דקות) ו-30% כשנעצרה; אימון — 120 ועוד 50 לכל שיא שנרשם בו
+export const sessionXP = (s) => s.xp ?? (s.still ? Math.round(XP.workout * ([900, 1200, 1800].includes(s.durationSec) ? 0.6 : 0.3)) : XP.workout + (s.prs?.length || 0) * XP.pr);
 
 // רשומת היסטוריה שייכת לאימון: לפי מזהה, או (לאימונים ישנים בלי מזהה) לפי זמן קרוב
 export function belongs(entry, session) {
@@ -15,7 +20,7 @@ export function belongs(entry, session) {
 function recompute(session) {
   let volume = 0, setsDone = 0;
   for (const ex of session.exercises || []) {
-    const timed = ['time', 'cardio'].includes(EX[ex.exId]?.type);
+    const timed = isTimed(ex);
     for (const st of ex.sets) { setsDone++; if (!timed) volume += (st.w || 0) * (st.reps || 0); }
   }
   session.volume = Math.round(volume);
@@ -42,7 +47,8 @@ export function updateSession(state, index, edited) {
   next.exercises = (next.exercises || []).map((e) => ({ ...e, sets: e.sets.filter((st) => st.reps > 0).map((st) => ({ ...st, done: true })) })).filter((e) => e.sets.length);
   recompute(next);
   for (const e of next.exercises) {
-    if (e.role === 'finisher' || e.role === 'warmup' || e.role === 'cooldown') continue;
+    // אותן רשומות שהאימון החי כותב (views/workout.js): בלי סיומת, מוביליטי / שיעורים ו-HIIT — אחרת שמירה בעורך מוסיפה אותם להיסטוריית הכוח
+    if (e.role === 'finisher' || e.role === 'mob' || e.role === 'hiit' || e.role === 'warmup' || e.role === 'cooldown') continue;
     (state.history[e.exId] ||= []).push({ date: next.date, sid: id, sets: e.sets, target: e.target });
     state.history[e.exId].sort((a, b) => a.date.localeCompare(b.date));
   }
@@ -60,7 +66,7 @@ export function deleteSession(state, index) {
   if (s.day != null && state.plan && !s.partial && dayKey(s.date) >= (state.plan.weekStart || '')) {
     state.plan.completedDays = state.plan.completedDays.filter((d) => d !== s.day);
   }
-  state.xp = Math.max(0, (state.xp || 0) - WORKOUT_XP);
+  state.xp = Math.max(0, (state.xp || 0) - sessionXP(s));
   return state;
 }
 

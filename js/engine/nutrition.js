@@ -141,7 +141,8 @@ export const DISLIKE_GROUPS = {
   processed: { tags: [],
     ids: ['hot_dog', 'loof', 'jerky', 'turkey_slices', 'pastrami_beef', 'salami', 'chicken_wings', 'tuna_salad', 'egg_salad', 'dairy_pudding', 'chocolate_milk', 'protein_shake', 'whey_milk', 'cornflakes', 'mayo',
       'chocolate_spread', 'bamba', 'bissli', 'chips', 'chocolate', 'wafers', 'cookies', 'granola_bar', 'ice_cream', 'energy_drink', 'soft_drink', 'iso_drink', 'halva', 'jam',
-      'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'veg_hot_dogs', 'soy_protein', 'pea_protein', 'soy_flakes'],
+      'veg_schnitzel', 'veg_burger', 'veg_kebab', 'veg_ground', 'veg_hot_dogs', 'soy_protein', 'pea_protein', 'soy_flakes',
+      'chicken_meatballs', 'baked_fries'],   // 25.11.2026: קציצות עוף תעשייתיות לחימום וצ׳יפס קפוא — לפי תיאור המקור, לא לפי השם
     re: /נקניק|קבנוס|פסטרמה|סלמי|מעושן|משומר|שימורים|קפוא|תעשייתי|נאגטס|מן הצומח|שניצל תירס|חטיף|ביסלי|במבה|תפוצ׳יפס|דוריטוס|צ׳יטוס|אפרופו|ופל|וופל|עוגיות|עוגייה|קרקר|בייגלה|שקדי מרק|שוקולד|ממרח|מרגרינה|מיונז|קטשופ|גלידה|ארטיק|שלגון|קרטיב|מעדן|מילקי|(^|\s)סקי |קרם בוואריה|אייס קפה|שוקו|משקה קל|משקה אנרגיה|איזוטוני|קולה|מוגז|נקטר(?!ינ)|תרכיז|מנה חמה|אינסטנט|אבקת|קורנפלקס|צ׳יריוס|כריות עם|פיטנס|ברנפלקס|וויטביקס|מותכת|טוסטי|אצבעות מוצרלה|קרואסון|רוגלך|מאפינס|סוכרי|מסטיק|מרשמלו|טופי|קרמבו|פיצה|בורקס|מלאווח|ג׳חנון|יוגורט פירות|יוגורט מולר|יוגורט לשתייה|חלבה|ריבה/ },
   seed_oils: { tags: [],
     ids: ['fries', 'chips', 'tuna_oil', 'tuna_salad', 'egg_salad', 'tofu', 'schnitzel', 'chicken_wings', 'falafel', 'mayo', 'bamba', 'bissli', 'wafers', 'cookies', 'veg_schnitzel',
@@ -153,11 +154,18 @@ export const DISLIKE_GROUPS = {
 };
 // מאכלים שהתבנית תופסת בטעות
 const GROUP_KEEP = { wheat: /^אורז|תירס|כוסמת|קינואה/, processed: /בלי מיונז|שעועית/, sugar: /בלי סוכר|ללא סוכר|דיאט/, seed_oils: /שמן זית|ללא שמן|בלי מיונז|אפוי|באוויר/ };
-const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_schnitzel', 'oatmeal_milk', 'oatmeal_water', 'oats', 'cornflakes', 'cornflakes_dry'], processed: ['tuna_can', 'tuna_oil', 'corn_canned', 'beans_tomato_canned', 'sardines_oil', 'mackerel_can'], sugar: [], seed_oils: ['sunflower_seeds', 'egg_omelette', 'israeli_salad', 'baked_fries'] };
+const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_schnitzel', 'oatmeal_milk', 'oatmeal_water', 'oats', 'cornflakes', 'cornflakes_dry'], processed: ['tuna_can', 'tuna_oil', 'corn_canned', 'beans_tomato_canned', 'sardines_oil', 'mackerel_can'], sugar: [], seed_oils: ['sunflower_seeds', 'egg_omelette', 'israeli_salad'] };   // בלי baked_fries (25.11.2026): המוצר שבמאגר הוא צ׳יפס קפוא שטוגן לפני האפייה ("מטוגנים, קפואים, אפויים בתנור")
+// שמני זרעים גם לפי תיאור המקור (25.11.2026): השם "לחם מחיטה מלאה" או "קוסקוס" לא מגלה שהמוצר שבמאגר הוכן עם שמן סויה או טוגן בשמן קנולה,
+// והמאכלים האלה נשארו בתפריט של מי שביקש בלי שמני זרעים. כל רכיב מקור נבדק בנפרד: שמן סויה / קנולה / חמניות / תירס, מרגרינה, מיונז,
+// או טיגון בלי ששמן זית נזכר. סויה שאינה שמן (פולי סויה, משקה סויה, רוטב סויה) לא נתפסת, ו"ללא שמן" / "בשמן זית" נשארים.
+// התבניות כוללות גם את הנוסח האנגלי של תיאורי המקור: במהדורה האנגלית של MOVA התיאורים מתורגמים, ותבנית בעברית בלבד לא תופסת שם דבר.
+const SEED_SRC_RX = /שמן (סויה|קנולה|חמניות|תירס)|מרגרינה|מיונז|מטוג|טיגון|בשמן|(soy(bean)?|canola|sunflower|corn) oil|margarine|mayonnaise|(^|[^-\w])fried|(pan|deep)-fried|\bin oil|oil-popped/i, SEED_SRC_KEEP = /שמן זית|ללא שמן|ללא תוספת שמן|בלי שמן|olive oil|without (added )?oil|no (added )?oil/i;
+const seedOilSrc = (food) => (food.src || []).some((x) => SEED_SRC_RX.test(x.name) && !SEED_SRC_KEEP.test(x.name));
 export function inDislikeGroup(food, g) {
   const d = DISLIKE_GROUPS[g]; if (!d || !food) return false;
   if (GROUP_OK[g].includes(food.id)) return false;
   if (d.ids.includes(food.id) || (food.tags || []).some((t) => d.tags.includes(t))) return true;
+  if (g === 'seed_oils' && seedOilSrc(food)) return true;
   return d.re.test(food.name) && !GROUP_KEEP[g].test(food.name);
 }
 export function allowed(food, dislikes = [], dislikedFoods = []) {
@@ -202,9 +210,15 @@ const GLUTEN_FREE_RX = /אטריות אורז|פסטה ללא גלוטן|לחם 
 let glutenIds = null;
 const hasGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && (inDislikeGroup(food, 'wheat') || GLUTEN_RX.test(food.name || ''));
 const glutenExtra = () => (glutenIds ||= new Set(FOODS.filter(hasGluten).map((x) => x.id)));
+// שומשום (25.11.2026): התגיות (טחינה / חומוס) והמזהה של חלבה לא תפסו מאכל שהשומשום נזכר רק בשמו או בתיאור המקור שלו —
+// "לחמנייה" היא במאגר "לחמניה להמבורגר, עם שומשום", והיא הוגשה בתפריט של מי שסימן אלרגיה לשומשום ולא סומנה בחיפוש.
+const SESAME_RX = /שומשום|sesame/i;   // גם בנוסח האנגלי של השם והמקור (המהדורה האנגלית של MOVA)
+let sesameIds = null;
+const hasSesame = (food) => !!food && (SESAME_RX.test(food.name || '') || (food.src || []).some((x) => SESAME_RX.test(x.name)));
+const sesameExtra = () => (sesameIds ||= new Set(FOODS.filter(hasSesame).map((x) => x.id)));
 export function blockedBy(profile = {}) {
   const tags = new Set(DIET_TAGS[profile.diet] || []), ids = new Set(DIET_IDS[profile.diet] || []);
-  for (const a of profile.allergies || []) { for (const t of ALLERGY_TAGS[a] || []) tags.add(t); for (const id of ALLERGY_IDS[a] || []) ids.add(id); if (a === 'gluten') for (const id of glutenExtra()) ids.add(id); }
+  for (const a of profile.allergies || []) { for (const t of ALLERGY_TAGS[a] || []) tags.add(t); for (const id of ALLERGY_IDS[a] || []) ids.add(id); if (a === 'gluten') for (const id of glutenExtra()) ids.add(id); if (a === 'sesame') for (const id of sesameExtra()) ids.add(id); }
   return { tags, ids };
 }
 export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
@@ -213,7 +227,7 @@ export function planAllowed(food, profile = {}, blk = blockedBy(profile)) {
 // אלרגיות שהמאכל נוגע בהן (לפי התגיות והמזהים שבמאגר) — לסימון בחיפוש וביומן
 export function allergyHits(food, profile = {}) {
   const tags = food?.tags || [];
-  return (profile.allergies || []).filter((a) => (ALLERGY_TAGS[a] || []).some((t) => tags.includes(t)) || (ALLERGY_IDS[a] || []).includes(food?.id) || (a === 'gluten' && hasGluten(food))).map((a) => ALLERGIES[a]);
+  return (profile.allergies || []).filter((a) => (ALLERGY_TAGS[a] || []).some((t) => tags.includes(t)) || (ALLERGY_IDS[a] || []).includes(food?.id) || (a === 'gluten' && hasGluten(food)) || (a === 'sesame' && hasSesame(food))).map((a) => ALLERGIES[a]);
 }
 const isMeat = (f) => f.tags.some((t) => MEAT.includes(t));
 const isDairy = (f) => f.tags.some((t) => MILK.includes(t));
@@ -400,7 +414,25 @@ export function mealPlan(profile, { ctx = 'base', seed = 1, t: dayT = null, rece
   const total = roundMacros(meals.reduce((a, m) => { for (const k of Object.keys(a)) a[k] += m.total[k]; return a; }, { kcal: 0, p: 0, c: 0, f: 0, fib: 0 }));
   const noVeg = (profile.dislikes || []).includes('vegetables');
   // short: התפריט רחוק מהיעד (מעט מדי מאכלים מתאימים) — המסך מציג על זה הערה
-  return { targets: t, meals, total, noVeg, short: total.p < t.protein * 0.85 || total.kcal < t.kcal * 0.9 };
+  // over (25.11.2026): גם חריגה כלפי מעלה היא מרחק מהיעד — עם הגבלות רבות התפריט יצא מעל יעד הקלוריות יום אחרי יום, והמסך שתק.
+  // הסף סימטרי לסף החוסר: יותר מ-10% מעל יעד הקלוריות (החוסר: פחות מ-90%). lowP: החלבון מתחת ל-85% — לנוסח ההערה.
+  const lowP = total.p < t.protein * 0.85;
+  return { targets: t, meals, total, noVeg, short: lowP || total.kcal < t.kcal * 0.9, over: total.kcal > t.kcal * 1.1, lowP };
+}
+
+// התפריט של היום — מקור אחד למסך הבית, למסך התזונה ולמסך "התוכנית שלך" (25.11.2026). קודם כל מסך חישב לבד:
+// הבית בלי היומן האחרון ועם זרע משלו, ומסך התזונה עם זרע שנקבע פעם אחת בטעינת האפליקציה — כך שהבית הציג מנה אחרת,
+// "תפריט אחר" נשכח ברענון יחד עם ההחלפות שנעשו עליו, ואפליקציה שנשארה פתוחה בלילה הציגה את התפריט של אתמול.
+// הזרע: היום בחודש, ועוד מספר הפעמים שביקשו היום "תפריט אחר" (daily.shuffle — נשמר ברשומה של היום בלבד).
+// recent: מה שנרשם ביומן ב-14 הימים שלפני היום (מקבל עדיפות) — בלי היום עצמו, כדי שסימון "אכלתי" לא יחליף את שאר התפריט.
+// ההחלפות (daily.menu) תקפות רק לאותו זרע ולאותו מקום.
+const dKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+export function menuToday(state, ctx = 'base', now = new Date()) {
+  const dd = state?.daily?.[dKey(now)] || {}, seed = now.getDate() + 100 * (dd.shuffle || 0);
+  const ms = dd.menu && dd.menu.seed === seed && dd.menu.ctx === ctx ? dd.menu : {};
+  const recent = new Set();
+  for (let i = 1; i <= 14; i++) for (const it of state?.daily?.[dKey(new Date(now.getTime() - i * 864e5))]?.foods || []) recent.add(it.id);
+  return { ctx, seed, recent: [...recent], swaps: ms.swaps || {}, dishes: ms.dishes || {} };
 }
 
 // חלופות לפריט בתפריט: עד שלושה מאכלים מאותו סוג שמתאימים לארוחה, קרובים בקלוריות ובחלבון

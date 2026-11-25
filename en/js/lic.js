@@ -25,7 +25,12 @@ const valid = () => !!L && L.exp > Date.now() && Date.now() - (L.t || 0) < GRACE
 if (kParam && isIOS() && !isStandalone()) document.querySelector('link[rel="manifest"]')?.remove();
 // תיאור המכשיר: זהה בספארי ובאפליקציה שבמסך הבית — כך הקישור עובר ביניהן דרך השרת
 const fp = () => [screen.width, screen.height, devicePixelRatio, navigator.language, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
-const api = async (path, body) => (await fetch(`${WORKER}/lic/${path}`, body ? { method: 'POST', body: JSON.stringify(body) } : undefined)).json();
+// בקשה שלא נענית בתוך 8 שניות נחשבת "אין תשובה" (25.11.2026): רשת שמקבלת את הבקשה ולא עונה (סינון, רשת שדורשת התחברות) השאירה את האפליקציה פתוחה בלי קישור
+const TIMEOUT = 8000;
+const api = async (path, body) => {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), TIMEOUT);
+  try { return await (await fetch(`${WORKER}/lic/${path}`, { ...(body ? { method: 'POST', body: JSON.stringify(body) } : {}), signal: c.signal })).json(); } finally { clearTimeout(t); }
+};
 
 const WHY = {
   used: 'This link has already been activated on another phone. Each link works on one phone.',
@@ -107,11 +112,10 @@ export async function initLicense() {
   let answered = false;
   try { const c = await api(`cfg?app=${APP_ID}`); if (typeof c.enforce === 'boolean') { cfg = { enforce: c.enforce, t: Date.now() }; put(KC, cfg); answered = true; if (why === 'srv') why = ''; } } catch { /* אין תשובה */ }
   clearTimeout(retry);
-  if (!answered && !cfgFresh()) {
-    // השרת לא ענה, ואין תשובה שמורה בתוקף: נעולים עד שיענה (לא נשמר — התשובה הבאה מהשרת קובעת), ומנסים שוב לבד
-    cfg = { enforce: true }; if (!valid() && !why) why = 'srv';
-    if (!valid()) retry = setTimeout(initLicense, 8000);
-  }
+  // השרת לא ענה, ואין תשובה שמורה בתוקף: נעולים עד שיענה (לא נשמר — התשובה הבאה מהשרת קובעת), ומנסים שוב לבד
+  if (!answered && !cfgFresh()) cfg = { enforce: true };
+  // אותו הסבר ואותו ניסיון חוזר גם לקישור שאושר לפני יותר מ-21 יום כשהשרת לא עונה (25.11.2026): קודם הוצג "צריך קישור הפעלה אישי", בלי ניסיון חוזר
+  if (!answered && cfg.enforce && !valid() && (L || !cfgFresh())) { if (!why) why = 'srv'; retry = setTimeout(initLicense, 8000); }
   const browserOnIos = isIOS() && !isStandalone();
   // אפליקציה מותקנת שנפתחת עם הקישור שבכתובת שלה: מפעילים רק כשאין קישור בתוקף (ולא דורסים קישור חדש יותר שהודבק)
   if (kParam && (!L || L.token !== kParam) && !(isStandalone() && valid())) {

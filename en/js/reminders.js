@@ -74,12 +74,14 @@ export function saveReminderSettings(settings) {
 // מחזיר את כתובת היומן (https). opts: { name, coach, mins } — לכותרת האירוע ולאורכו.
 export async function calendarFeed(opts = {}) {
   const r = reminders(), last = get().calOpts || {}, o = { ...last, ...opts };
-  const sample = buildICS({ workout: { on: true, days: [0], time: '18:00' } }, o);   // הכותרת והתיאור — באותו נוסח של הקובץ
-  const pick = (k) => (sample.match(new RegExp(`^${k}:(.*)$`, 'm')) || [])[1] || '';
-  const { id } = await post('/cal/set', { id: r.calId || undefined, settings: { workout: r.settings.workout }, title: pick('SUMMARY'), desc: pick('DESCRIPTION'), calName: pick('X-WR-CALNAME'), mins: o.mins || 60 });
-  set((s) => { s.reminders = { ...reminders(), calId: id }; s.calOpts = o; return s; });
+  // הכותרת והתיאור — באותו נוסח של הקובץ, אבל בלי השם (25.11.2026): השם לא נשלח לשרת, וכתובת היומן נקראת בלי הזדהות. השרת מקודד את הטקסט בעצמו.
+  const { id } = await post('/cal/set', { id: r.calId || undefined, settings: { workout: r.settings.workout }, title: icsTitle(''), desc: icsDesc(o.coach), calName: ICS_NAME, mins: o.mins || 60 });
+  set((s) => { s.reminders = { ...reminders(), calId: id }; s.calOpts = o; s.calNoName = 1; return s; });
   return `${WORKER}/cal/${id}.ics`;
 }
+
+// יומן שנרשם לפני 25.11.2026 נשמר בשרת עם השם בכותרת: נשלח מחדש פעם אחת, בלי השם
+if (typeof window !== 'undefined') setTimeout(() => { if (reminders().calId && !get().calNoName && navigator.onLine) calendarFeed().catch(() => {}); }, 6000);
 
 export async function syncReminders() {
   const r = reminders();
@@ -109,6 +111,12 @@ export function pingWorkout() {
 
 // ───── חלופה בלי Push: קובץ לוח שנה (iCal) עם התראות ─────
 const ICS_DAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+const ICS_NAME = 'MOVA';
+const icsTitle = (name) => `💪 Workout in MOVA${name ? ` — ${name}` : ''}`;
+const icsDesc = (coach = 'Ori') => `${coach} is waiting for you in the app. https://dudutal-dev.github.io/Fitness-studio/en/`;
+// ערכי טקסט לפי RFC 5545: לוכסן הפוך, נקודה-פסיק, פסיק ושורה חדשה מקודדים (שם עם פסיק נכנס קודם לכותרת כמו שהוא)
+export const icsEsc = (t) => String(t ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+// המזהה של כל אירוע, ה-PRODID ושם הקובץ כוללים את מזהה האפליקציה (25.11.2026): קודם שלוש האפליקציות יצרו אותם מזהים (…@lohem), ואירוע של אחת יכול היה להחליף ביומן אירוע של אחרת
 export function buildICS(settings, { name = '', coach = 'Ori', mins = 60 } = {}) {
   const pad = (n) => String(n).padStart(2, '0');
   const now = new Date();
@@ -116,7 +124,7 @@ export function buildICS(settings, { name = '', coach = 'Ori', mins = 60 } = {})
   const ev = [];
   const nextDate = (dow) => { const d = new Date(now); d.setDate(d.getDate() + ((dow - d.getDay() + 7) % 7)); return d; };
   const dt = (d, hhmm) => { const [h, m] = hhmm.split(':'); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(h)}${pad(m)}00`; };
-  const add = (uid, summary, desc, start, rrule, mins) => ev.push(['BEGIN:VEVENT', `UID:${uid}@lohem`, `DTSTAMP:${stamp}`, `DTSTART:${start}`, `DURATION:PT${mins}M`, `RRULE:${rrule}`, `SUMMARY:${summary}`, `DESCRIPTION:${desc}`,
+  const add = (uid, title, text, start, rrule, mins, summary = icsEsc(title), desc = icsEsc(text)) => ev.push(['BEGIN:VEVENT', `UID:${uid}@${APP_ID}`, `DTSTAMP:${stamp}`, `DTSTART:${start}`, `DURATION:PT${mins}M`, `RRULE:${rrule}`, `SUMMARY:${summary}`, `DESCRIPTION:${desc}`,
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:-PT15M', 'END:VALARM', 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT'].join('\r\n'));
   if (settings.workout?.on && settings.workout.days?.length) {
     // אירוע שבועי חוזר לכל שעה: ימים עם אותה שעה נכנסים לאירוע אחד
@@ -125,9 +133,9 @@ export function buildICS(settings, { name = '', coach = 'Ori', mins = 60 } = {})
     for (const [time, ds] of Object.entries(byTime)) {
       const first = Math.min(...ds.map((x) => (x - now.getDay() + 7) % 7));
       const d = new Date(now); d.setDate(d.getDate() + first);
-      add(`workout-${time.replace(':', '')}`, `💪 Workout in MOVA${name ? ` — ${name}` : ''}`, `${coach} is waiting for you in the app. https://dudutal-dev.github.io/Fitness-studio/en/`, dt(d, time), `FREQ=WEEKLY;BYDAY=${ds.map((x) => ICS_DAYS[x]).join(',')}`, mins);
+      add(`workout-${time.replace(':', '')}`, icsTitle(name), icsDesc(coach), dt(d, time), `FREQ=WEEKLY;BYDAY=${ds.map((x) => ICS_DAYS[x]).join(',')}`, mins);
     }
   }
   if (settings.weigh?.on) add('weigh', '⚖️ Weekly weigh-in', 'In the morning, before eating — log it in the app.', dt(nextDate(Number(settings.weigh.day)), settings.weigh.time), `FREQ=WEEKLY;BYDAY=${ICS_DAYS[Number(settings.weigh.day)]}`, 5);
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LOHEM//Reminders//HE', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:MOVA', ...ev, 'END:VCALENDAR'].join('\r\n');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${APP_ID.toUpperCase()}//Reminders//HE`, 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${icsEsc(ICS_NAME)}`, ...ev, 'END:VCALENDAR'].join('\r\n');
 }

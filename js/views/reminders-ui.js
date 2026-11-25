@@ -4,6 +4,7 @@ import { platform, installOneLine } from '../install.js';
 import { get, set, g } from '../store.js';
 import { reminders, enableReminders, disableReminders, testReminder, saveReminderSettings, needsInstall, pushSupported, buildICS, workoutTime, calendarFeed, isIOS } from '../reminders.js';
 import { COACHES } from '../data/coaches.js';
+import { APP_ID } from '../app-id.js';
 import { plannedToday, toMin } from '../engine/schedule.js';
 
 const DAY_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
@@ -74,7 +75,7 @@ export function downloadICS() {
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'lohem-reminders.ics';
+  a.download = `${APP_ID}-reminders.ics`;   // שם הקובץ לפי האפליקציה (25.11.2026)
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   toast('נפתח קובץ יומן — לבחור "הוסף הכל", והאימונים ייכנסו ליומן עם התראה', 5000);

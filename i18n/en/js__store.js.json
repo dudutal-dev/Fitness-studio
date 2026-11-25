@@ -1,4 +1,9 @@
 {
  "דרגה חדשה:": "New rank:",
- "קובץ לא תקין": "Invalid file"
+ "קובץ לא תקין": "Invalid file",
+ "הקובץ אינו קובץ גיבוי תקין": "This file is not a valid backup file",
+ "הקובץ אינו גיבוי של האפליקציה": "This file is not a backup of the app",
+ "אין בקובץ פרופיל — אי אפשר לשחזר ממנו": "The file has no profile — it can't be restored",
+ "אין בקובץ תוכנית אימונים — אי אפשר לשחזר ממנו": "The file has no training plan — it can't be restored",
+ "הקובץ פגום — אי אפשר לשחזר ממנו": "The file is damaged — it can't be restored"
 }

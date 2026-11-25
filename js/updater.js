@@ -7,7 +7,9 @@ const KEY = 'studio_updated_to';
 let reg = null;
 let pending = false;
 
-const inSession = () => !!document.querySelector('.live, .still');   // גם מדיטציית בוקר / לילה היא אימון: לא מרעננים באמצע
+// גם שאלון ההיכרות (25.11.2026): רענון באמצע מחק את התשובות. מסך השער עצמו (בלי פס השלבים, עם כפתור) עדיין מתעדכן; מסך בניית התוכנית (בלי כפתורים) לא.
+const inOnboarding = () => { const ob = document.querySelector('.ob'); return !!ob && (!!ob.querySelector('.steps') || !ob.querySelector('.actions')); };
+const inSession = () => !!document.querySelector('.live, .still') || inOnboarding();   // גם מדיטציית בוקר / לילה היא אימון: לא מרעננים באמצע
 
 function reloadNow(v) {
   try { sessionStorage.setItem(KEY, v || ''); } catch { /* */ }

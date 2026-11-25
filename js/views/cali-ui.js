@@ -8,7 +8,7 @@ import { LADDERS, STRENGTH_LADDERS, SKILL_LADDERS, rungState, ladderLock, ladder
 import { newMob, mobLevel, mobTested } from '../engine/mob.js';
 import { mobTestSheet } from './mob-ui.js';
 import { journeySetup } from './med-ui.js';
-import { goalForTrack } from '../engine/program.js';
+import { goalOnSwitch } from '../engine/program.js';   // 25.11.2026: המעבר זוכר את המטרה הקודמת ומחזיר אותה (profile.goalBack)
 import { runLevelFrom3k } from '../engine/running.js';
 import { infoSheet } from './workout.js';
 import { say, stop, unlock } from '../coach/voice.js';
@@ -101,7 +101,7 @@ export function switchTrack(track, rerender, preset) {
       set((s) => {
         const q = s.profile;
         if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
-        q.track = 'med'; q.coach = 'or'; q.goal = goalForTrack(q.goal, 'med'); q.medMin = cfg.medMin; q.medPace ??= 'calm'; q.days = cfg.days; q.medJ = { ...cfg.medJ, start: new Date().toISOString() };
+        q.track = 'med'; q.coach = 'or'; q.goal = goalOnSwitch(q, 'med'); q.medMin = cfg.medMin; q.medPace ??= 'calm'; q.days = cfg.days; q.medJ = { ...cfg.medJ, start: new Date().toISOString() };
         if (q.extras) delete q.extras.med;
         s.plan = createPlan(q);
         return s;
@@ -115,7 +115,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.level = q.walkLevel || 1;
-      q.track = 'walk'; q.coach = 'shira'; q.goal = goalForTrack(q.goal, 'walk'); q.walkMin ??= 30; q.days = Math.max(3, q.days || 4);
+      q.track = 'walk'; q.coach = 'shira'; q.goal = goalOnSwitch(q, 'walk'); q.walkMin ??= 30; q.days = Math.max(3, q.days || 4);
       s.plan = createPlan(q);
       return s;
     });
@@ -127,7 +127,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.level = q.taiLevel || 1;
-      q.track = 'tai'; q.coach = 'mei'; q.goal = goalForTrack(q.goal, 'tai'); q.taiMin ??= 20; q.days = Math.min(5, q.days || 3);
+      q.track = 'tai'; q.coach = 'mei'; q.goal = goalOnSwitch(q, 'tai'); q.taiMin ??= 20; q.days = Math.min(5, q.days || 3);
       s.plan = createPlan(q);
       return s;
     });
@@ -139,7 +139,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.level = q.yogaLevel || 1;
-      q.track = 'yoga'; q.coach = 'yael'; q.goal = goalForTrack(q.goal, 'yoga'); q.yogaMin ??= 30; q.days = Math.min(5, q.days || 3);
+      q.track = 'yoga'; q.coach = 'yael'; q.goal = goalOnSwitch(q, 'yoga'); q.yogaMin ??= 30; q.days = Math.min(5, q.days || 3);
       s.plan = createPlan(q);
       return s;
     });
@@ -151,7 +151,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.level = q.pilLevel || 1;
-      q.track = 'pil'; q.coach = 'lia'; q.goal = goalForTrack(q.goal, 'pil'); q.pilMin ??= 30; q.days = Math.min(5, q.days || 3);
+      q.track = 'pil'; q.coach = 'lia'; q.goal = goalOnSwitch(q, 'pil'); q.pilMin ??= 30; q.days = Math.min(5, q.days || 3);
       s.plan = createPlan(q);
       return s;
     });
@@ -163,7 +163,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.level = q.hiitLevel || Math.min(3, q.gymLevel || q.level || 2);
-      q.track = 'hiit'; q.coach = 'lia'; q.goal = goalForTrack(q.goal, 'hiit'); q.hiitMin ??= 20;
+      q.track = 'hiit'; q.coach = 'lia'; q.goal = goalOnSwitch(q, 'hiit'); q.hiitMin ??= 20;
       s.plan = createPlan(q);
       return s;
     });
@@ -175,7 +175,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.runBase ??= q.run3k ? 30 : 15;
-      q.track = 'run'; q.coach = q.runCoach || 'guy'; q.goal = goalForTrack(q.goal, 'run'); q.level = q.runLevel || runLevelFrom3k(q.run3k);
+      q.track = 'run'; q.coach = q.runCoach || 'guy'; q.goal = goalOnSwitch(q, 'run'); q.level = q.runLevel || runLevelFrom3k(q.run3k);
       s.plan = createPlan(q);
       return s;
     });
@@ -187,7 +187,7 @@ export function switchTrack(track, rerender, preset) {
       const q = s.profile;
       if (!NO_GYM.includes(q.track)) { q.gymCoach = q.coach; q.gymLevel = q.level; }
       q.mob ||= newMob(); q.mobN = 0;
-      q.track = 'mob'; q.coach = 'tamar'; q.goal = goalForTrack(q.goal, 'mob'); q.level = mobLevel(q.mob);
+      q.track = 'mob'; q.coach = 'tamar'; q.goal = goalOnSwitch(q, 'mob'); q.level = mobLevel(q.mob);
       s.plan = createPlan(q);
       return s;
     });
@@ -199,7 +199,7 @@ export function switchTrack(track, rerender, preset) {
     set((s) => {
       const q = s.profile;
       if (NO_GYM.includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
-      q.track = 'gym'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
+      q.track = 'gym'; q.coach = q.gymCoach || 'ori'; q.goal = goalOnSwitch(q, 'gym');
       s.plan = createPlan(q);
       return s;
     });
@@ -249,8 +249,8 @@ function toCali(track, cali, rerender) {
     q.cali = cali;
     if (track === 'mix') {
       if (NO_GYM.includes(q.track)) q.level = q.gymLevel || (q.track === 'cali' ? q.level : 2) || 2;
-      q.track = 'mix'; q.coach = q.gymCoach || 'ori'; q.goal = goalForTrack(q.goal, 'gym');
-    } else { q.track = 'cali'; q.coach = 'maya'; q.goal = goalForTrack(q.goal, 'cali'); q.level = caliLevel(cali); }
+      q.track = 'mix'; q.coach = q.gymCoach || 'ori'; q.goal = goalOnSwitch(q, 'gym');
+    } else { q.track = 'cali'; q.coach = 'maya'; q.goal = goalOnSwitch(q, 'cali'); q.level = caliLevel(cali); }
     s.plan = createPlan(q);
     return s;
   });

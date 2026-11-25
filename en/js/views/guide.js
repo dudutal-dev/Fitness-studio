@@ -22,7 +22,7 @@ function slides() {
       visual: `<div class="g-trio">${[['ori', 'Gym'], ['maya', 'Calisthenics'], ['shira', 'Running'], ['lia', 'HIIT']].map(([c, t]) => `<figure><img src="${COACHES[c].img}" alt=""><figcaption><b>${COACHES[c].name}</b><span>${t}</span></figcaption></figure>`).join('')}</div>`,
       body: `<div class="g-brand">${BRAND.name}</div><h2>A personal coach for every track, at every level</h2>
         <div class="g-feats">
-          <div>${ib('dumbbell', 'pri')}<span><b>One track or a mix</b>Gym, calisthenics, running, walking, HIIT, Pilates, yoga, tai chi, mobility — or several together</span></div>
+          <div>${ib('dumbbell', 'pri')}<span><b>One track or a mix</b>Gym, calisthenics, running, walking, moving meditation, HIIT, Pilates, yoga, tai chi, mobility — or several together</span></div>
           <div>${ib('vol', 'acc')}<span><b>A coach who talks to you</b>Demonstrates every exercise, counts reps and times rests</span></div>
           <div>${ib('chart', 'ok')}<span><b>A plan that progresses with you</b>Changes by itself based on your performance</span></div>
         </div>
@@ -42,7 +42,7 @@ function slides() {
     {
       id: 'setup', title: 'Step 2 · First setup', eyebrow: '2 minutes',
       visual: `${em('⚙️', 'pri', 'xl')}`,
-      body: step(1, 'Choose a track and a coach', 'Gym (Ori or Noa), calisthenics with Maya, running (Guy or Shira), HIIT or Pilates with Lia, yoga with Yael, tai chi with Mei, mobility & flexibility with Tamar, or a mix of them. You can change it later — from Home too, with the "My track" button') +
+      body: step(1, 'Choose a track and a coach', 'Gym (Ori or Noa), calisthenics with Maya, running (Guy or Shira), walking with Shira, moving meditation with Or, HIIT or Pilates with Lia, yoga with Yael, tai chi with Mei, mobility & flexibility with Tamar, or a mix of them. You can change it later — from Home too, with the "My track" button') +
         step(2, 'Personal details', 'Form of address (male/female), name, age, height, weight and target weight') +
         step(3, 'Goal', 'General fitness / mass / strength / fat loss') +
         step(4, 'Level check', 'Max push-ups and pull-ups, 3 km time — answer honestly. If you know how much you lift on bench press, squat and deadlift you can add it (optional) — and your first workout will start at the right weight') +
@@ -85,6 +85,15 @@ function slides() {
         tip('🎵', '<b>Music at walking pace</b>: the note button on the walk screen.') +
         tip('🧭', '<b>Shira coaches to your pace</b>: GPS measures distance and pace and draws your route on a map. Too slow in a brisk segment — she asks you to pick it up; too fast in recovery — to ease off.') +
         tip('🎯', '<b>Three levels</b>: beginners, regular walkers and fast walkers. Complete most of your walks and you move up a level after four weeks.'),
+    },
+    {
+      // מדיטציה בתנועה (25.11.2026): השער מבטיח עשרה סוגי אימון ועשרה מאמנים, והמדריך מנה תשעה ולא הזכיר את המסלול
+      id: 'med', title: 'Moving meditation', eyebrow: 'Meditative walking, with Or',
+      visual: `<div class="g-coach"><img src="${COACHES.or.img}" alt=""></div>`,
+      body: tip('🌿', '<b>A meditative walk outdoors</b>: 20, 30 or 45 minutes, calm or brisk. Or speaks at the start of each part, and in between you walk with music.') +
+        tip('🧭', '<b>Nine journeys</b>: Morning, Energy, Joy, Release, Healing, Connection, Reset, Gratitude and Presence. Each journey has six parts, and its points are marked on the route map at the end.') +
+        tip('🗓️', '<b>As your main track — a journey in stages</b>: choose a path and a length — 4, 8 or 12 weeks — and move through four stages: Arriving, Release, Deepening and Integration. This track has no nutrition menu.') +
+        tip('🌙', '<b>Morning and night meditations</b>: no walking — sitting in the morning, lying down at night. 15, 20 or 30 minutes, with guided breathing.'),
     },
     {
       id: 'tai', title: 'Tai chi track', eyebrow: 'Slow movement, balance and breathing',

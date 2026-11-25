@@ -2,7 +2,7 @@
 import { html, esc, on, sheet, toast, fmtTime, icon } from '../ui/dom.js';
 import { get, set } from '../store.js';
 import { EX } from '../data/exercises.js';
-import { updateSession, deleteSession, updateRun, deleteRun } from '../engine/history-edit.js';
+import { updateSession, deleteSession, updateRun, deleteRun, isTimed } from '../engine/history-edit.js';
 import { parse3k } from './onboarding.js';
 import { routeMap } from '../ui/map.js';
 import { renderRouteImage, loadRouteImage, deleteRouteImage, shareRouteImage } from '../ui/route-image.js';
@@ -31,14 +31,14 @@ export function openSessionEditor(index, onDone) {
 
   const body = () => html`
     <label class="field"><span>Date and time</span><input class="input" type="datetime-local" data-date value="${toLocalInput(draft.date)}"></label>
-    ${draft.exercises.length ? draft.exercises.map((e, ei) => { const ex = EX[e.exId]; const timed = ['time', 'cardio'].includes(ex?.type); return html`<div class="ed-ex">
+    ${draft.exercises.length ? draft.exercises.map((e, ei) => { const ex = EX[e.exId]; const timed = isTimed(e); return html`<div class="ed-ex">
       <div class="row between"><b>${esc(ex?.name || e.exId)}</b><button class="btn sm ghost danger" data-delex="${ei}">Delete exercise</button></div>
       ${e.sets.map((st, si) => setRow(ei, si, st, timed))}
       <button class="btn sm ghost" data-addset="${ei}">＋ Set</button></div>`; }).join('')
     : '<div class="sub" style="margin:8px 0">This workout has no exercise details (for example, a workout imported from a watch).</div>'}`;
 
   sheet(html`<div class="eyebrow">Edit workout</div><div class="h1" style="font-size:22px">${esc(draft.name)}</div>
-    <div class="sub">${fmtTime(draft.durationSec || 0)} · ${draft.setsDone || 0} Sets</div>
+    <div class="sub">${fmtTime(draft.durationSec || 0)}${draft.setsDone ? ` · ${draft.setsDone} Sets` : ''}</div>
     <div id="edBody" style="margin-top:12px">${body()}</div>
     <button class="btn primary block xl" style="margin-top:14px" data-save>Save changes</button>
     <button class="btn danger block" style="margin-top:8px" data-del>${icon('trash')} Delete workout</button>`, {
@@ -52,7 +52,7 @@ export function openSessionEditor(index, onDone) {
         draft.exercises[Number(row.dataset.ei)].sets[Number(row.dataset.si)][inp.dataset.f] = Number(inp.value) || 0;
       });
       on(sh, 'click', '[data-delset]', (e, b) => { const row = b.closest('.ed-set'); draft.exercises[Number(row.dataset.ei)].sets.splice(Number(row.dataset.si), 1); repaint(); });
-      on(sh, 'click', '[data-addset]', (e, b) => { const ex = draft.exercises[Number(b.dataset.addset)]; const last = ex.sets[ex.sets.length - 1] || { w: 0, reps: 8 }; ex.sets.push({ ...last, done: true }); repaint(); });
+      on(sh, 'click', '[data-addset]', (e, b) => { const ex = draft.exercises[Number(b.dataset.addset)]; const last = ex.sets[ex.sets.length - 1] || { w: 0, reps: isTimed(ex) ? 30 : 8 }; ex.sets.push({ ...last, done: true }); repaint(); });
       on(sh, 'click', '[data-delex]', (e, b) => { draft.exercises.splice(Number(b.dataset.delex), 1); repaint(); });
       sh.querySelector('[data-save]').addEventListener('click', () => {
         set((s) => updateSession(s, s.sessions.findIndex((x) => x.date === orig.date && x.name === orig.name), { date: draft.date, exercises: draft.exercises }));

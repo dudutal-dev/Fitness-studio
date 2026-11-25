@@ -20,7 +20,7 @@ export function roundLoad(w, ex) {
 // "קשה" כשיעד השבוע נמוך ממנו בנקודה לפחות — 4%. בשבוע שיא "קשה" הוא היעד, והמשקל נשאר.
 export function nextSetLoad(set, item, ex) {
   const { w, reps, rpe } = set, [lo, hi] = item.reps, target = item.rpe || 8;
-  if (rpe <= 6.5 && reps >= hi - 1) return { w: roundLoad(w + ex.inc, ex), why: 'up' };
+  if (rpe <= 6.5 && reps >= hi) return { w: roundLoad(w + ex.inc, ex), why: 'up' };   // רק בראש הטווח (25.11.2026: חזרה אחת מתחתיו כבר העלתה משקל)
   const cut = reps < lo ? (rpe >= 10 ? 0.08 : rpe >= 9 ? 0.05 : 0) : rpe >= 10 ? 0.05 : rpe >= 9 && rpe - target >= 1 ? 0.04 : 0;
   if (!cut || !(w > 0)) return { w, why: null };
   let nw = roundLoad(w * (1 - cut), ex);

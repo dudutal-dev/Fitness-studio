@@ -549,8 +549,9 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
       const sec = Math.ceil(left);
       if (sec !== lastSec) {
         lastSec = sec;
-        if (sec === 30 && total >= 60) say('rest_30');
-        if (sec === 10 && total >= 25) say('rest_10');
+        // רק מאמן שמקליט את המשפטים האלה (25.11.2026): ב-HIIT ובשיעורים אין הקלטה, והבקשה נכשלה ועברה לקול המערכת
+        if (sec === 30 && total >= 60 && coachSays('rest_30', coach)) say('rest_30');
+        if (sec === 10 && total >= 25 && coachSays('rest_10', coach)) say('rest_10');
         if (sec <= 3 && sec >= 1 && !autoNext) { sayNow([`n${sec}`]); vibrate(20); }
       }
       if (left <= 0) {
@@ -605,7 +606,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
         if (e.role === 'finisher' || e.role === 'mob' || e.role === 'hiit') continue;
         (s2.history[e.exId] ||= []).push({ date: nowIso, sid, sets: e.sets, target: e.target });
       }
-      s2.sessions.push({ id: sid, date: nowIso, name: w.name, ...(caliW ? { track: 'cali' } : mobW ? { track: 'mob' } : hiitW ? { track: 'hiit' } : pilW ? { track: 'pil' } : yogaW ? { track: 'yoga' } : taiW ? { track: 'tai' } : {}), day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr });
+      s2.sessions.push({ id: sid, date: nowIso, name: w.name, ...(caliW ? { track: 'cali' } : mobW ? { track: 'mob' } : hiitW ? { track: 'hiit' } : pilW ? { track: 'pil' } : yogaW ? { track: 'yoga' } : taiW ? { track: 'tai' } : {}), day: workout.day ?? null, field: !!workout.field, durationSec: dur, volume: Math.round(volume), setsDone, exercises, prs, warmupDone: mobilityDone.warmup, stretchDone: mobilityDone.cooldown, readiness: w.readiness ?? null, partial, hr, xp: gained });   // xp: כדי שמחיקה מההיסטוריה תוריד בדיוק מה שהאימון נתן
       if (workout.day != null && !partial && !s2.plan.completedDays.includes(workout.day)) s2.plan.completedDays.push(workout.day);
       // קליסתניקס: עלייה/ירידה בסולמות לפי הביצוע, והשבוע נבנה מחדש עם השלבים החדשים
       if (hasCali(s2.profile) && caliW) {
@@ -768,7 +769,7 @@ export function startWorkout(workout, { readiness = null, sized = false } = {}) 
   on(root, 'click', '[data-rpe]', (e, t) => {
     setLog().rpe = Number(t.dataset.rpe);
     vibrate(20);
-    { const r = setLog().rpe, cm = ctxMid(r >= 10 ? 'max' : r <= 6.5 ? 'easy' : '-', coach); if (cm) say(cm); }
+    { const r = setLog().rpe, kind = r >= 10 ? 'max' : r <= 6.5 ? 'easy' : null, cm = kind && ctxMid(kind, coach); if (cm) say(cm); }   // "טוב" / "קשה": אין מה לומר (25.11.2026: נוצר המפתח ctx_- — קליפ שלא קיים, ורישום ב-ctxSaid)
     afterLog();
   });
 

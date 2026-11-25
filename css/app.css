@@ -131,7 +131,8 @@ svg .s { fill: currentColor; stroke: none; }
 @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; min-width: 0; }
-.top-actions { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; flex-shrink: 1; }
+/* 25.11.2026: הכפתורים שבכותרת לא מתכווצים. קודם התיבה התכווצה יחד עם הברכה, והילדים שלה (שלא מתכווצים) גלשו ממנה — "הגדרות" נחתך בקצה המסך כשיש תג רצף. את החוסר סופגת שורת המסלול (.hello), שיש לה קיצור בשלוש נקודות. */
+.top-actions { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; flex: 0 0 auto; }
 .top-actions > * { flex: 0 0 auto; }
 .top-actions .tag { white-space: nowrap; height: 30px; padding: 0 10px; font-size: 13px; }
 .brand { flex: 0 1 auto; min-width: 0; }
@@ -197,6 +198,11 @@ a.btn { text-decoration: none; }
 .input:focus { border-color: var(--pri-ink); }
 .seg { display: flex; background: var(--panel2); border-radius: 14px; padding: 4px; gap: 4px; }
 .seg button { flex: 1 1 0; min-width: 0; height: 40px; padding: 0 6px; border-radius: 10px; font-weight: 700; font-size: 15px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* לשוניות מסך ההתקדמות (25.11.2026): עד שש בשורה, ושם של לשונית לא נחתך — הכפתור לא צר מהטקסט שלו; כשאין מקום לכולן השורה נגללת לצדדים. שאר ה-.seg לא משתנים. */
+.seg:not(.tabs):has(> [data-tab]) { overflow-x: auto; scrollbar-width: none; }
+.seg:not(.tabs):has(> [data-tab])::-webkit-scrollbar { display: none; }
+.seg:not(.tabs):has(> [data-tab]) button { flex: 1 0 0; min-width: max-content; overflow: visible; }
+.seg:not(.tabs):has(> [data-tab]:nth-child(6)) button { font-size: 13px; padding: 0 3px; }
 .seg button.on { background: var(--card-solid); color: var(--pri-ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
 :root:not([data-theme="light"]) .seg button.on { background: rgba(255, 255, 255, 0.13); color: #fff; box-shadow: none; }
 .stepper { display: flex; align-items: center; gap: 4px; min-width: 0; background: var(--panel); border-radius: 16px; padding: 5px; }
@@ -278,11 +284,15 @@ input[type=range] { width: 100%; accent-color: var(--pri-ink); }
 .tracker .v small { color: var(--mute); font-size: 12px; font-weight: 600; }
 .tracker .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tracker .bar { height: 5px; margin-top: 8px; }
-.hello { min-width: 0; }
+.hello { flex: 1 1 0; min-width: 0; container-type: inline-size; }
+/* כשנשאר לשורת המסלול מעט מקום (תג רצף, מסך צר), מספר האימונים בשבוע יורד והשם נשאר */
+@container (max-width: 189px) { .track-chip small { display: none; } }
 /* כפתור הגדרות: אייקון גלגל שיניים + כיתוב, כדי שיהיה ברור מה הוא פותח */
 .set-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; background: var(--panel2); color: var(--text); font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .set-btn svg.i { width: 20px; height: 20px; color: var(--mute); }
 @media (max-width: 350px) { .set-btn span { display: none; } .set-btn { padding: 0 10px; } }
+/* מסך צר עם תג רצף (25.11.2026): "הגדרות" נשאר כסמל בלבד, כדי ששם המסלול לא ייחתך */
+@media (max-width: 380px) { .top-actions:has(.tag) .set-btn:not(.bell) span { display: none; } .top-actions:has(.tag) .set-btn:not(.bell) { padding: 0 10px; } }
 .hello .h1 { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-row svg.i { color: var(--pri-ink); }
 .rank-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--mute); white-space: nowrap; }
@@ -928,7 +938,8 @@ html.locked body { overflow: hidden; }
 
 /* ───── מוביליטי וגמישות (תמר) ───── */
 [data-track-seg], [data-pick-track] { flex-wrap: wrap; }
-[data-track-seg] button, [data-pick-track] button { font-size: 14px; padding: 0 4px; flex: 1 1 30%; }
+/* שם ארוך ("מדיטציה בתנועה") יורד לשורה שנייה במקום להיחתך (25.11.2026) */
+[data-track-seg] button, [data-pick-track] button { font-size: 14px; padding: 0 4px; flex: 1 1 30%; white-space: normal; line-height: 1.12; overflow: visible; }
 .mob-test { margin-top: 10px; }
 .mob-test .sub { margin: 4px 0 10px; }
 .mt-opts { display: grid; gap: 6px; }
@@ -1128,6 +1139,10 @@ html.locked body { overflow: hidden; }
 .ts-txt b { display: block; font-size: 15.5px; }
 .ts-txt small { display: block; font-size: 12px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .track-chip small { font-size: inherit; font-weight: 600; color: var(--mute); }
+/* שם המסלול ומספר האימונים בנפרד (.tc): כשאין מקום נחתך השם, והמספר נשאר שלם (25.11.2026) */
+.track-chip .tc { display: flex; }
+.track-chip .tc > b { flex: 0 1 auto; min-width: 0; font-weight: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-chip .tc > small { flex: 0 0 auto; white-space: pre; }
 @media (max-width: 350px) { .track-chip small { display: none; } }
 
 /* ───── תזונה: הערות בטיחות וסימון אלרגיות ───── */

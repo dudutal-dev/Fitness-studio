@@ -5,7 +5,7 @@ import { get, set, daily, setDaily, today, addXP, XP, g } from '../store.js';
 import { COACHES, demoPoster } from '../data/coaches.js';
 import { EX } from '../data/exercises.js';
 import { combatReadiness, rankFor, streak, readinessScore } from '../engine/stats.js';
-import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, orderMeals, mealWindow, mainCtx } from '../engine/nutrition.js';
+import { dayTotals, dayType, dayTargets, wantsNutrition, mealPlan, menuToday, orderMeals, mealWindow, mainCtx } from '../engine/nutrition.js';
 import { FOOD } from '../data/foods.js';
 import { openNutritionTab } from './nutrition.js';
 import { buildFieldWorkout, extraCoach } from '../engine/program.js';
@@ -85,8 +85,7 @@ export function renderHome(root) {
   // כרטיס התזונה של היום: כמה נשאר, שלושת אבות המזון, והארוחה הבאה מהתפריט (אותו תפריט שבמסך התזונה)
   const nutCard = () => {
     const left = t.kcal - eaten.kcal, nf = (n) => Math.round(n).toLocaleString('he-IL');
-    const ms = dd.menu && dd.menu.seed === new Date().getDate() && dd.menu.ctx === mainCtx(p) ? dd.menu : {};
-    const plan = mealPlan(p, { ctx: mainCtx(p), seed: new Date().getDate(), t, swaps: ms.swaps, dishes: ms.dishes });
+    const plan = mealPlan(p, { ...menuToday(s, mainCtx(p)), t });   // אותו זרע, אותו יומן אחרון ואותן החלפות כמו במסך התזונה (25.11.2026)
     const h = new Date().getHours();
     const order = h < 10 ? ['breakfast', 'snack1', 'lunch'] : h < 12 ? ['snack1', 'lunch'] : h < 15 ? ['lunch', 'post', 'dinner'] : h < 18 ? ['post', 'dinner'] : ['dinner'];
     // כשנקבעו ימי אימון הארוחות מסודרות לפי שעת האימון של היום (orderMeals), ו"הארוחה הבאה" היא הראשונה שעוד לא עברה
@@ -127,7 +126,7 @@ export function renderHome(root) {
   root.innerHTML = html`<div class="home">
     <div class="topbar">
       <div class="hello"><div class="sub">${greeting()}, ${esc(p.name)}</div>
-        <button class="track-chip" data-act="track" aria-label="המסלול שלי"><img src="${coach.face}" alt=""><span>${esc(trackLabel(p))}<small> · <span class="num">${total}</span> בשבוע</small></span>${icon('chev')}</button></div>
+        <button class="track-chip" data-act="track" aria-label="המסלול שלי"><img src="${coach.face}" alt=""><span class="tc"><b>${esc(trackLabel(p))}</b><small> · <span class="num">${total}</span> בשבוע</small></span>${icon('chev')}</button></div>
       <div class="top-actions">
         ${st ? `<span class="tag orange" title="רצף ימים">${icon('flame')} <span class="num">${st}</span></span>` : ''}
         <button class="set-btn bell" data-act="notices" aria-label="עדכונים">${icon('bell')}${promptsHtml ? '<i class="dot"></i>' : ''}</button>

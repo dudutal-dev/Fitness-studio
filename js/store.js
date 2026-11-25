@@ -93,10 +93,23 @@ export function regenerateWeek(s) {
 export function exportData() {
   return JSON.stringify(state, null, 1);
 }
+// קובץ גיבוי נבדק לפני שהוא מחליף את מה שבטלפון (25.11.2026): פרופיל ותוכנית אמיתיים, ורשימות במקום שהאפליקציה מצפה לרשימות.
+// קודם התקבל כל JSON עם מפתח profile — קובץ שגוי מחק את כל הנתונים או השאיר מסך ריק. מפתח שחסר בגיבוי ישן מתמלא מברירת המחדל, כמו בטעינה.
+const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+export function readBackup(json) {
+  let data;
+  try { data = JSON.parse(json); } catch { throw new Error('הקובץ אינו קובץ גיבוי תקין'); }
+  const p = data?.profile, pl = data?.plan, bad = (m) => { throw new Error(m); };
+  if (!isObj(data) || !('profile' in data)) bad('הקובץ אינו גיבוי של האפליקציה');
+  if (!isObj(p) || typeof p.name !== 'string' || !p.name || !(Number(p.days) > 0)) bad('אין בקובץ פרופיל — אי אפשר לשחזר ממנו');
+  if (!isObj(pl) || !Array.isArray(pl.week?.sessions) || !Array.isArray(pl.completedDays)) bad('אין בקובץ תוכנית אימונים — אי אפשר לשחזר ממנו');
+  for (const k of ['sessions', 'runs', 'weights', 'events']) if (k in data && !(Array.isArray(data[k]) && data[k].every(isObj))) bad('הקובץ פגום — אי אפשר לשחזר ממנו');
+  for (const k of ['history', 'daily', 'settings']) if (k in data && !isObj(data[k])) bad('הקובץ פגום — אי אפשר לשחזר ממנו');
+  if ('xp' in data && !Number.isFinite(data.xp)) bad('הקובץ פגום — אי אפשר לשחזר ממנו');
+  return data;
+}
 export function importData(json) {
-  const data = JSON.parse(json);
-  if (!data || typeof data !== 'object' || !('profile' in data)) throw new Error('קובץ לא תקין');
-  state = { ...structuredClone(DEFAULT), ...data };
+  state = { ...structuredClone(DEFAULT), ...readBackup(json) };
   save();
   subs.forEach((s) => s(state));
 }

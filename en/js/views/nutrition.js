@@ -5,7 +5,7 @@ import { ring } from '../ui/charts.js';
 import { get, set, daily, setDaily, g } from '../store.js';
 import { dayType, dayTargets, fuelTips, DAY_TYPES, wantsNutrition, allergyHits, swapOptions, dishOptions, inService, mainCtx, ctxList, activityFor } from '../engine/nutrition.js';
 import { nutPrefsHtml, bindNutPrefs } from './nut-prefs.js';
-import { mealPlan, orderMeals, mealWindow, qtyLabel, dayTotals, foodLookup, searchFoods, partsTotals, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
+import { mealPlan, menuToday, orderMeals, mealWindow, qtyLabel, dayTotals, foodLookup, searchFoods, partsTotals, ACTIVITY, activityKey, trendAdvice } from '../engine/nutrition.js';
 import { FOOD, FOODS, DISLIKE_TAGS, NO_VEG_TIPS, ARMY_TIPS, NUTRITION_REFS } from '../data/foods.js';
 // טיפים למי שאוכל בחדר אוכל ובשטח (העדפות ← "בשירות"): במקום הטיפ על ימים עמוסים — שלושה טיפים של שירות
 const SERVICE_TIPS = [
@@ -20,7 +20,6 @@ import { lookupBarcode, startScanner } from '../barcode.js';
 let tab = 'today';
 export const openNutritionTab = (t) => { tab = t; };   // מהבית: הכרטיס "התזונה של היום" פותח ישר את התפריט
 let ctx = null;   // נקבע בכניסה לפי ההעדפה: בבית, או חדר האוכל למי שבשירות
-let seed = new Date().getDate();
 let editDislikes = false;
 let dislikeQuery = '';
 
@@ -31,13 +30,6 @@ const MEAL_SLOTS = [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['dinner', '
 function currentSlot() {
   const h = new Date().getHours();
   return h < 11 ? 'breakfast' : h < 16 ? 'lunch' : h < 21 ? 'dinner' : 'snack';
-}
-
-// מה שנרשם ביומן ב-14 הימים האחרונים — מקבל עדיפות בתפריט
-function recentFoodIds(s) {
-  const ids = new Set();
-  for (let i = 0; i < 14; i++) for (const it of s.daily[dayKey(new Date(Date.now() - i * 864e5))]?.foods || []) ids.add(it.id);
-  return [...ids];
 }
 
 // הערות בטיחות: למי שאין לו יעד גירעון (ראו nutritionGuard במנוע) — מה השתנה, ולמי לפנות
@@ -76,8 +68,9 @@ export function renderNutrition(root) {
   const dt = dayType(s, Date.now(), dd.dayType);
   // החלפות שנעשו בתפריט של היום נשמרות ברשומה היומית, כל עוד לא ביקשו "תפריט אחר" ולא שינו מקום
   ctx ||= mainCtx(p);
-  const ms = dd.menu && dd.menu.seed === seed && dd.menu.ctx === ctx ? dd.menu : { seed, ctx, swaps: {}, dishes: {} };
-  const mw = mealWindow(s), plan = orderMeals(mealPlan(p, { ctx, seed, t: dayTargets(p, dt.type), recent: recentFoodIds(s), swaps: ms.swaps, dishes: ms.dishes }), mw);   // הארוחות מסודרות לפי שעת האימון של היום
+  // הזרע, היומן האחרון וההחלפות מגיעים ממקור אחד (menuToday במנוע) — אותו תפריט כמו במסך הבית; הזרע נגזר בכל ציור, לא פעם אחת בטעינה (25.11.2026)
+  const ms = menuToday(s, ctx), seed = ms.seed;
+  const mw = mealWindow(s), plan = orderMeals(mealPlan(p, { ...ms, t: dayTargets(p, dt.type) }), mw);   // הארוחות מסודרות לפי שעת האימון של היום
   const t = plan.targets;
   const fuel = fuelTips(p, dt.type);
   const eaten = dayTotals(dd, custom);
@@ -94,7 +87,8 @@ export function renderNutrition(root) {
     .filter(([slot, , n]) => n && !log.some((x) => (x.slot || 'snack') === slot));
   const macro = (name, val, of, unit, color) => `<div class="macro"><div class="row between"><span>${name}</span><b><bdi>${val}</bdi><small> / <bdi>${of} ${unit}</bdi></small></b></div>
     <div class="bar"><i style="width:${Math.min(100, Math.round((val / Math.max(1, of)) * 100))}%;background:${color}"></i></div></div>`;
-  const goalTag = p.goal === 'cut' ? 'Deficit' : p.goal === 'muscle' ? 'Surplus' : 'Maintenance';
+  // לפי היעד שחושב בפועל, לא לפי המטרה שנבחרה (25.11.2026): במצב רגיש (nutritionGuard) המטרה "חיטוב" מקבלת יעד תחזוקה, והשורה אמרה "גירעון"
+  const goalTag = t.delta < 0 ? 'Deficit' : t.delta > 0 ? 'Surplus' : 'Maintenance';
   const TABS = [['today', 'Today'], ['menu', 'Menu'], ['prefs', 'Preferences']];
 
   const todayTab = () => html`
@@ -151,7 +145,8 @@ export function renderNutrition(root) {
       <button class="btn sm" data-act="shuffle">${icon('swap', 'width="16" height="16"')} Different menu</button></div>
     ${mw && plan.meals.some((m) => m.id === 'post') ? `<div class="sub t-foot meal-note">${mw === 'rest' ? 'No workout in the calendar today — a snack replaces "After workout".' : mw.done ? 'Meals are ordered around the workout you did today.' : `Today's workout is at ${mw.time}  — meals are ordered around it.`}</div>` : ''}
     <div class="sub t-foot swap-hint">Tap a dish or a food to see alternatives; the amounts adjust to your target.</div>
-    ${plan.short ? '<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">With the restrictions you chose, there are not enough suitable foods here to reach the target. Top up with what you have on hand, or try "Different menu".</div>' : ''}
+    ${plan.over ? `<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">${plan.lowP ? 'With the restrictions you chose there aren\'t enough suitable foods here: the menu comes out above the calorie target and below the protein target. You can try "Different menu".' : 'With the restrictions you chose there aren\'t enough suitable foods here, and the menu comes out above the calorie target. You can make a portion smaller, or try "Different menu".'}</div>`
+    : plan.short ? '<div class="sub t-foot" style="margin:-4px 0 10px;color:var(--orange)">With the restrictions you chose, there are not enough suitable foods here to reach the target. Top up with what you have on hand, or try "Different menu".</div>' : ''}
     ${plan.meals.map((m, mi) => html`<div class="card tight meal">
       <div class="meal-head"><div class="grow"><b>${emi(m.icon)} ${m.name}${m.hint ? ` <small class="meal-at num">around ${m.hint}</small>` : ''}</b><span class="num sub t-foot">${m.total.kcal} kcal · ${m.total.p} g protein</span></div>
         <button class="eat-btn" data-eat-meal="${mi}" aria-label="I ate ${esc(m.name)}">${icon('check')} Ate it</button></div>
@@ -251,7 +246,8 @@ export function renderNutrition(root) {
   });
   bindNutPrefs(root, on, (mutate) => { const was = inService(get().profile); set((s2) => { mutate(s2.profile); return s2; }); if (inService(get().profile) !== was) ctx = null; rerender(); });
   on(root, 'click', '[data-act="nut-off"]', () => { set((s2) => { s2.profile.nutrition = false; return s2; }); tab = 'today'; toast('Nutrition coaching is off. You can turn it back on from here.'); rerender(); });
-  on(root, 'click', '[data-act="shuffle"]', () => { seed++; rerender(); });
+  // "תפריט אחר" נשמר ברשומה של היום (daily.shuffle), כדי שהתפריט שנבחר — וההחלפות שנעשו עליו — יישארו גם אחרי רענון (25.11.2026)
+  on(root, 'click', '[data-act="shuffle"]', () => { setDaily({ shuffle: (daily().shuffle || 0) + 1 }); rerender(); });
   on(root, 'click', '[data-act="edit"]', () => { editDislikes = !editDislikes; rerender(); });
   on(root, 'click', '[data-act="add-food"]', () => foodSearchSheet(rerender));
   on(root, 'click', '[data-act="clear-log"]', () => { setDaily({ foods: [] }); rerender(); });

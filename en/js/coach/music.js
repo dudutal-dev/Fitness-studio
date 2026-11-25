@@ -146,10 +146,12 @@ export function setMusicMood(m) {
 }
 
 // דעיכה ארוכה ואז עצירה — לסוף מדיטציית הלילה
-export function fadeOutMusic(sec = 30) { if (!alive) return; ramp(0, sec); setTimeout(() => stopMusic(), sec * 1000); }
+// העצירה שבסוף הדעיכה שייכת לנגן שדעך (25.11.2026): אם בינתיים המוזיקה נעצרה והתחילה מחדש (מדיטציה שנייה אחרי "לילה טוב"), הטיימר הישן לא עוצר את החדשה
+let fadeT = 0;
+export function fadeOutMusic(sec = 30) { if (!alive) return; const mine = el; ramp(0, sec); clearTimeout(fadeT); fadeT = setTimeout(() => { if (alive && el === mine) stopMusic(); }, sec * 1000); }
 export function stopMusic() {
   if (!alive) return;
-  alive = false; offSpeak?.(); offSpeak = null; clearTimeout(upT); clearTimeout(pendT); pending = null; token++; clearInterval(guard); guard = null; ready = null;
+  alive = false; offSpeak?.(); offSpeak = null; clearTimeout(upT); clearTimeout(pendT); clearTimeout(fadeT); pending = null; token++; clearInterval(guard); guard = null; ready = null;
   removeEventListener('pointerdown', retry, { capture: true });
   document.removeEventListener('visibilitychange', onVis);
   const old = el, g = gain, ctx = audioCtx(), us = urls; el = null; gain = null; urls = []; now = null;

@@ -28,6 +28,7 @@ export function startStill(id, { minutes = 15, day = null } = {}) {
   const total = minutes * 60, starts = stillStarts(minutes), night = M.when === 'night';
   const mOn = () => get().settings.medMusic !== false;
   let elapsed = 0, lastTick = Date.now(), paused = false, stage = -1, done = false, wakeLock = null, timer = null, breathT0 = 0, speaking = false;
+  const tails = [];   // הטיימרים של סוף מדיטציית הלילה (דעיכת המוזיקה וסגירת המסך) — מבוטלים בסגירה
   preload([0, 1, 2, 3, 4].map((i) => stillLine(id, i)));
 
   const root = el(html`<div class="still ${night ? 'night' : ''}" role="dialog" aria-label="${esc(M.name)}">
@@ -80,13 +81,14 @@ export function startStill(id, { minutes = 15, day = null } = {}) {
   }
   function save(full) {
     const dur = Math.round(Math.min(elapsed, total));
-    if (dur < 120) return;   // פחות משתי דקות — לא נרשם
+    if (dur < 120) { toast('פחות משתי דקות — המדיטציה לא נשמרה'); return; }   // פחות משתי דקות — לא נרשם (25.11.2026: ואומרים זאת)
+    const xp = Math.round(XP.workout * (full ? 0.6 : 0.3));
     set((s) => {
-      s.sessions.push({ id: `s_${Date.now()}`, date: new Date().toISOString(), name: `${night ? 'מדיטציית לילה' : 'מדיטציית בוקר'} · ${M.name}`, track: 'med', still: id, day, field: false, durationSec: dur, volume: 0, setsDone: 0, exercises: [], prs: [] });
+      s.sessions.push({ id: `s_${Date.now()}`, date: new Date().toISOString(), name: `${night ? 'מדיטציית לילה' : 'מדיטציית בוקר'} · ${M.name}`, track: 'med', still: id, day, field: false, durationSec: dur, volume: 0, setsDone: 0, exercises: [], prs: [], xp });   // xp: כדי שמחיקה מההיסטוריה תוריד בדיוק מה שניתן
       if (full && day != null && !s.plan.completedDays.includes(day)) s.plan.completedDays.push(day);
       return s;
     });
-    addXP(Math.round(XP.workout * (full ? 0.6 : 0.3)), 'מדיטציה');
+    addXP(xp, 'מדיטציה');
     track(`done:med-${M.when}`);
     if (full && day != null) maybeAdvanceWeek();
   }
@@ -96,10 +98,12 @@ export function startStill(id, { minutes = 15, day = null } = {}) {
     $('#stg').textContent = full ? 'המדיטציה הסתיימה' : 'נעצר כאן'; $('#left').textContent = '';
     $('.still-btns').innerHTML = `<button class="btn primary block" data-act="close">${night ? 'לילה טוב' : 'סיום'}</button>`;
     // בלילה: המוזיקה ממשיכה עוד עשר דקות ודועכת, והמסך נסגר לבד אחריה. בבוקר: דעיכה קצרה
-    if (full && M.tail && mOn()) { setTimeout(() => fadeOutMusic(60), (M.tail - 60) * 1000); setTimeout(() => { if (root.isConnected) close(); }, M.tail * 1000 + 2000); }
+    if (full && M.tail && mOn()) tails.push(setTimeout(() => fadeOutMusic(60), (M.tail - 60) * 1000), setTimeout(() => { if (root.isConnected) close(); }, M.tail * 1000 + 2000));
     else if (mOn()) fadeOutMusic(full ? 12 : 3);
   }
   function close() {
+    // 25.11.2026: בלי הביטול, הטיימרים של מדיטציה שנסגרה ב"לילה טוב" דעכו ועצרו את המוזיקה של המדיטציה שהתחילה אחריה
+    tails.forEach(clearTimeout); tails.length = 0;
     clearInterval(timer); offSpeak(); stop(); stopMusic(); useCoach(null);
     try { wakeLock?.release(); } catch { /* */ }
     releaseKeepAlive(); root.remove(); document.body.style.overflow = '';

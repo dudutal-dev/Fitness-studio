@@ -149,5 +149,9 @@
  "הליכות בשבוע ·": "walks a week ·",
  "דקות": "minutes",
  "מסע חדש": "New journey",
- "להפוך למסע בשלבים": "Turn into a staged journey"
+ "להפוך למסע בשלבים": "Turn into a staged journey",
+ "לשחזר מהגיבוי?": "Restore from the backup?",
+ "בקובץ: הגיבוי של": "In the file: the backup of",
+ "אימונים. כל מה שנמצא עכשיו בטלפון יוחלף במה שבקובץ.": "workouts. Everything on this phone now will be replaced by what's in the file.",
+ "כן, לשחזר": "Yes, restore"
 }

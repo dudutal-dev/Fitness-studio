@@ -215,7 +215,8 @@ for fid, name, portion, cat, tags, ctx, meals, comps in ALL_SPEC:
         alc += float(f.get('alcohol') or 0) * g / 100
         srcs.append({'code': int(code), 'name': f['shmmitzrach'].replace('\n', ' ').strip(), 'g': round(g)})
     r = lambda v, d=0: round(v, d) if d else round(v)
-    item = {'id': fid, 'name': name, 'portion': f'{portion} · {round(grams_total)} ג׳', 'g': round(grams_total), 'kcal': r(tot['kcal']), 'p': r(tot['p'], 1), 'c': r(tot['c'], 1), 'f': r(tot['f'], 1), 'fib': r(tot['fib'], 1),
+    item = {'id': fid, 'name': name, 'portion': portion if portion.endswith(f'{round(grams_total)} ג׳') else f'{portion} · {round(grams_total)} ג׳',   # בלי כפילות: "250 ג׳ · 250 ג׳" (25.11.2026)
+             'g': round(grams_total), 'kcal': r(tot['kcal']), 'p': r(tot['p'], 1), 'c': r(tot['c'], 1), 'f': r(tot['f'], 1), 'fib': r(tot['fib'], 1),
             'cat': cat, 'tags': tags, 'ctx': ctx, 'meals': meals, 'src': srcs}
     # במאגר, ערך הסיבים של הפריטים האלה זהה לערך הפחמימות (כנראה שגיאת הזנה) — לא נספר כסיבים
     if fid in ('chicken_meatballs',):

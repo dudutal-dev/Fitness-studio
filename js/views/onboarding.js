@@ -68,10 +68,11 @@ export const TRACKS = {
 };
 
 export function renderOnboarding(root, done) {
+  // hiitLevel מתחיל ב-1 (25.11.2026): האפשרויות במסך הן 1 / 3 / 5; עם 2 אף אחת לא סומנה, ונשמרה רמה שלא הוצעה. רמה 1 היא אותו יחס עבודה־מנוחה (30/30)
   const d = {
     track: 'gym', auto: false, gymAccess: 'yes', coach: 'ori', equip: [], squats: 20, dips: 0, plankSec: 45, name: '', age: 20, heightCm: 178, weightKg: 72, targetWeight: 75, sex: 'm',
     goal: 'combat', years: 1, pushups: 30, pullups: 8, run3kStr: '', days: 4, sessionMin: 60,
-    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 2, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1, walkMin: 30, walkLevel: 1, medMin: 30, mjPath: 'full', mjWeeks: 8, mjLevel: 1,
+    injuries: [], dislikes: [], dislikedFoods: [], nutrition: null, diet: 'all', kosher: false, mealsN: 5, allergies: [], health: [], mobN: 0, mobMin: 20, mobTest: {}, flags: [], runBase: 15, hiitMin: 20, hiitLevel: 1, hiitLow: false, pilMin: 30, pilLevel: 1, yogaMin: 30, yogaLevel: 1, taiMin: 20, taiLevel: 1, walkMin: 30, walkLevel: 1, medMin: 30, mjPath: 'full', mjWeeks: 8, mjLevel: 1,
   };
   let step = 0;
   const STEPS = 11;

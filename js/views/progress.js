@@ -147,9 +147,12 @@ function caliTab(s, p) {
     : `<div class="card" style="margin-top:12px"><div class="empty"><div class="e">${ib('chart', 'pri', 'xl')}</div>אחרי האימון הראשון יופיע כאן גרף התקדמות לכל תרגיל</div></div>`}`;
 }
 
+// מה מוצג אחרי משך האימון (25.11.2026): סטים ונפח רק כשיש — שיעור לפי זמן מציג את מספר התרגילים, ומדיטציה או אימון מיובא בלי פירוט רק את המשך (היה "0 סטים · 0 ק״ג")
+const sessionParts = (x) => (x.exercises?.length && x.exercises.every((e) => e.unit === 'sec') ? ` · ${x.exercises.length} תרגילים` : x.setsDone ? ` · ${x.setsDone} סטים` : '') + (x.volume ? ` · ${x.volume.toLocaleString('he-IL')} ק״ג` : '');
+
 function history(s) {
   const items = [
-    ...s.sessions.map((x, i) => ({ key: `s:${i}`, date: x.date, ico: x.field ? 'pack' : 'dumbbell', t: x.name, sub: `${fmtTime(x.durationSec)} · ${x.setsDone} סטים · ${(x.volume || 0).toLocaleString('he-IL')} ק״ג${x.prs?.length ? ` · ${x.prs.length} שיאים` : ''}${x.hr ? ` · ❤ ${x.hr.avg}` : ''}${x.source === 'garmin' ? ' · ⌚' : ''}` })),
+    ...s.sessions.map((x, i) => ({ key: `s:${i}`, date: x.date, ico: x.field ? 'pack' : 'dumbbell', t: x.name, sub: `${fmtTime(x.durationSec)}${sessionParts(x)}${x.prs?.length ? ` · ${x.prs.length === 1 ? 'שיא אחד' : `${x.prs.length} שיאים`}` : ''}${x.hr ? ` · ❤ ${x.hr.avg}` : ''}${x.source === 'garmin' ? ' · ⌚' : ''}` })),
     ...s.runs.map((r, i) => ({ key: `r:${i}`, date: r.date, ico: 'run', t: r.name, sub: `${fmtTime(r.durationSec)}${r.distanceKm ? ` · ${r.distanceKm} ק״מ` : ''}${r.timeSec ? ` · 3 ק״מ ב-${fmtTime(r.timeSec)}` : ''}${r.hr ? ` · ❤ ${r.hr.avg}` : ''}${r.source === 'garmin' ? ' · ⌚' : ''}` })),
   ].sort((a, b) => b.date.localeCompare(a.date));
   const shown = showAll ? items : items.slice(0, 15);

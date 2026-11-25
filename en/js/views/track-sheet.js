@@ -41,19 +41,42 @@ function summarySheet(before) {
     <button class="btn primary block" style="margin-top:14px" data-close>Great</button>`);
 }
 
-// מוסיפים שיעורים: מעדכנים את מספר השיעורים מהסוג הזה, ואת סך האימונים בשבוע (עד 6)
+// כמה שיעורים מהתחום באמת נכנסים לשבוע, וכמה ימי אימון הם מוסיפים (25.11.2026). days — ימי האימון עכשיו; took — כמה מהם התחום הזה כבר הוסיף;
+// others — שאר התוספות שבשבוע (תחומים אחרים ומוביליטי); n — כמה שיעורים ביקשו. השבוע מוגבל ל-6 אימונים, ואימון אחד לפחות נשאר למסלול הראשי.
+// מחזיר את מספר השיעורים שנכנס, את ימי האימון החדשים, ואת מה שהתחום הוסיף להם — כדי שהסרה תחזיר בדיוק את זה.
+export function fitExtra(days, took, others, n) {
+  const base = Math.max(1, days - took);
+  let fit = Math.max(0, Math.floor(n));
+  while (fit > 0 && fit > Math.min(6, Math.max(2, base + fit)) - 1 - others) fit--;
+  const d = Math.min(6, Math.max(2, base + fit));
+  return { n: fit, days: d, took: Math.max(0, d - base) };
+}
+
+// מוסיפים שיעורים: מעדכנים את מספר השיעורים מהסוג הזה, ואת סך האימונים בשבוע (עד 6). מחזיר כמה שיעורים נכנסו בפועל.
+// 25.11.2026: קודם התוספת נחתכה ב-6 אבל ההסרה הורידה את כל n — 4 אימונים, טאי צ'י 3 ואז "בלי" השאירו 3. עכשיו profile.extraDays זוכר
+// כמה ימים כל תחום הוסיף, וההסרה מחזירה בדיוק אותם; ומה שנשמר (ומסומן) הוא מה שנכנס לשבוע, לא מה שביקשו.
 function setExtra(track, n) {
+  let got = 0;
   set((s) => {
     const q = s.profile, was = q.extras?.[track] || 0;
     // קליסתניקס כתחום נוסף בלי מבדק רמה: מתחילים משלבי הבסיס ובלי ציוד; הסולמות מתקדמים לבד מאימון לאימון
     if (track === 'cali' && n && !q.cali) { const hM = (q.heightCm || 175) / 100; q.cali = newCali({ pushups: 15, squats: 20, pullups: 0, dips: 0, plankSec: 45, bmi: (q.weightKg || 70) / (hM * hM) }, []); }
-    q.extras = { ...(q.extras || {}), [track]: n };
-    if (!n) delete q.extras[track];
-    q.days = Math.min(6, Math.max(2, (q.days || 3) + (n - was)));
+    const others = Object.entries(q.extras || {}).reduce((a, [t, m]) => a + (t !== track && canAdd(q.track, t) ? m || 0 : 0), 0) + (q.track !== 'mob' ? mobCount(q) : 0);
+    // פרופיל שנשמר לפני התיקון לא זוכר כמה ימים התחום הוסיף: מניחים שאת כולם, כמו קודם
+    const f = fitExtra(q.days || 3, was ? q.extraDays?.[track] ?? was : 0, others, n);
+    got = f.n;
+    q.extras = { ...(q.extras || {}), [track]: f.n };
+    q.extraDays = { ...(q.extraDays || {}), [track]: f.took };
+    if (!f.n) { delete q.extras[track]; delete q.extraDays[track]; }
+    q.days = f.days;
     s.plan.completedDays = [];
     return regenerateWeek(s);
   });
+  return got;
 }
+// ההודעה אחרי שינוי: מה נכנס לשבוע, ואם נכנס פחות ממה שביקשו — למה
+const extraToast = (t, got, want) => (!want ? `${nameOf(t)} removed from the week` : !got ? `No room for ${nameOf(t)} — the week is full`
+  : `${nameOf(t)}: ${got === 1 ? '1 workout' : `${got} workouts`} a week${got < want ? ' — no room for more' : ''}`);
 
 // בחירה במסלול אחר: שואלים אם התחום הקודם נשאר בתוקף
 function askSheet(target, rerender) {
@@ -79,7 +102,7 @@ function askSheet(target, rerender) {
       on(sh, 'click', '[data-ask]', (e, b) => {
         const before = snapshot(), how = b.dataset.ask;
         close();
-        if (how === 'both' && !swap) { setExtra(target, n); toast(`${nameOf(target)} added to the week`); rerender(); setTimeout(() => summarySheet(before), 350); return; }
+        if (how === 'both' && !swap) { const got = setExtra(target, n); toast(got === n ? `${nameOf(target)} added to the week` : extraToast(target, got, n), got === n ? undefined : 3200); rerender(); setTimeout(() => summarySheet(before), 350); return; }
         // המעבר עצמו לא תמיד מיידי (25.11.2026): מדיטציה בתנועה פותחת קודם את "המסע שלי", וקליסתניקס / משולב — מבדק רמה.
         // לכן ההמשך (תחומים נוספים, ציור מחדש, "התוכנית עודכנה") רץ רק כשהמעבר הושלם. קודם הוא רץ מיד: הפרופיל השתנה לפני האישור,
         // ביטול השאיר אותו שונה, והסיכום הוצג עם התוכנית הישנה.
@@ -132,10 +155,10 @@ export function trackSheet(rerender) {
       });
       on(sh, 'click', '[data-ts-extra] button', (e, b) => {
         const t = b.parentElement.dataset.tsExtra, v = Number(b.dataset.v), before = snapshot();
-        setExtra(t, v);
-        toast(v ? `${nameOf(t)}: ${v === 1 ? '1 workout' : `${v} workouts`} a week` : `${nameOf(t)} removed from the week`);
+        const got = setExtra(t, v);
+        toast(extraToast(t, got, v), got < v ? 3200 : undefined);
         repaint(); rerender();
-        if (wantsNutrition(get().profile) && snapshot().kcal !== before.kcal) toast(`Calorie target updated: ${snapshot().kcal.toLocaleString('en-US')} kcal`, 2600);
+        if (got >= v && wantsNutrition(get().profile) && snapshot().kcal !== before.kcal) toast(`Calorie target updated: ${snapshot().kcal.toLocaleString('en-US')} kcal`, 2600);
       });
       on(sh, 'click', '[data-ts-mob] button', (e, b) => {
         const v = Number(b.dataset.v);

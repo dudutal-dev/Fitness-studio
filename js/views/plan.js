@@ -42,6 +42,8 @@ export function renderPlan(root) {
   const tracks = [...(run || walk ? [] : tai ? ['tai'] : yoga ? ['yoga'] : pil ? ['pil'] : hiit ? ['hiit'] : mob ? ['mob'] : mix ? ['gym', 'cali'] : [cali ? 'cali' : 'gym']), ...(mobN ? ['mob'] : [])];
   const inTracks = (e) => e.tracks.some((t) => tracks.includes(t));
   const libList = EXERCISES.filter((e) => inTracks(e) && (libFilter === 'all' || e.group === libFilter));
+  // הספרייה מוצגת רק כשיש תרגילים להציג (25.11.2026): בהליכה ובמדיטציה בתנועה הופיעה כותרת "0 תרגילים" עם סינון ריק
+  const hasLib = !(run && !mobN) && EXERCISES.some(inTracks);
 
   root.innerHTML = html`
     <div class="page-head"><div class="h1">${icon(GOALS[p.goal].icon)} ${GOALS[p.goal].name}</div>
@@ -81,11 +83,11 @@ export function renderPlan(root) {
       <div class="lvl-dots">${[1, 2, 3, 4, 5].map((l) => `<i class="${l <= p.level ? 'on' : ''}"></i>`).join('')}</div>
       <div class="grid2"><button class="btn sm" data-lvl="-1" ${p.level <= 1 ? 'disabled' : ''}>קל יותר</button><button class="btn sm" data-lvl="1" ${p.level >= 5 ? 'disabled' : ''}>קשה יותר</button></div></div>`}
 
-    ${run && !mobN ? '' : html`<div class="h2">ספריית תרגילים<span class="sub t-foot" style="margin-inline-start:auto">${libList.length} תרגילים</span></div>
+    ${hasLib ? html`<div class="h2">ספריית תרגילים<span class="sub t-foot" style="margin-inline-start:auto">${libList.length} תרגילים</span></div>
     <div class="chips scroll" style="margin-bottom:12px">${[['all', 'הכל'], ...Object.entries(GROUPS).filter(([k]) => EXERCISES.some((e) => e.group === k && inTracks(e)))].map(([k, v]) => `<button class="chip ${libFilter === k ? 'on' : ''}" data-filter="${k}">${v}</button>`)}</div>
     <div class="lib">${libList.slice(0, libAll ? 999 : 6).map((e) => html`
       <button class="lib-card" data-info="${e.id}" data-coach="${exCoach(p, e.id)}"><img src="${demoPoster(exCoach(p, e.id), e.id)}" alt="" loading="lazy"><div class="cap"><small>${GROUPS[e.group]}</small>${esc(e.name)}</div></button>`)}</div>
-    ${libList.length > 6 ? `<button class="btn block mt-3" data-act="lib-all">${libAll ? 'הצג פחות' : `הצג את כל ${libList.length} התרגילים`}</button>` : ''}`}
+    ${libList.length > 6 ? `<button class="btn block mt-3" data-act="lib-all">${libAll ? 'הצג פחות' : `הצג את כל ${libList.length} התרגילים`}</button>` : ''}` : ''}
   `;
 
   bindMjStills(root);
