@@ -154,7 +154,7 @@ const SHOWN = 'remShown';
 export function checkWorkoutDue(start) {
   const s = get(), st = reminders().settings, now = new Date(), today = now.toDateString();
   const pt = s.profile?.name && s.plan ? plannedToday(s.plan, st, now) : null, late = pt ? now.getHours() * 60 + now.getMinutes() - toMin(pt.time) : -1;
-  if (!pt || late < 0 || late >= 30 || document.querySelector('.live, .ob, .sheet, .lic-gate, .guide')) return false;
+  if (!pt || late < 0 || late >= 30 || document.querySelector('.live, .still, .ob, .sheet, .lic-gate, .guide')) return false;
   try { const v = JSON.parse(localStorage.getItem(SHOWN) || 'null'); if (v && v.day === today && (v.done || Date.now() < v.until)) return false; } catch { /* */ }
   const trained = [...(s.sessions || []), ...(s.runs || [])].some((x) => new Date(x.date).toDateString() === today);
   if (trained) return false;

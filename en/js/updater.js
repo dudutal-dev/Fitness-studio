@@ -7,7 +7,7 @@ const KEY = 'studio_updated_to';
 let reg = null;
 let pending = false;
 
-const inSession = () => !!document.querySelector('.live');
+const inSession = () => !!document.querySelector('.live, .still');   // גם מדיטציית בוקר / לילה היא אימון: לא מרעננים באמצע
 
 function reloadNow(v) {
   try { sessionStorage.setItem(KEY, v || ''); } catch { /* */ }
