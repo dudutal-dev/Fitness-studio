@@ -12,6 +12,8 @@ export function gpsTracker() {
   // (רגיל בעיר, בין בניינים או כשהטלפון בכיס) תורמות למרחק במקום להיזרק, ורעש של מדידה בודדת לא מתווסף למרחק.
   let o = null, fx = 0, fy = 0, v = 0, ft = 0, ref = null, far = 0;
   let spd = null, spdAt = 0;   // מהירות שהמכשיר מדווח (מ׳ לשנייה), מוחלקת
+  // בלי מהירות מהמכשיר (25.11.2026): עמידה במקום מזוהה לפי המיקום עצמו. hist — המיקום המסונן בחלון האחרון; pend — צעדים שעוד לא נספרו
+  const hist = [], pend = [];
   const WALK_Q = 2.2;          // כמה מהר המיקום האמיתי יכול להשתנות (מ׳ לשנייה) — קובע כמה מהר המסנן "מאמין" לתזוזה
   const toLL = (x, y) => [o.lat + y / 110540, o.lon + x / (111320 * Math.cos((o.lat * Math.PI) / 180))];
 
@@ -27,18 +29,26 @@ export function gpsTracker() {
     const mx = (lon - o.lon) * 111320 * Math.cos((o.lat * Math.PI) / 180), my = (lat - o.lat) * 110540;
     const dt = Math.min(600, (t - ft) / 1000), off = Math.hypot(mx - fx, my - fy);
     // קפיצה בודדת רחוקה מדי — מתעלמים; אם היא חוזרת שוב ושוב, המיקום הקודם היה השגוי ומתחילים ממנה
-    if (off > Math.max(60, acc * 3) + dt * 9) { if (++far < 5) return; v = 1e6; } else far = 0;
+    if (off > Math.max(60, acc * 3) + dt * 9) { if (++far < 5) return; v = 1e6; hist.length = pend.length = 0; } else far = 0;
     v += dt * WALK_Q * WALK_Q * (spd != null && now - spdAt < 5000 ? Math.max(0.3, Math.min(4, (spd / WALK_Q) ** 2 + 0.2)) : 1);
     const k = v / (v + acc * acc);
     fx += k * (mx - fx); fy += k * (my - fy); v *= 1 - k; ft = t;
     here = toLL(fx, fy);
+    // בתנועה המיקום מתרחק ממה שהיה לפני חלון הזמן; בעמידה הוא רק רועד סביב אותה נקודה. הסף (C) והחלון (win) גדלים עם אי־הוודאות,
+    // כך שגם הליכה איטית (עד כחצי מטר בשנייה) עוברת אותו. קודם, בלי מהירות מהמכשיר, הרעד הזה נספר: עד 130 מ׳ בעשר דקות עמידה.
+    const sd = Math.sqrt(v), C = Math.max(8, Math.min(3 * Math.max(sd, hist[0]?.s || 0), 40)), win = Math.max(15, Math.min(C / 0.5, 60)) * 1000;
+    hist.push({ t, x: fx, y: fy, s: sd }); while (hist.length > 1 && hist[1].t <= t - win) hist.shift();
     if (paused) return;
     if (!ref) { ref = { x: fx, y: fy, t }; path.push(here); return; }
     const d = Math.hypot(fx - ref.x, fy - ref.y), secs = (t - ref.t) / 1000;
     const still = spd != null && now - spdAt < 5000 && spd < 0.25;       // המכשיר מדווח שעומדים
     if (d < Math.max(3, Math.min(Math.sqrt(v) * 1.6, 25)) || still) return;   // תזוזה קטנה מאי־הוודאות של המיקום — עדיין לא סופרים
-    if (d / Math.max(secs, 1) < 9) { dist += d; recent.push({ t, d: dist }); path.push(here); }
+    if (d / Math.max(secs, 1) < 9) pend.push({ t, d, here });
     ref = { x: fx, y: fy, t };
+    // הצעדים נספרים כשברור שזזים (המכשיר מדווח מהירות, או שהמיקום התרחק) — כולל אלה שחיכו מתחילת התנועה; צעדים שחיכו יותר מהחלון היו רעד, ונזרקים
+    const moving = (spd != null && now - spdAt < 5000) || Math.hypot(fx - hist[0].x, fy - hist[0].y) > C;
+    while (pend.length && t - pend[0].t > win + 5000) pend.shift();
+    if (moving) { for (const p of pend) { dist += p.d; recent.push({ t: p.t, d: dist }); path.push(p.here); } pend.length = 0; }
     while (recent.length && t - recent[0].t > 45000) recent.shift();
   }
 
@@ -49,7 +59,7 @@ export function gpsTracker() {
       return true;
     },
     stop() { if (watch != null) navigator.geolocation.clearWatch(watch); watch = null; },
-    pause(v2) { paused = v2; if (!v2) ref = null; },
+    pause(v2) { paused = v2; pend.length = 0; if (!v2) ref = null; },
     get distM() { return dist; },
     get path() { return path; },
     get here() { return here; },

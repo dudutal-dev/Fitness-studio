@@ -74,6 +74,29 @@ function setExtra(track, n) {
   });
   return got;
 }
+// מוביליטי לצד המסלול (25.11.2026): כמו בתחומים הנוספים, profile.extraDays.mob זוכר כמה ימי אימון המוביליטי הוסיף, וההסרה מחזירה בדיוק אותם.
+// קודם "להוסיף ולהמשיך" הוסיף יום אימון ו"בלי" לא החזיר אותו (4 ← 5 ← נשאר 5); לחיצה שנייה על "להוסיף" הוסיפה עוד יום בלי אימון מוביליטי;
+// ובשבוע מלא נשמר mobN בלי שאימון נכנס לשבוע. add — "להוסיף ולהמשיך": יום אימון נוסף (fitExtra; בשבוע מלא לא נכנס כלום).
+// בלי add — הבחירה שבחלונית: על חשבון ימי האימון הקיימים, כמו קודם. הורדה מחזירה ימים רק כשנשארו פחות אימוני מוביליטי מהימים שנוספו.
+// פרופיל שהוסיף מוביליטי לפני התיקון לא זוכר יום שנוסף, ולכן אצלו ההסרה לא מורידה יום (כמו קודם). מחזיר כמה אימונים נכנסו לשבוע.
+export function fitMob(q, n, add = false) {
+  const was = mobCount(q), took = was ? q.extraDays?.mob || 0 : 0;
+  const others = Object.entries(q.extras || {}).reduce((a, [t, m]) => a + (canAdd(q.track, t) ? m || 0 : 0), 0);
+  let days = q.days || 3, keep = Math.min(took, n);
+  if (add && was) return was;                                                                  // כבר בשבוע: לא מוסיפים יום נוסף
+  if (add) { const f = fitExtra(days, 0, others + (q.track === 'mix' ? 1 : 0), n); n = f.n; days = f.days; keep = f.took; }   // במשולב נשארים שני אימונים למסלול הראשי
+  else days = Math.max(2, days - (took - keep));
+  if (n && !q.mob) q.mob = newMob();
+  q.mobN = n; q.days = days;
+  q.extraDays = { ...(q.extraDays || {}), mob: keep };
+  if (!keep) delete q.extraDays.mob;
+  return mobCount(q);
+}
+function setMob(n, add) {
+  let got = 0;
+  set((s) => { got = fitMob(s.profile, n, add); s.plan.completedDays = []; return regenerateWeek(s); });
+  return got;
+}
 // ההודעה אחרי שינוי: מה נכנס לשבוע, ואם נכנס פחות ממה שביקשו — למה
 const extraToast = (t, got, want) => (!want ? `${nameOf(t)} הוסר מהשבוע` : !got ? `אין מקום ל${nameOf(t)} — השבוע מלא`
   : `${nameOf(t)}: ${got === 1 ? 'אימון אחד' : `${got} אימונים`} בשבוע${got < want ? ' — אין מקום ליותר' : ''}`);
@@ -162,7 +185,7 @@ export function trackSheet(rerender) {
       });
       on(sh, 'click', '[data-ts-mob] button', (e, b) => {
         const v = Number(b.dataset.v);
-        set((s) => { const q = s.profile; if (v && !q.mob) q.mob = newMob(); q.mobN = v; s.plan.completedDays = []; return regenerateWeek(s); });
+        setMob(v);
         toast(v ? `${v === 1 ? 'אימון מוביליטי אחד' : `${v} אימוני מוביליטי`} בשבוע` : 'אימוני המוביליטי הוסרו מהשבוע');
         repaint(); rerender();
       });
@@ -181,7 +204,7 @@ function askMob(rerender) {
     onMount(sh, close) {
       on(sh, 'click', '[data-am]', (e, b) => {
         const before = snapshot(); close();
-        if (b.dataset.am === 'both') set((s) => { const q = s.profile; if (!q.mob) q.mob = newMob(); q.mobN = Math.max(1, q.mobN || 0); q.days = Math.min(6, (q.days || 3) + 1); s.plan.completedDays = []; return regenerateWeek(s); });
+        if (b.dataset.am === 'both') { if (!setMob(Math.max(1, get().profile.mobN || 0), true)) { rerender(); return toast(extraToast('mob', 0, 1), 3200); } }   // שבוע מלא: אומרים, ולא מציגים סיכום של שינוי שלא קרה
         else switchTrack('mob', () => {});
         rerender(); setTimeout(() => summarySheet(before), 350);
       });

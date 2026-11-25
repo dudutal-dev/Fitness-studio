@@ -37,7 +37,8 @@ function profilePart() {
   const s = get();
   const p = s.profile || {};
   const last = [...(s.sessions || []), ...(s.runs || [])].map((x) => x.date).sort().pop() || null;
-  return { app: APP_ID, name: p.name || '', sex: p.sex || 'm', coach: p.coach || 'ori', tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jerusalem', lastWorkout: last };
+  // השם הפרטי לא נשלח לשרת (החלטת בעל המוצר, 25.11.2026). נשלח שדה ריק ולא שדה חסר: ב-/update השרת שומר את השם הישן כשהשדה חסר, ומוחק אותו כשהוא ריק
+  return { app: APP_ID, name: '', sex: p.sex || 'm', coach: p.coach || 'ori', tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jerusalem', lastWorkout: last };
 }
 
 async function post(path, body) {
@@ -58,7 +59,7 @@ export async function enableReminders() {
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(VAPID_PUBLIC) });
   const cur = reminders();
   const { id } = await post('/subscribe', { id: cur.id, subscription: sub.toJSON(), settings: cur.settings, ...profilePart() });
-  set((s) => { s.reminders = { ...cur, id, enabled: true }; return s; });
+  set((s) => { s.reminders = { ...cur, id, enabled: true }; s.pushNoName = 1; return s; });
   return id;
 }
 
@@ -86,9 +87,12 @@ if (typeof window !== 'undefined') setTimeout(() => { if (reminders().calId && !
 export async function syncReminders() {
   const r = reminders();
   if (!r.enabled || !r.id) return;
-  try { await post('/update', { id: r.id, settings: r.settings, ...profilePart() }); }
+  try { await post('/update', { id: r.id, settings: r.settings, ...profilePart() }); if (!get().pushNoName) set((s) => { s.pushNoName = 1; return s; }); }
   catch (e) { if (e.status === 404) set((s) => { s.reminders = { ...reminders(), enabled: false }; return s; }); throw e; }
 }
+
+// מי שנרשם לתזכורות לפני 25.11.2026 שמור בשרת עם השם הפרטי: מעדכנים פעם אחת, והשרת מוחק את השם. נכשל — מנסים שוב בפתיחה הבאה
+if (typeof window !== 'undefined') setTimeout(() => { const r = reminders(); if (r.enabled && r.id && !get().pushNoName && navigator.onLine) syncReminders().catch(() => {}); }, 7000);
 
 export async function testReminder() {
   const r = reminders();

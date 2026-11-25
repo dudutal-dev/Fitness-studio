@@ -1,7 +1,7 @@
 {
   "name": "MOVA — your personal fitness studio",
   "short_name": "MOVA",
-  "description": "סטודיו כושר אישי: חדר כושר, קליסתניקס, ריצה, תזונה ומעקב — עם מאמן וירטואלי לכל מסלול",
+  "description": "Your personal fitness studio: gym, calisthenics, running, nutrition and tracking — with a virtual coach for every track",
   "lang": "en",
   "dir": "ltr",
   "start_url": "./#/home",

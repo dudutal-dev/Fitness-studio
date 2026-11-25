@@ -88,8 +88,9 @@ export function updateRun(state, index, edited) {
 
 export function deleteRun(state, index) {
   if (!state.runs[index]) return state;
-  state.runs.splice(index, 1);
+  const [r] = state.runs.splice(index, 1);
   syncRunLevel(state);
-  state.xp = Math.max(0, (state.xp || 0) - RUN_XP);
+  // הנקודות שהריצה נתנה (25.11.2026): מה שנשמר עליה (xp — כולל שיא במבדק); ברשומה ישנה בלי השדה — 90, כמו קודם
+  state.xp = Math.max(0, (state.xp || 0) - (r.xp ?? RUN_XP));
   return state;
 }

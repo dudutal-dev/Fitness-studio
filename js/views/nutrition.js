@@ -177,7 +177,7 @@ export function renderNutrition(root) {
     <details class="card acc method"><summary>איך זה מחושב</summary><div class="acc-body">
       ${p.track === 'cali' ? `<div class="m-row"><b>קליסתניקס</b><span>${p.goal === 'muscle' ? 'העודף הקלורי נשאר קטן בכוונה: כל קילו נוסף הוא קילו שצריך להרים במתח ובמקבילים.' : p.goal === 'cut' ? 'ירידה איטית שומרת על הכוח. כל קילו שומן שיורד מקל ישירות על מתח, לברים ועמידת ידיים.' : 'איזון קלורי עם חלבון גבוה: בונים כוח בלי לעלות במשקל, כי הכוח כאן נמדד ביחס למשקל הגוף.'}</span></div>` : ''}
       <div class="m-row"><b>לפי היום</b><span>הפחמימה עוקבת אחרי עומס האימון של אותו יום (Burke 2011; ACSM / AND / DC 2016): ‎+15% קלוריות ביום ריצה ארוכה, ‎+5% ביום אימון קשה, בלי שינוי ביום קל, ו-‎−5% ביום מנוחה. החלבון קבוע. גודל ההזזה הוא בחירה של האפליקציה, לא ממצא מחקרי.</span></div>
-      <div class="m-row"><b>קלוריות</b><span>BMR לפי Mifflin-St Jeor (<span class="num">${t.bmr}</span>) × מקדם פעילות ${t.activity.factor} = <span class="num">${t.tdee}</span>${t.delta ? ` ${t.delta > 0 ? '+' : '−'} <span class="num">${Math.abs(t.delta)}</span> (${p.goal === 'cut' ? 'ירידה של ~0.5% ממשקל הגוף בשבוע' : 'עודף של ~10% — עלייה של 0.25–0.5% בשבוע'})` : ' (תחזוקה)'}${t.adjust ? ` ${t.adjust > 0 ? '+' : '−'} <span class="num">${Math.abs(t.adjust)}</span> (כיול לפי מגמת המשקל שלך)` : ''}</span></div>
+      <div class="m-row"><b>קלוריות</b><span>BMR לפי Mifflin-St Jeor (<span class="num">${t.bmr}</span>) × מקדם פעילות ${t.activity.factor} = <span class="num">${t.tdee}</span>${t.delta ? ` ${t.delta > 0 ? '+' : '−'} <span class="num">${Math.abs(t.delta)}</span> (${p.goal === 'cut' ? 'ירידה של ~0.5% ממשקל הגוף בשבוע' : 'עודף של ~10% — עלייה של 0.25–0.5% בשבוע'})` : ' (תחזוקה)'}${t.adjust ? ` ${t.adjust > 0 ? '+' : '−'} <span class="num">${Math.abs(t.adjust)}</span> (כיול לפי מגמת המשקל שלך)` : ''}${t.minKcal && t.kcal === t.minKcal ? ` · לא פחות מ-<span class="num">${t.minKcal}</span> קק״ל ביום, המינימום המקובל בלי ליווי מקצועי` : ''}</span></div>
       <div class="m-row"><b>חלבון</b><span>${t.perKg} ג׳ לק״ג${t.refW < Math.round(p.weightKg) ? ` (לפי משקל ייחוס ${t.refW} ק״ג)` : ''} — ISSN: 1.4–2.0 למתאמנים, יותר בגירעון; 20–40 ג׳ בכל ארוחה</span></div>
       <div class="m-row"><b>שומן</b><span>25% מהקלוריות (טווח מומלץ 20–35%), לא פחות מ-0.5 ג׳ לק״ג</span></div>
       <div class="m-row"><b>פחמימה</b><span>יתרת הקלוריות — <span class="num">${(t.carbs / (p.weightKg || 70)).toFixed(1)}</span> ג׳ לק״ג (ACSM: 5–7 לאימון בינוני, 3–5 לקל)</span></div>
@@ -464,7 +464,7 @@ function customFoodSheet(slot, onDone, prefill = '') {
         const v = (n) => inp(n).value.trim();
         const name = v('name'), tot = parts.length ? partsTotals(parts, custom()) : null, kcal = tot ? tot.kcal : Number(v('kcal'));
         if (!name) { toast('צריך לתת למנה שם'); return; }
-        if (!kcal) { toast('מוסיפים מרכיב אחד לפחות, או מקלידים קלוריות'); return; }
+        if (!(kcal > 0)) { toast('מוסיפים מרכיב אחד לפחות, או מקלידים קלוריות'); return; }
         const food = { id: `c_${Date.now()}`, name, portion: v('portion') || 'מנה', kcal, p: tot ? tot.p : Number(v('p')) || 0, c: tot ? tot.c : Number(v('c')) || 0, f: tot ? tot.f : Number(v('f')) || 0, fib: tot ? tot.fib : Number(pre.fib) || 0,
           cat: 'custom', tags: [], ctx: ['base', 'home', 'field'], custom: true, ...(pre.barcode ? { barcode: pre.barcode } : {}), ...(tot ? { parts: parts.map((x) => ({ id: x.id, qty: x.qty })) } : {}) };
         set((s2) => { (s2.profile.customFoods ||= []).push(food); return s2; });

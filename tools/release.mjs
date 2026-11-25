@@ -19,6 +19,8 @@ writeFileSync(new URL('sw.js', root), sw);
 try { const au = new URL('admin/index.html', root); writeFileSync(au, readFileSync(au, 'utf8').replace(/const ADMIN_V = '[^']*';/, `const ADMIN_V = '${v}';`)); } catch { /* אין אפליקציית ניהול בריפו הזה */ }
 // רשימת סרטוני ההדגמה לכל מאמן (להורדה מראש באפליקציה)
 try { const { execFileSync } = await import('node:child_process'); console.log(execFileSync('node', [new URL('media_list.mjs', import.meta.url).pathname], { encoding: 'utf8' }).trim()); } catch (e) { console.error('media list failed:', e.message); process.exit(1); }
+// טבלת קבוצות המזון (js/data/food-groups.js) מחושבת מחדש מהמאגר העברי — לפני בניית הגרסה האנגלית, שמקבלת אותה כמו שהיא
+try { const { execFileSync } = await import('node:child_process'); console.log(execFileSync('node', [new URL('food_groups.mjs', import.meta.url).pathname], { encoding: 'utf8' }).trim()); } catch (e) { console.error('food groups failed:', e.message); process.exit(1); }
 // הגרסה האנגלית (en/) נבנית מחדש מהמקור העברי בכל שחרור, כדי ששתי הגרסאות יהיו תמיד באותה גרסה
 try { const { execFileSync } = await import('node:child_process'); const out = execFileSync('node', [new URL('i18n.mjs', import.meta.url).pathname, 'build'], { encoding: 'utf8' }); console.log(out.trim().split('\n').pop()); } catch { /* אין גרסה אנגלית בריפו הזה */ }
 console.log('release', v, media ? '(media refreshed)' : '');

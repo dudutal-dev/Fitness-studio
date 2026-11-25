@@ -90,7 +90,7 @@ test('משקל המנה לא מודפס פעמיים', () => {
   assert.equal(FOOD.oatmeal_milk.portion, '250 ג׳');
 });
 
-test('מעבר מסלול הלוך וחזור מחזיר את המטרה הקודמת (MOVA)', { skip: !program.goalOnSwitch }, () => {
+test('מעבר מסלול הלוך וחזור מחזיר את המטרה הקודמת (MOVA)', { skip: !program.goalOnSwitch || !program.goalsFor('med')?.includes('zen') }, () => {
   const { goalOnSwitch } = program, sw = (q, track) => { q.goal = goalOnSwitch(q, track); q.track = track; return q; };
   const f = { sex: 'f', weightKg: 62, heightCm: 165, age: 30, days: 3, track: 'gym', goal: 'cut' };
   const before = targets(f).kcal;

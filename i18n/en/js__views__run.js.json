@@ -74,5 +74,7 @@
  "הבא:": "Next: ",
  "השלב האחרון": "The last stage",
  "האימון נעצר כשהמסך היה סגור. ממשיכים מאותה נקודה.": "The workout stopped while the screen was closed. Continuing from the same point.",
- "· קליטה חלשה מדי, המרחק לא נמדד כרגע": " · signal too weak, distance is not being measured right now"
+ "· קליטה חלשה מדי, המרחק לא נמדד כרגע": " · signal too weak, distance is not being measured right now",
+ "3 ק״מ:": "3 km:",
+ "האימון נעצר לפני הסוף. הוא יישמר, והיום בתוכנית נשאר פתוח.": "The session stopped before the end. It will be saved, and the day stays open in your plan."
 }

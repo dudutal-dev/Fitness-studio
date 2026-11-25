@@ -229,5 +229,7 @@
  "במסלול הזה אין תפריט": "This track has no menu",
  "מדיטציה בתנועה היא הליכה ושקט, בלי יעדי קלוריות ובלי יומן אכילה. מי שרוצה ליווי תזונה בוחר מסלול ראשי אחר ב\"המסלול שלי\", והתפריט חוזר כמו שהיה.": "Moving meditation is walking and quiet, with no calorie targets and no food log. If you want nutrition guidance, pick a different main track under \"My track\", and the menu comes back as it was.",
  "עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים: התפריט יוצא מעל יעד הקלוריות, והחלבון מתחת ליעד. אפשר לנסות \"תפריט אחר\".": "With the restrictions you chose there aren't enough suitable foods here: the menu comes out above the calorie target and below the protein target. You can try \"Different menu\".",
- "עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים, והתפריט יוצא מעל יעד הקלוריות. אפשר להקטין מנה, או לנסות \"תפריט אחר\".": "With the restrictions you chose there aren't enough suitable foods here, and the menu comes out above the calorie target. You can make a portion smaller, or try \"Different menu\"."
+ "עם ההגבלות שנבחרו אין כאן מספיק מאכלים מתאימים, והתפריט יוצא מעל יעד הקלוריות. אפשר להקטין מנה, או לנסות \"תפריט אחר\".": "With the restrictions you chose there aren't enough suitable foods here, and the menu comes out above the calorie target. You can make a portion smaller, or try \"Different menu\".",
+ "· לא פחות מ-": " · never below ",
+ "קק״ל ביום, המינימום המקובל בלי ליווי מקצועי": " kcal a day, the accepted minimum without professional supervision"
 }

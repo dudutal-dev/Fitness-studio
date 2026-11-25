@@ -1,5 +1,6 @@
 // מנוע תזונה: יעדים קלוריים ומאקרו, ובניית תפריט יומי שמכבד את מה שהמשתמש לא אוכל.
 import { FOODS, FOOD } from '../data/foods.js';
+import { FOOD_GROUPS } from '../data/food-groups.js';
 import { hasSchedule, plannedToday, closedDays, toMin, fromMin } from './schedule.js';
 import { DISHES, DISH } from '../data/dishes.js';
 
@@ -49,6 +50,10 @@ export function goalDelta(goal, weightKg, tdee = 2800, track = 'gym') {
 }
 
 const KCAL_ADJ_MAX = 500;
+// רצפה מוחלטת ליעד היומי (25.11.2026): 1,200 קק״ל לנשים ו-1,500 לגברים — הגבול המקובל לדיאטה בלי ליווי מקצועי.
+// קודם הרצפה היחידה הייתה קצב חילוף החומרים במנוחה, ואישה בת 70 במשקל 45 ק״ג קיבלה יעד של 960 קק״ל.
+export const KCAL_MIN = { f: 1200, m: 1500 };
+const kcalMin = (profile) => KCAL_MIN[profile?.sex === 'f' ? 'f' : 'm'];
 
 // ───── שערי בטיחות ─────
 // למי שהיעד האוטומטי עלול להזיק לו אין גירעון קלורי: היריון, הנקה, מתחת לגיל 18, תת־משקל (BMI < 18.5), או מצב רפואי שמושפע מתזונה.
@@ -73,11 +78,14 @@ export function targets(profile) {
   const tdee = rest * act.factor;
   const guard = nutritionGuard(profile);
   const rawDelta = goalDelta(profile.goal, w, tdee, profile.track);
-  const delta = guard.noDeficit ? Math.max(0, rawDelta) : rawDelta;
+  const delta0 = guard.noDeficit ? Math.max(0, rawDelta) : rawDelta;
   // כיול אישי לפי מגמת המשקל בפועל (ראו trendAdvice) — המשוואות הן הערכה; המשקל הוא המדידה.
   const adjust = Math.max(guard.noDeficit ? 0 : -KCAL_ADJ_MAX, Math.min(KCAL_ADJ_MAX, profile.kcalAdjust || 0));
-  // רצפה: לא יורדים מתחת לקצב חילוף החומרים במנוחה.
-  const kcal = Math.round(Math.max(rest, tdee + delta + adjust) / 10) * 10;
+  // רצפה: לא יורדים מתחת לקצב חילוף החומרים במנוחה, ולא מתחת לרצפה המוחלטת (KCAL_MIN).
+  const minKcal = kcalMin(profile), want = tdee + delta0 + adjust;
+  const kcal = Math.round(Math.max(rest, minKcal, want) / 10) * 10;
+  // כשהרצפה הרימה את היעד, הגירעון שמוצג הוא מה שנשאר ממנו בפועל (ולא "גירעון של 250" ליעד שהוא כבר תחזוקה)
+  const delta = delta0 < 0 && kcal > want + 5 ? Math.min(0, Math.round(kcal - tdee - adjust)) : delta0;
   // חלבון: ISSN (Jäger 2017) — 1.4–2.0 ג׳/ק״ג למתאמנים; Morton 2018 — התועלת לשריר מתייצבת סביב 1.6 (גבול עליון 2.2).
   // בגירעון יותר (Helms 2014: 2.3–3.1 ג׳ לק״ג מסה רזה ≈ 2.2 לק״ג משקל גוף). בעודף משקל מחשבים לפי משקל ב-BMI 30,
   // אחרת היעד מתנפח לפי רקמת שומן שלא צריכה חלבון.
@@ -101,7 +109,7 @@ export function targets(profile) {
   // + 0.5 ל׳ לכל שעת אימון (ACSM 2007: קצבי הזעה 0.5–2.0 ל׳/שעה — לוקחים את הקצה הנמוך; בחום ובשטח יותר).
   const base = profile.sex === 'f' ? 1.6 : 2.0;
   const waterL = Math.round((base + 0.5 * ((mobOnly ? profile.mob?.minutes || 20 : profile.sessionMin || 60) / 60)) * 10) / 10;
-  return { kcal, protein, fat, carbs, fiber, waterL, tdee: Math.round(tdee), bmr: Math.round(rest), delta, adjust, activity: act, perKg, refW: Math.round(refW), guard };
+  return { kcal, protein, fat, carbs, fiber, waterL, tdee: Math.round(tdee), bmr: Math.round(rest), minKcal, delta, adjust, activity: act, perKg, refW: Math.round(refW), guard };
 }
 
 // ───── כיול לפי מגמת המשקל ─────
@@ -158,15 +166,24 @@ const GROUP_OK = { wheat: ['rice_cakes', 'corn_cakes', 'rice_noodles', 'corn_sch
 // שמני זרעים גם לפי תיאור המקור (25.11.2026): השם "לחם מחיטה מלאה" או "קוסקוס" לא מגלה שהמוצר שבמאגר הוכן עם שמן סויה או טוגן בשמן קנולה,
 // והמאכלים האלה נשארו בתפריט של מי שביקש בלי שמני זרעים. כל רכיב מקור נבדק בנפרד: שמן סויה / קנולה / חמניות / תירס, מרגרינה, מיונז,
 // או טיגון בלי ששמן זית נזכר. סויה שאינה שמן (פולי סויה, משקה סויה, רוטב סויה) לא נתפסת, ו"ללא שמן" / "בשמן זית" נשארים.
-// התבניות כוללות גם את הנוסח האנגלי של תיאורי המקור: במהדורה האנגלית של MOVA התיאורים מתורגמים, ותבנית בעברית בלבד לא תופסת שם דבר.
-const SEED_SRC_RX = /שמן (סויה|קנולה|חמניות|תירס)|מרגרינה|מיונז|מטוג|טיגון|בשמן|(soy(bean)?|canola|sunflower|corn) oil|margarine|mayonnaise|(^|[^-\w])fried|(pan|deep)-fried|\bin oil|oil-popped/i, SEED_SRC_KEEP = /שמן זית|ללא שמן|ללא תוספת שמן|בלי שמן|olive oil|without (added )?oil|no (added )?oil/i;
+const SEED_SRC_RX = /שמן (סויה|קנולה|חמניות|תירס)|מרגרינה|מיונז|מטוג|טיגון|בשמן/, SEED_SRC_KEEP = /שמן זית|ללא שמן|ללא תוספת שמן|בלי שמן/;
 const seedOilSrc = (food) => (food.src || []).some((x) => SEED_SRC_RX.test(x.name) && !SEED_SRC_KEEP.test(x.name));
-export function inDislikeGroup(food, g) {
+// הכללים הגולמיים (לפי שם המאכל ותיאור המקור בעברית). משמשים את tools/food_groups.mjs, ומאכלים שאינם במאגר (מזון שהמתאמן יצר).
+function rawInGroup(food, g) {
   const d = DISLIKE_GROUPS[g]; if (!d || !food) return false;
   if (GROUP_OK[g].includes(food.id)) return false;
   if (d.ids.includes(food.id) || (food.tags || []).some((t) => d.tags.includes(t))) return true;
   if (g === 'seed_oils' && seedOilSrc(food)) return true;
   return d.re.test(food.name) && !GROUP_KEEP[g].test(food.name);
+}
+// מאכלי המאגר נענים מטבלה שחושבה מראש מהמקור העברי (25.11.2026; js/data/food-groups.js, נוצרת בכל שחרור): במהדורה האנגלית של MOVA
+// השמות ותיאורי המקור מתורגמים, והתבניות בעברית לא תפסו שם כמעט כלום — "בלי סוכר" סינן 16 מאכלים במקום 86, וסימון הגלוטן 119 במקום 175.
+// הטבלה מחזיקה מזהים בלבד, ולכן היא זהה בשתי השפות. מאכל שאינו במאגר, או שהשם שלו שונה מזה שבמאגר, נבדק בכללים הגולמיים.
+const GROUP_IDS = Object.fromEntries(Object.entries(FOOD_GROUPS).map(([k, ids]) => [k, new Set(ids)]));
+const inDb = (food) => !!food && FOOD[food.id]?.name === food.name;
+const byTable = (k, raw) => (food) => (inDb(food) && GROUP_IDS[k] ? GROUP_IDS[k].has(food.id) : raw(food));
+export function inDislikeGroup(food, g) {
+  return DISLIKE_GROUPS[g] ? byTable(g, (f) => rawInGroup(f, g))(food) : false;
 }
 export function allowed(food, dislikes = [], dislikedFoods = []) {
   if (dislikedFoods.includes(food.id)) return false;
@@ -208,13 +225,17 @@ const PLANT_ANYWHERE = new Set(['pea_protein', 'soy_protein', 'soy_milk', 'roast
 const GLUTEN_RX = /קרואסון|עוגת|עוגה|עוגי|בבקה|גביניה|וופל|בראוניז|בייגל|אוראו|לוטוס|קמיש|קרקר|לחמית|כיף כף|טוויקס|קינדר|טורטית|טאבולה|וויטביקס|סולת|שניצל|קוסקוס|נאגטס|קובה|בורקס|פיצה|פסטה|לחם|פיתה|לחמני|חלה|מאפה|מאפינ|רוגלך|סופגני|מלוואח|ג.חנון|טורטיה|לאפה|פתיתים|אטריות|נודלס|ניוקי|קרוטונים|שקדי מרק|פנקייק|בלינצ|קרפ|שעורה|גריסים|בירה|כוסמין|סובין|ברנפלקס|דגני|כריות עם|קורנפלקס|גרנולה|מצופות|קבוקים|בבלילה|סיגרים/;
 const GLUTEN_FREE_RX = /אטריות אורז|פסטה ללא גלוטן|לחם ללא גלוטן|ללא גלוטן|מקופלת/;
 let glutenIds = null;
-const hasGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && (inDislikeGroup(food, 'wheat') || GLUTEN_RX.test(food.name || ''));
+const rawGluten = (food) => !!food && !GLUTEN_FREE_RX.test(food.name || '') && (rawInGroup(food, 'wheat') || GLUTEN_RX.test(food.name || ''));
+const hasGluten = byTable('gluten', rawGluten);
 const glutenExtra = () => (glutenIds ||= new Set(FOODS.filter(hasGluten).map((x) => x.id)));
 // שומשום (25.11.2026): התגיות (טחינה / חומוס) והמזהה של חלבה לא תפסו מאכל שהשומשום נזכר רק בשמו או בתיאור המקור שלו —
 // "לחמנייה" היא במאגר "לחמניה להמבורגר, עם שומשום", והיא הוגשה בתפריט של מי שסימן אלרגיה לשומשום ולא סומנה בחיפוש.
-const SESAME_RX = /שומשום|sesame/i;   // גם בנוסח האנגלי של השם והמקור (המהדורה האנגלית של MOVA)
+const SESAME_RX = /שומשום|sesame/i;   // גם באנגלית: למזון שהמתאמן יצר והקליד את שמו באנגלית (מאכלי המאגר נענים מהטבלה)
 let sesameIds = null;
-const hasSesame = (food) => !!food && (SESAME_RX.test(food.name || '') || (food.src || []).some((x) => SESAME_RX.test(x.name)));
+const rawSesame = (food) => !!food && (SESAME_RX.test(food.name || '') || (food.src || []).some((x) => SESAME_RX.test(x.name)));
+const hasSesame = byTable('sesame', rawSesame);
+// הכללים הגולמיים לפי שם הקבוצה — מהם נבנית הטבלה (tools/food_groups.mjs), והבדיקה משווה אותה אליהם (tests/qa-foodgroups.test.js)
+export const RAW_FOOD_RULES = { ...Object.fromEntries(Object.keys(DISLIKE_GROUPS).map((g) => [g, (f) => rawInGroup(f, g)])), gluten: rawGluten, sesame: rawSesame };
 const sesameExtra = () => (sesameIds ||= new Set(FOODS.filter(hasSesame).map((x) => x.id)));
 export function blockedBy(profile = {}) {
   const tags = new Set(DIET_TAGS[profile.diet] || []), ids = new Set(DIET_IDS[profile.diet] || []);
@@ -547,7 +568,7 @@ export function dayType(state, now = Date.now(), manual = null) {
 export function dayTargets(profile, type = 'light') {
   const b = targets(profile);
   const f0 = DAY_TYPES[type]?.f || 0, f = f0 < 0 && b.guard.noDeficit ? 0 : f0;   // בלי "יום מנוחה מינוס 5%" למי שאין לו גירעון
-  const kcal = f ? Math.round(Math.max(b.bmr, b.kcal * (1 + f)) / 10) * 10 : b.kcal;
+  const kcal = f ? Math.round(Math.max(b.bmr, b.minKcal, b.kcal * (1 + f)) / 10) * 10 : b.kcal;
   const carbs = f ? Math.max(0, Math.round((kcal - b.protein * 4 - b.fat * 9) / 4)) : b.carbs;
   return { ...b, kcal, carbs, fiber: Math.round((kcal / 1000) * 14), dayType: type, baseKcal: b.kcal, baseCarbs: b.carbs, dayDelta: kcal - b.kcal };
 }

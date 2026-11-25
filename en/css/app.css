@@ -1273,6 +1273,12 @@ button.mi .tag { margin-inline-end: 4px; }
 .live.map-full .map-zoom { display: grid; gap: 8px; position: absolute; z-index: 3; right: 14px; top: calc(116px + var(--safe-t)); }
 .map-zoom button { width: 40px; height: 40px; border-radius: 12px; background: rgba(10, 14, 19, 0.72); color: #fff; font-size: 22px; font-weight: 700; line-height: 1; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .live.map-full .stage.run-stage .rmap-credit { top: calc(212px + var(--safe-t)); left: auto; right: 14px; }
+/* מסך נמוך (25.11.2026): באימון חופשי הלוח גבוה יותר (שתי שורות כפתורים) וכיסה את כפתור ההקטנה — הכפתורים עוברים לשורה אחת מתחת לכפתורים שלמעלה */
+@media (max-height: 660px) {
+  .live.map-full .map-zoom { grid-auto-flow: column; top: calc(62px + var(--safe-t)); }
+  .live.map-full .stage.run-stage .rmap-credit { top: calc(110px + var(--safe-t)); }
+  .live.map-full .say { right: 110px; }   /* הכיתוב של המאמן נעצר לפני הכפתורים */
+}
 /* בסיכום: המסלול כולו בחלק העליון, בלי כותרת שמסתירה אותו */
 .live.run-ended .stage.run-stage .title { display: none; }
 .live.run-ended .stage.run-stage::after { background: linear-gradient(to bottom, rgba(4,5,7,0.45), transparent 22%); }

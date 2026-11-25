@@ -112,6 +112,8 @@ function build(write) {
     writeFileSync(join(OUT, 'index.html'), html);
     const md = loadDict('manifest.webmanifest'); let man = readFileSync(join(ROOT, 'manifest.webmanifest'), 'utf8');
     for (const [he, en] of Object.entries(md)) man = man.split(he).join(en);
+    // התיאור (25.11.2026): נשאר בעברית במניפסט האנגלי כי לא היה במילון. תרגום במילון קודם; בלעדיו — הנוסח הזה. המניפסט העברי לא משתנה
+    man = man.replace(/("description": ")([^"]*)(")/, (m, a, d, z) => (HE.test(d) ? `${a}Your personal fitness studio: gym, calisthenics, running, nutrition and tracking — with a virtual coach for every track${z}` : m));
     writeFileSync(join(OUT, 'manifest.webmanifest'), man.replace('"lang": "he"', '"lang": "en"').replace('"dir": "rtl"', '"dir": "ltr"').replace(/"assets\//g, '"../assets/'));
     mkdirSync(join(OUT, 'css'), { recursive: true });
     for (const f of readdirSync(join(ROOT, 'css'))) writeFileSync(join(OUT, 'css', f), readFileSync(join(ROOT, 'css', f), 'utf8').replace(/url\((['"]?)\.\.\/assets\//g, 'url($1../../assets/'));

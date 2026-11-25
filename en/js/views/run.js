@@ -57,7 +57,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   let segStart = 0, elapsed = 0, lastTick = Date.now(), wokeAt = 0;
   const SLEEP_GAP = 5 * 60000;
   let paused = false, timer = null, wakeLock = null;
-  let testStart = null, testStartDist = 0, saidHalf = false;
+  let testStart = null, testStartDist = 0, saidHalf = false, testT = null;   // testT: זמן ה-3 ק״מ שנמדד במבדק (שניות)
   let kmAnnounced = 0;
   let zoneOutSince = 0, zoneCooldown = 0, tipped = false, freeTips = 0;
   const FREE_TIP = (n) => (walkS ? (n % 2 ? 'walk_form' : 'walk_talk') : runCoach ? (n % 2 ? 'run_form' : 'run_breathe') : null);
@@ -186,7 +186,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     // הליכה: בפתיחה שירה מציגה את עצמה, ואז את המקטע הראשון (בלי לקטוע את הברכה)
     if (medS) say(medLine(medS, Math.min(i, 5)), { priority: !(i === 0 && elapsed === 0), keep: true });   // keep: הפתיחה מחכה לסוף הברכה הארוכה
     else if (walkS) say(lastPower ? 'walk_last' : WALK_VOICE[sg.kind], { priority: !(i === 0 && elapsed === 0) });
-    else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) });
+    else say(isLastFast ? 'run_last' : runCoach && run.type === 'long' && sg.kind === 'steady' ? 'run_long' : SEG_VOICE[sg.kind], { priority: !(runCoach && run.type !== 'test' && i === 0 && elapsed === 0) && !(testT && sg.kind === 'cool') });   // אחרי המבדק: השחרור לא קוטע את "המבדק הושלם"
     tipped = false; praised = false; counted = false;
     if (medS && sg.point && sg.kind !== 'warm' && sg.kind !== 'cool') marks.push({ name: sg.point, pos: gps.status.ok && gps.here ? [...gps.here] : null, i });
     if (sg.kind === 'test') { testStart = elapsed; testStartDist = distM(); $('#testDone').style.display = ''; $('[data-act="skip"]').style.display = 'none'; }
@@ -300,25 +300,34 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     i++; enterSeg();
   }
 
+  // סוף המבדק (25.11.2026): הזמן נרשם, והאימון ממשיך לשחרור ומסתיים כרגיל. קודם האימון נסגר כאן: השחרור לא רץ אף פעם,
+  // וברשומה נשמרו "3 ק״מ" לצד זמן כולל שכלל גם את החימום
   function testDone() {
-    const sec = Math.round((elapsed - testStart) / 1000);
-    clearInterval(timer);
-    finish(sec);
+    if (testT || segs[i].kind !== 'test') return;
+    testT = Math.max(1, Math.round((elapsed - testStart) / 1000));
+    kmAnnounced = Math.floor(distM() / 1000);   // הקילומטרים של המבדק לא מוכרזים בשחרור
+    toast(`3 km: ${fmtTime(testT)}`, 3500);
+    nextSeg();
   }
 
-  function finish(testSec = null) {
+  function finish() {
+    if (ended) return;
     clearInterval(timer);
+    const testSec = testT, inTest = segs[i]?.kind === 'test';
+    const dur = Math.round(elapsed / 1000);
+    // נעצר מוקדם (25.11.2026): פחות מ-60% מהזמן המתוכנן (דילוג על חימום ושחרור עדיין נחשב אימון מלא), או מבדק בלי תוצאה —
+    // נשמר בהיסטוריה, אבל היום בתוכנית נשאר פתוח, כמו שמירה חלקית של אימון. אימון חופשי אינו חלק מהתוכנית
+    const partial = run.type !== 'free' && (run.type === 'test' ? !testSec : totalPlanned > 0 && dur < totalPlanned * 0.6);
     gps.stop();
     const hr = hrRec.stop();
-    if (!testSec) { stop(); say(medS ? 'med_done' : walkS ? 'walk_done' : 'run_done', { priority: true }); } else say('run_done');
+    if (!(testSec && inTest)) { stop(); say(medS ? 'med_done' : walkS ? 'walk_done' : 'run_done', { priority: true }); } else say('run_done');
     // משפט אחד בהקשר בסיום: השבוע נסגר, פעילות עשירית, פעילות ארוכה (הריצה נשמרת רק אחרי הדירוג, ולכן plus: 1)
     if ((walkS || runCoach) && !testSec) {
       const st0 = get(), tot = st0.plan?.week?.sessions?.length || 0, did = st0.plan?.completedDays || [];
-      const weekDone = day != null && (isRun(st0.profile) || isWalk(st0.profile) || extra) && !did.includes(day) && tot >= 2 && did.length === tot - 1;
-      const ce = ctxEnd(coach, { weekDone, durSec: Math.round(elapsed / 1000), plannedMin: totalPlanned / 60, plus: 1 }); if (ce) say(ce);
+      const weekDone = !partial && day != null && (isRun(st0.profile) || isWalk(st0.profile) || extra) && !did.includes(day) && tot >= 2 && did.length === tot - 1;
+      const ce = ctxEnd(coach, { partial, weekDone, durSec: Math.round(elapsed / 1000), plannedMin: totalPlanned / 60, plus: 1 }); if (ce) say(ce);
     }
-    confetti(90);
-    const dur = Math.round(elapsed / 1000);
+    if (!partial) confetti(90);
     const measured = distM();
     const route = measured >= 200 ? simplifyPath(gps.path) : [];
     $('#mapBtn').hidden = true;
@@ -332,11 +341,12 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       ...(medS ? { marks: pts, accent: '#8a5cf6', sub: `with ${COACHES.or.name}`, art: `../assets/med/${medS}.webp` } : {}) })
       .then((b) => { routeBlob = b; const btn = $('#routeImgBtn'); if (btn) btn.hidden = false; if (stamp.saved) saveRouteImage(stamp(), b); }).catch(() => {});
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">Average pace <b class="num">${fmtPace(dur / (measured / 1000))}</b> per km${splits.map((t, k) => ` · km ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
-    const distGuess = testSec ? 3 : measured >= 200 ? Math.round(measured / 10) / 100 : '';
+    const distGuess = measured >= 200 ? Math.round(measured / 10) / 100 : testSec ? 3 : '';   // מבדק: המרחק של כל האימון כשנמדד (25.11.2026); בלי GPS — 3 ק״מ, כמו קודם
     $('.panel').innerHTML = html`<div class="h1" style="text-align:center;margin-top:8px">${walkS ? 'Walk complete' : 'Run complete'}</div>
       <div class="kpis" style="margin:14px 0"><div class="kpi"><b>${fmtTime(dur)}</b><span>Total time</span></div>
         ${testSec ? `<div class="kpi up"><b>${fmtTime(testSec)}</b><span>3 km</span></div>` : `<div class="kpi"><b>${distGuess || '—'}</b><span>km</span></div>`}
         <div class="kpi"><b>+${XP.run}</b><span>XP</span></div></div>
+      ${partial ? '<div class="sub" style="text-align:center;margin-bottom:10px">The session stopped before the end. It will be saved, and the day stays open in your plan.</div>' : ''}
       ${medS ? `<div class="med-points"><b>The points of the journey</b><ol>${marks.map((m) => `<li class="${m.pos ? '' : 'nopos'}">${esc(m.name)}</li>`).join('')}</ol>${pts.length ? '<div class="sub t-cap">The numbers are marked on the map, where each point began.</div>' : ''}</div>` : ''}
       ${splitsHtml}${hrSummaryHtml(hr)}
       <label class="field" style="margin-top:12px"><span>Distance (km) ${measured >= 200 ? '— measured by GPS, you can correct it' : '— optional'}</span><input class="input num" id="dist" type="number" step="0.01" inputmode="decimal" value="${distGuess}" placeholder="e.g. 5.2"></label>
@@ -351,7 +361,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {
       const dist = Number($('#dist').value) || null;
-      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}), ...(medS ? { med: medS } : {}), ...(route.length > 1 && pts.length ? { marks: pts } : {}) });
+      saveRun({ type: run.type, name: run.name, durationSec: dur, distanceKm: dist, timeSec: testSec, rpe: Number(b.dataset.rpe), date: stamp(), day, hr, gps: measured >= 200, ...(partial ? { partial: true } : {}), ...(route.length > 1 ? { route, splits } : {}), ...(extra ? { planDay: true } : {}), ...(walkS ? { walk: true } : {}), ...(medS ? { med: medS } : {}), ...(route.length > 1 && pts.length ? { marks: pts } : {}) });
       stamp.saved = true; if (routeBlob) saveRouteImage(stamp(), routeBlob);
       close();
     });
@@ -413,17 +423,18 @@ export function saveRun(r) {
   const st = get();
   const prev = st.runs.filter((x) => x.type === 'test' && x.timeSec).map((x) => x.timeSec);
   const isPR = r.timeSec && (!prev.length || r.timeSec < Math.min(...prev));
+  const xp = XP.run + (isPR ? XP.pr : 0);   // נשמר על הרשומה (25.11.2026), כדי שמחיקה תוריד בדיוק את מה שניתן
   set((s2) => {
-    s2.runs.push({ date: r.date || new Date().toISOString(), ...r });
+    s2.runs.push({ date: r.date || new Date().toISOString(), ...r, xp });
     s2.runs.filter((x) => x.route).slice(0, -40).forEach((x) => { delete x.route; delete x.marks; });   // המסלול נשמר ל-40 האימונים האחרונים
     // מסלול ריצה: הריצה היא האימון של היום בתוכנית
-    if ((isRun(s2.profile) || isWalk(s2.profile) || r.planDay) && r.day != null && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
+    if ((isRun(s2.profile) || isWalk(s2.profile) || r.planDay) && r.day != null && !r.partial && !s2.plan.completedDays.includes(r.day)) s2.plan.completedDays.push(r.day);
     if (isRun(s2.profile) && r.timeSec) s2.profile.level = runLevelFrom3k(r.timeSec);
     if (r.timeSec) { s2.profile.run3k = r.timeSec; s2.profile.runLevel = runLevelFrom3k(r.timeSec); }
     return s2;
   });
-  addXP(XP.run + (isPR ? XP.pr : 0), 'run');
-  if ((isRun(get().profile) || isWalk(get().profile) || r.planDay) && r.day != null) { const msg = maybeAdvanceWeek(); if (msg) pushEvent({ type: 'coach', text: msg }); }
+  addXP(xp, 'run');
+  if ((isRun(get().profile) || isWalk(get().profile) || r.planDay) && r.day != null && !r.partial) { const msg = maybeAdvanceWeek(); if (msg) pushEvent({ type: 'coach', text: msg }); }
   pingWorkout();
   if (r.timeSec) pushEvent({ type: isPR ? 'pr' : 'coach', text: `${isPR ? 'New 3 km record' : '3 km test'}: ${fmtTime(r.timeSec)}. Next target: ${fmtTime(next3kTarget(r.timeSec))}` });
   if (isPR) say('pr');
