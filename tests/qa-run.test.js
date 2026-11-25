@@ -79,3 +79,22 @@ test('אימון מתוכנן שנעצר מוקדם נשמר, אבל לא מסמ
   assert.match(src, /r\.day != null && !r\.partial && !s2\.plan\.completedDays\.includes\(r\.day\)/);
   assert.match(src, /r\.day != null && !r\.partial\) \{ const msg = maybeAdvanceWeek\(\)/);
 });
+
+// ───── מפה וסימון (25.11.2026) ─────
+test('סימוני הקילומטרים מחולקים לפי המרחק שנמדד, ומסלול קצר מוגדל למסגרת', async () => {
+  const { kmPoints } = await import('../js/ui/route-image.js');
+  const { fitView, fitScale, project } = await import('../js/ui/map.js');
+  const MY = 111195, line = (m, n = 60) => Array.from({ length: n + 1 }, (_, i) => [32.08 + (m * i) / n / MY, 34.78]);
+  const at = (p) => Math.round(((p[0] - 32.08) * MY) / 5) * 5;
+  const r = line(2450);   // המסלול השמור קצר ב-2% מ-2,500 מ׳ שנמדדו
+  assert.deepEqual(kmPoints(r).map(at), [1000, 2000]);
+  assert.deepEqual(kmPoints(r, 2500).map(at), [980, 1960]);            // 1,000 מתוך 2,500 = 40% מהמסלול
+  assert.equal(kmPoints(line(2940), 2990).length, 2);                  // לא יותר סימונים מקילומטרים שלמים
+  assert.equal(kmPoints(line(2960), 3020).length, 3);                  // שלושה ק״מ נמדדו — שלושה סימונים, אף שהמסלול השמור קצר מ-3,000
+  assert.deepEqual(kmPoints(r, 5000).map(at), [1000, 2000]);           // מרחק שתוקן ביד ורחוק מאורך המסלול — לא משמש
+  const sq = [[32.08, 34.78], [32.0818, 34.78], [32.0818, 34.7821], [32.08, 34.7821], [32.08, 34.78]];
+  const { z } = fitView(sq, 393, 220, 16), s = fitScale(sq, 393, 220, z, 16);
+  const a = project(32.0818, 34.78, z), d = project(32.08, 34.7821, z), bw = (d[0] - a[0]) * s, bh = (d[1] - a[1]) * s;
+  assert.ok(s >= 1 && s <= 1.7); assert.ok(bw <= 393 - 32 + 0.5 && bh <= 220 - 32 + 0.5, 'המסלול נשאר בתוך המסגרת');
+  assert.ok(Math.max(bw / (393 - 32), bh / (220 - 32)) > 0.58, 'ולא נשאר קטן');
+});

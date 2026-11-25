@@ -1229,6 +1229,7 @@ button.mi .tag { margin-inline-end: 4px; }
 
 /* מפת המסלול בריצה ובהליכה */
 .live .stage .run-map { position: absolute; inset: 0; }
+.live.run-ended.has-route .stage .say, .live.run-ended.has-route .stage .coach-pip { display: none; }   /* 25.11.2026: בסיכום המסלול מקבל את כל התמונה */
 .rmap { overflow: hidden; background: #131a22; direction: ltr; }
 .rmap-tiles, .rmap-line { position: absolute; inset: 0; width: 100%; height: 100%; }
 .rmap-tiles img { position: absolute; top: 0; left: 0; width: 256px; height: 256px; max-width: none; user-select: none; -webkit-user-drag: none; }

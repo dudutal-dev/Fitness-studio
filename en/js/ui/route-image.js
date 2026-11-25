@@ -2,7 +2,7 @@
 // נקודות ההתחלה והסיום, סימון לכל קילומטר, ונקודות ממוספרות (marks — למשל הנקודות של מסע המדיטציה); שורת נתונים גדולה; ומקרא לנקודות.
 // נוצרת בסוף האימון ונשמרת בטלפון (Cache Storage, לא ב-localStorage — תמונות כבדות מדי בשבילו) לפי תאריך הריצה;
 // ההיסטוריה מציגה אותה גם בלי רשת, ואפשר לשתף או לשמור אותה. אם אריחי המפה לא נטענים — המסלול מצויר על רקע חלק.
-import { project, fitView } from './map.js';
+import { project, fitView, fitScale } from './map.js';
 import { APP_ID, APP_NAME } from '../app-id.js';
 
 const STORE = `routes-${APP_ID}`, KEEP = 80;
@@ -16,11 +16,16 @@ const tile = (z, x, y) => new Promise((res) => {
 const R = 6371000, rad = (d) => (d * Math.PI) / 180;
 const dist = (a, b) => { const dl = rad(b[0] - a[0]), dn = rad(b[1] - a[1]), h = Math.sin(dl / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
 // הנקודה שעל המסלול בכל קילומטר שלם: [[lat, lon], …]
-export function kmPoints(route) {
-  const out = []; let acc = 0, next = 1000;
+// totalM (25.11.2026): המרחק שנמדד באימון. המסלול השמור מדולל ל-150 נקודות ולכן קצר מעט מהמרחק שנמדד (פינות נחתכות) — בלי התיקון
+// סימון הקילומטר זז קדימה (נמדד: 20–50 מ׳ אחרי 1–2 ק״מ, ויותר ככל שהמסלול מתארך). עם totalM הסימונים מחולקים לפי המרחק שנמדד,
+// כמו זמני המקטעים. מרחק ששונה מאורך המסלול ביותר מ-15% (תוקן ביד) — לא משמש.
+export function kmPoints(route, totalM = 0) {
+  let len = 0; for (let i = 1; i < route.length; i++) len += dist(route[i - 1], route[i]);
+  const k = totalM > 0 && len > 0 && Math.abs(totalM / len - 1) <= 0.15 ? len / totalM : 1, step = 1000 * k;
+  const out = []; let acc = 0, next = step;
   for (let i = 1; i < route.length; i++) {
     const d = dist(route[i - 1], route[i]);
-    while (d > 0 && acc + d >= next) { const f = (next - acc) / d; out.push([route[i - 1][0] + (route[i][0] - route[i - 1][0]) * f, route[i - 1][1] + (route[i][1] - route[i - 1][1]) * f]); next += 1000; }
+    while (d > 0 && acc + d >= next) { const f = (next - acc) / d; out.push([route[i - 1][0] + (route[i][0] - route[i - 1][0]) * f, route[i - 1][1] + (route[i][1] - route[i - 1][1]) * f]); next += step; }
     acc += d;
   }
   return out;
@@ -30,15 +35,15 @@ const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x 
 // route: [[lat, lon], …] · title: שם האימון · date: תאריך לתצוגה · stats: [{ v, l }] עד ארבעה נתונים · caption: שורת סיכום (כשאין stats)
 // marks: [{ pos: [lat, lon], name, n }] נקודות ממוספרות על המסלול, עם מקרא · accent: צבע המסלול · sub: שורה קטנה מתחת לכותרת
 // art: כתובת של איור (מאותו אתר) שממלא את רקע הכותרת — למשל האיור של מסע המדיטציה. מחזיר Blob של JPEG
-export async function renderRouteImage(route, { title = '', caption = '', date = '', sub = '', stats = [], marks = [], accent = '#2f6bff', art = '', w = 1080 } = {}) {
+export async function renderRouteImage(route, { title = '', caption = '', date = '', sub = '', stats = [], marks = [], accent = '#2f6bff', art = '', w = 1080, km = 0 } = {}) {
   marks = marks.filter((m) => m && m.pos);
   const artIm = art ? await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = art; }) : null;
   const head = artIm ? 250 : 150, mh = 860, statH = stats.length || caption ? 190 : 0, rows = Math.ceil(marks.length / 2), legH = rows ? 70 + rows * 62 : 0, foot = 26, h = head + mh + statH + legH + foot;
   const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-  const { z, c } = fitView(route, w, mh, 90, 17), n = 2 ** z;
-  const [cx, cy] = project(c[0], c[1], z), ox = cx - w / 2, oy = cy - mh / 2;
+  const { z, c } = fitView(route, w, mh, 90, 17), n = 2 ** z, s = fitScale(route, w, mh, z, 90);   // s: מסלול קצר מוגדל כדי למלא את המפה
+  const [cx, cy] = project(c[0], c[1], z), ox = cx - w / 2 / s, oy = cy - mh / 2 / s;
   const want = [];
-  for (let x = Math.floor(ox / 256); x <= Math.floor((ox + w) / 256); x++) for (let y = Math.floor(oy / 256); y <= Math.floor((oy + mh) / 256); y++) if (y >= 0 && y < n) want.push([x, y]);
+  for (let x = Math.floor(ox / 256); x <= Math.floor((ox + w / s) / 256); x++) for (let y = Math.floor(oy / 256); y <= Math.floor((oy + mh / s) / 256); y++) if (y >= 0 && y < n) want.push([x, y]);
   const tiles = await Promise.all(want.map(([x, y]) => tile(z, ((x % n) + n) % n, y)));
   const rtl = document.documentElement.dir !== 'ltr', F = 'Heebo, system-ui, sans-serif';
   const paint = (withTiles) => {
@@ -47,16 +52,16 @@ export async function renderRouteImage(route, { title = '', caption = '', date =
     // ── המפה
     g.save(); g.translate(0, head); g.beginPath(); g.rect(0, 0, w, mh); g.clip();
     g.fillStyle = '#e9eef2'; g.fillRect(0, 0, w, mh);
-    if (withTiles) want.forEach(([x, y], i) => { if (tiles[i]) g.drawImage(tiles[i], Math.round(x * 256 - ox), Math.round(y * 256 - oy), 256, 256); });
+    if (withTiles) want.forEach(([x, y], i) => { if (tiles[i]) g.drawImage(tiles[i], Math.floor((x * 256 - ox) * s), Math.floor((y * 256 - oy) * s), Math.ceil(256 * s) + 1, Math.ceil(256 * s) + 1); });
     g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(0, 0, w, mh);   // מרכך את המפה כדי שהמסלול יבלוט
-    const xy = (p) => { const [x, y] = project(p[0], p[1], z); return [x - ox, y - oy]; };
+    const xy = (p) => { const [x, y] = project(p[0], p[1], z); return [(x - ox) * s, (y - oy) * s]; };
     const pts = route.map(xy);
     g.lineJoin = g.lineCap = 'round';
     const line = (color, width) => { g.strokeStyle = color; g.lineWidth = width; g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); };
     line('rgba(15,22,29,0.28)', 20); line('#ffffff', 15); line(accent, 9);
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'ltr';
     // סימון לכל קילומטר
-    kmPoints(route).forEach((p, i) => { const [x, y] = xy(p); g.beginPath(); g.arc(x, y, 15, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent; g.stroke(); g.fillStyle = '#0f161d'; g.font = `800 17px ${F}`; g.fillText(String(i + 1), x, y + 1); });
+    kmPoints(route, km * 1000).forEach((p, i) => { const [x, y] = xy(p); g.beginPath(); g.arc(x, y, 15, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent; g.stroke(); g.fillStyle = '#0f161d'; g.font = `800 17px ${F}`; g.fillText(String(i + 1), x, y + 1); });
     const dot = ([x, y], fill, r) => { g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = '#fff'; g.fill(); g.beginPath(); g.arc(x, y, r - 5, 0, 7); g.fillStyle = fill; g.fill(); };
     dot(pts[0], '#19b36b', 17); dot(pts[pts.length - 1], '#ff5a3c', 17);
     // הנקודות הממוספרות

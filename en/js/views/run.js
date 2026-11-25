@@ -150,6 +150,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   function layoutMap() {
     if (!map) return;
     const h = root.clientHeight;
+    // בסיכום (25.11.2026): כל המסלול בין הכפתורים שלמעלה לתחתית התמונה, והבועה של המאמן מוסתרת (css) — קודם היא כיסתה את תחתית המסלול
+    if (ended) { const hh = $('#rmap').clientHeight || 1, top = Math.min(hh * 0.5, $('.hud-top').getBoundingClientRect().bottom - $('#rmap').getBoundingClientRect().top + 4); return map.layout({ anchor: (top + hh) / 2 / hh, inset: top, pad: 16 }); }
     if (!root.classList.contains('map-full')) return map.layout({ anchor: 0.56, inset: 90 });
     const top = $('.hud-top').getBoundingClientRect().bottom + 54, bot = $('.panel').getBoundingClientRect().top;
     map.layout({ anchor: (top + bot) / 2 / h, inset: h - (bot - top) });
@@ -333,11 +335,11 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     $('#mapBtn').hidden = true;
     ended = true; root.classList.remove('map-full', 'panel-min'); root.classList.add('run-ended');
     const pts = marks.map((m, n) => ({ ...m, n: n + 1 })).filter((m) => m.pos).map(({ name, pos, n }) => ({ name, n, pos: [Math.round(pos[0] * 1e5) / 1e5, Math.round(pos[1] * 1e5) / 1e5] }));
-    if (route.length > 1) { showMap(true); map.setMode('fit'); map.setMarks(pts); }
+    if (route.length > 1) { root.classList.add('has-route'); showMap(true); map.setMode('fit'); map.setMarks(pts); }
     else if (mapOn) layoutMap();
     // תמונת המסלול: נוצרת ברקע; כשהיא מוכנה מופיע הכפתור, ובשמירה היא נשמרת בטלפון לפי תאריך האימון
     if (route.length > 1) renderRouteImage(route, { title: run.name, date: new Date().toLocaleDateString(document.documentElement.lang === 'en' ? 'en-GB' : 'en-US', { day: 'numeric', month: 'numeric', year: 'numeric' }),
-      stats: [{ v: (measured / 1000).toFixed(2), l: 'km' }, { v: fmtTime(dur), l: 'Time' }, { v: fmtPace(dur / (measured / 1000)), l: 'Pace per km' }],
+      km: measured / 1000, stats: [{ v: (measured / 1000).toFixed(2), l: 'km' }, { v: fmtTime(dur), l: 'Time' }, { v: fmtPace(dur / (measured / 1000)), l: 'Pace per km' }],
       ...(medS ? { marks: pts, accent: '#8a5cf6', sub: `with ${COACHES.or.name}`, art: `../assets/med/${medS}.webp` } : {}) })
       .then((b) => { routeBlob = b; const btn = $('#routeImgBtn'); if (btn) btn.hidden = false; if (stamp.saved) saveRouteImage(stamp(), b); }).catch(() => {});
     const splitsHtml = measured >= 200 ? `<div class="sub run-splits">Average pace <b class="num">${fmtPace(dur / (measured / 1000))}</b> per km${splits.map((t, k) => ` · km ${k + 1}: <b class="num">${fmtTime(t - (splits[k - 1] || 0))}</b>`).join('')}</div>` : '';
