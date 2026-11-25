@@ -285,6 +285,7 @@ const mem = { get: k => { try { return localStorage.getItem(k) || ''; } catch { 
 const HERE = BASE[mem.get('fitlicapp')] ? mem.get('fitlicapp') : 'studio';   // האפליקציה שנבחרה בפעם הקודמת בטופס ההנפקה
 let pw = mem.get('fitlicpw'), sess = '', sessAt = 0, show = 'all', stat = 'all', q = '', last = null;   // מפתחות נפרדים ממסך הניהול של אתונה/ליסבון (אותו דומיין)
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), unb64u = t => Uint8Array.from(atob(t.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+try { const k = JSON.parse(sessionStorage.getItem('fitlicsess') || 'null'); sessionStorage.removeItem('fitlicsess'); if (k && k.s && Date.now() - k.t < 25 * 60e3) { sess = k.s; sessAt = k.t; } } catch {}   // כניסה שעברה טעינה מחדש של עדכון גרסה
 const canFace = !!(window.PublicKeyCredential && navigator.credentials), faceOn = () => mem.get('fitlicwa') === '1';
 const say = t => { const m = $('#msg'); m.textContent = t; m.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => m.hidden = true, 3200); };
 const call = async (op, o = {}) => { const r = await fetch(API, { method: 'POST', body: JSON.stringify({ pw, sess, op, ...o }) }); return r.json(); };
@@ -342,7 +343,9 @@ async function start() {
     $('#authNote').textContent = first ? 'זו הכניסה הראשונה. הסיסמה שתיקבע כאן תהיה היחידה שפותחת את המסך הזה, ואין דרך לשחזר אותה. לפחות 8 תווים.' : 'הסיסמה נשמרת בטלפון הזה עד שלוחצים "יציאה".';
     $('#authGo').textContent = first ? 'קביעת הסיסמה' : 'כניסה'; $('#authForm').dataset.first = first ? '1' : '';
     if (!first && pw && (await call('login')).ok) return open();
-    if (!first && canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; $('#authNote').textContent = 'הטלפון הזה מוגדר לכניסה בזיהוי פנים.'; }
+    // עדכון גרסה טוען את העמוד מחדש: הכניסה בזיהוי פנים (חצי שעה) עוברת את הטעינה, כדי שלא יידרש זיהוי חדש אחרי כל גרסה
+    if (!first && sess && (await call('login')).ok) return open(); sess = '';
+    if (!first && canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; $('#authNote').textContent = 'הטלפון הזה מוגדר לכניסה בזיהוי פנים.'; waPrep(); }
   } catch { $('#authNote').textContent = 'אין חיבור לשרת. לנסות שוב בעוד רגע.'; }
 }
 $('#authForm').onsubmit = async e => { e.preventDefault(); pw = $('#pw').value;
@@ -363,19 +366,28 @@ async function faceEnable() {
   } catch { say('ההפעלה בוטלה'); } }
 async function faceDisable() { if (!await ask('לכבות זיהוי פנים?', 'הכניסה תחזור להיות עם סיסמה.', 'כיבוי', true)) return; await call('wa-clear').catch(() => {}); mem.set('fitlicwa', ''); say('זיהוי הפנים כובה'); }
 // אימות בזיהוי פנים. מחזיר true כשהשרת אישר (ואז sess תקף לחצי שעה מהפעולה האחרונה)
+// 25.11.2026 — "זיהוי הפנים נחסם": האייפון מאשר זיהוי פנים רק מיד אחרי לחיצה. קודם, בין הלחיצה לזיהוי חיכינו לתשובה מהשרת (האתגר),
+// והזיהוי הופעל גם לבד — בחזרה לאפליקציה אחרי חצי שעה, בלי שום לחיצה — ואז הטלפון חסם אותו. עכשיו האתגר מוכן מראש כשמסך הכניסה מוצג
+// (waPrep; תקף 3 דקות בשרת, מתחדש כל שתי דקות), הזיהוי מתחיל מיד בלחיצה, ובלי לחיצה לא מנסים לזהות אלא מציגים את הכפתור.
+let waPre = null;
+async function waPrep() { try { const st = await call('wa-start'); waPre = st.ok ? { st, at: Date.now() } : null; } catch { waPre = null; } }
+const faceShown = () => !$('#auth').hidden && !$('#faceGo').hidden;
+setInterval(() => { if (faceShown() && !document.hidden) waPrep(); }, 120e3);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && faceShown()) waPrep(); });
+const tapped = () => !navigator.userActivation || navigator.userActivation.isActive;   // יש לחיצה טרייה (בדפדפן ישן שלא מדווח — מנסים כמו קודם)
 async function faceAuth() {
-  try { const st = await call('wa-start'); if (!st.ok || !st.ids.length) { mem.set('fitlicwa', ''); say('זיהוי הפנים לא מוגדר. להיכנס עם סיסמה'); return false; }
+  try { const st = waPre && Date.now() - waPre.at < 150e3 ? waPre.st : await call('wa-start'); waPre = null; if (!st.ok || !st.ids.length) { mem.set('fitlicwa', ''); say('זיהוי הפנים לא מוגדר. להיכנס עם סיסמה'); return false; }
     const a = await navigator.credentials.get({ publicKey: { challenge: unb64u(st.challenge), rpId: location.hostname, allowCredentials: st.ids.map(id => ({ type: 'public-key', id: unb64u(id) })), userVerification: 'required', timeout: 60000 } });
     const r = await call('wa-finish', { id: a.id, authData: b64u(a.response.authenticatorData), clientData: b64u(a.response.clientDataJSON), sig: b64u(a.response.signature) });
-    if (!r.ok) { say('הזיהוי נכשל'); return false; } sess = r.sess; sessAt = Date.now(); return true;
-  } catch { say('הזיהוי בוטל'); return false; } }
+    if (!r.ok) { say('הזיהוי נכשל. לנסות שוב'); if (faceShown()) waPrep(); return false; } sess = r.sess; sessAt = Date.now(); return true;
+  } catch (e) { say(e && e.name === 'NotAllowedError' ? 'הזיהוי בוטל או נחסם. ללחוץ שוב על הכפתור' : e && e.name === 'SecurityError' ? 'זיהוי פנים לא זמין בכתובת הזאת. להיכנס עם סיסמה' : 'הזיהוי לא הצליח. לנסות שוב, או להיכנס עם סיסמה'); if (faceShown()) waPrep(); return false; } }
 // פעולת ניהול. הכניסה בזיהוי פנים תקפה לחצי שעה מהפעולה האחרונה: כשהיא עומדת לפוג או כבר פגה — מאמתים שוב וחוזרים על הפעולה,
 // במקום להיכשל בשקט.
 async function act(op, o = {}) {
-  if (faceOn() && sess && Date.now() - sessAt > 25 * 60e3) await faceAuth();
+  if (faceOn() && sess && Date.now() - sessAt > 25 * 60e3 && tapped()) await faceAuth();
   let r = await call(op, o).catch(() => ({ net: true }));
-  if (r.why === 'auth' && canFace && faceOn() && await faceAuth()) r = await call(op, o).catch(() => ({ net: true }));
-  if (r.why === 'auth') { lock(true); say('הכניסה פגה. לאמת שוב, ואז לחזור על הפעולה'); if (canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; } }
+  if (r.why === 'auth' && canFace && faceOn() && tapped() && await faceAuth()) r = await call(op, o).catch(() => ({ net: true }));
+  if (r.why === 'auth') { lock(true); say('הכניסה פגה. לאמת שוב, ואז לחזור על הפעולה'); if (canFace && faceOn()) { $('#faceGo').hidden = false; $('#usePw').hidden = false; $('#authForm').hidden = true; waPrep(); } }
   else if (r.ok && sess) sessAt = Date.now();
   return r;
 }
@@ -556,10 +568,11 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && la
 // ───── עדכון אוטומטי ─────
 // האפליקציה המותקנת נשארת פתוחה בזיכרון, והעמוד נשמר במטמון הדפדפן — לכן בודקים מול השרת בכל פתיחה ובכל חזרה למסך,
 // וכשיש גרסה חדשה טוענים אותה מחדש (עם כתובת שעוקפת את המטמון). השורה הבאה מתעדכנת ע״י tools/release.mjs.
-const ADMIN_V = '20261125.113913';
+const ADMIN_V = '20261125.212913';
 async function update() {
   try { const v = (await (await fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })).json()).v;
     if (!v || v === ADMIN_V || new URLSearchParams(location.search).get('v') === v || document.querySelector('.ov')) return;   // לא באמצע פעולה, ולא בלולאה
+    try { if (sess) sessionStorage.setItem('fitlicsess', JSON.stringify({ s: sess, t: sessAt })); } catch {}
     location.replace(location.pathname + '?v=' + encodeURIComponent(v));
   } catch { /* אין רשת */ } }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
