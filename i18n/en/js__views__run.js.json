@@ -72,5 +72,7 @@
  "שלב": "Stage ",
  "מתוך": " of ",
  "הבא:": "Next: ",
- "השלב האחרון": "The last stage"
+ "השלב האחרון": "The last stage",
+ "האימון נעצר כשהמסך היה סגור. ממשיכים מאותה נקודה.": "The workout stopped while the screen was closed. Continuing from the same point.",
+ "· קליטה חלשה מדי, המרחק לא נמדד כרגע": " · signal too weak, distance is not being measured right now"
 }

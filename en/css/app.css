@@ -1443,3 +1443,6 @@ button.mi .tag { margin-inline-end: 4px; }
 }
 /* תיקון לסיכום (25.11.2026): החלונית היא עמודת flex, והכפתורים שבתחתית התכווצו לגובה אפס במקום שהיא תיגלל */
 @media (orientation: portrait) { .live.run-ended .panel > * { flex-shrink: 0; } }
+
+/* מסך קצר (25.11.2026): בריצה / הליכה חופשית בלי מפה הכפתור "סיום ושמירה" היה מתחת למסך. התמונה שלמעלה מתכווצת כדי שהכפתורים ייכנסו */
+@media (orientation: portrait) and (max-height: 780px) { .live:not(.med-live):not(.run-ended):not(.map-full) .stage.run-stage { flex-shrink: 1 !important; min-height: 96px; } }

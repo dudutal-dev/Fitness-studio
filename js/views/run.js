@@ -54,7 +54,8 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const segs = run.segs;
   const hrMax = maxHrFor(profile);
   let i = 0;
-  let segStart = 0, elapsed = 0, lastTick = Date.now();
+  let segStart = 0, elapsed = 0, lastTick = Date.now(), wokeAt = 0;
+  const SLEEP_GAP = 5 * 60000;
   let paused = false, timer = null, wakeLock = null;
   let testStart = null, testStartDist = 0, saidHalf = false;
   let kmAnnounced = 0;
@@ -75,7 +76,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
   const marks = [];   // מדיטציה: הנקודה של כל חלק במסע — היכן על המסלול היא התחילה (לסימון על מפת הסיום ובדף המסלול)
   let routeBlob = null;   // תמונת המסלול — נוצרת בסיום ונשמרת עם האימון
   const stamp = () => (stamp.at ||= new Date().toISOString());
-  let paceWas = null, paceSince = 0, paceCooldown = 0, praised = false, blindSince = 0, blindSaid = false, counted = false;
+  let paceSegI = -1, paceWas = null, paceSince = 0, paceCooldown = 0, praised = false, blindSince = 0, blindSaid = false, counted = false;
   const hrRec = recorder(profile);
   let rscBase = null;
   const distM = () => {
@@ -196,7 +197,12 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
 
   function tick() {
     const now = Date.now();
-    if (!paused) elapsed += now - lastTick;
+    // הדף היה רדום (טלפון נעול, האפליקציה נסגרה ברקע) יותר מחמש דקות (25.11.2026): הזמן הזה לא נספר, והאימון ממשיך מהמקום שבו נעצר.
+    // קודם כל הפער נוסף לשעון: הליכה של חצי שעה "הסתיימה" מיד עם זמן של ארבע שעות, כל המקטעים רצו בשנייה וחצי, והיום סומן כבוצע.
+    // פער קצר יותר (מסך שננעל לכמה דקות תוך כדי הליכה) נספר כמו קודם, והאימון נשאר מסונכרן לשעון.
+    const gap = now - lastTick;
+    if (!paused && gap > SLEEP_GAP) { gps.pause(true); gps.pause(false); wokeAt = now; toast('האימון נעצר כשהמסך היה סגור. ממשיכים מאותה נקודה.', 4000); }
+    else if (!paused) elapsed += gap;
     lastTick = now;
     $('#tot').textContent = fmtTime(elapsed / 1000);
     const sg = segs[i];
@@ -216,7 +222,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     if (gps.here && $('#mapBtn').hidden && !$('[data-rpe]')) { $('#mapBtn').hidden = false; if (get().settings.runMap !== false && !medS) showMap(true); }   // במדיטציה נשאר האיור של המסע; המפה — בכפתור
     if (mapOn && now - mapDrawn > 1000) { mapDrawn = now; layoutMap(); map.draw(gps.path, gps.here); }   // המיקום העדכני — המפה זזה עם ההליכה
     if (Math.floor(d / 1000) > splits.length) splits.push(Math.round(elapsed / 1000));
-    if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳${st.accuracy > 40 ? ' · קליטה חלשה, המרחק מקורב' : ''}` : st.fixes ? 'אין קליטת GPS כרגע…' : 'מחפש GPS…'; }
+    if (gpsOn && !hasRSC()) { const st = gps.status; $('#gpsst').textContent = st.error ? 'אין גישה למיקום — המרחק לא יימדד. אפשר לאשר מיקום בהגדרות הדפדפן.' : st.ok ? `GPS · דיוק ${st.accuracy} מ׳${st.accuracy > 120 ? ' · קליטה חלשה מדי, המרחק לא נמדד כרגע' : st.accuracy > 40 ? ' · קליטה חלשה, המרחק מקורב' : ''}` : st.fixes ? 'אין קליטת GPS כרגע…' : 'מחפש GPS…'; }
     if (c.hr) {
       const z = zoneOf(c.hr, hrMax);
       $('#hr').textContent = c.hr; $('#hrz').textContent = `Z${z.z} · ${z.name}`; $('#hr').style.color = z.color;
@@ -254,10 +260,11 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
     const left = sg.sec - inSeg;
     // הליכה לפי הקצב מה-GPS: לאט מדי במקטע מהיר — מגבירים; מהר מדי במקטע רגוע — מאטים; ועל קצב טוב שנשמר — מילה טובה
     // במדיטציה (25.11.2026): אותה הכוונה במשפטים רגועים של אור, ולעיתים רחוקות יותר — רק אחרי שקטע הדיבור של המקטע הסתיים, ולא יותר מפעם בשתי דקות וחצי
+    if (paused) paceWas = undefined;   // אחרי השהיה ההכוונה מתחילה למדוד מחדש
     if (walkS && !paused) {
       const tgt = medS ? walkTarget({ level: profile.medLevel || profile.walkLevel || 1 }, sg.kind) : walkTarget(profile, sg.kind);
       const v = gps.status.ok ? paceVerdict(tgt, pc && pc < 2400 ? pc : null) : null;
-      if (v !== paceWas) { paceWas = v; paceSince = now; }
+      if (v !== paceWas || paceSegI !== i || wokeAt > paceSince) { paceWas = v; paceSince = now; paceSegI = i; }   // מודדים מחדש בכל מקטע ואחרי שהדף התעורר: "קצב מצוין" נאמר חצי דקה אחרי תחילת מקטע, על סמך המקטע הקודם
       const K = medS ? MED_PACE : { up: 'walk_pace_up', easy: 'walk_pace_easy', hold: 'walk_pace_hold', good: 'walk_pace_good' }, slowDown = medS ? 2.5 : 1;
       // תגובה מהירה יותר (24.11.2026): אחרי חצי דקה במקטע, סטייה שנמשכת רבע דקה, ולא יותר מפעם בדקה
       if (v && inSeg > (medS ? 75 : 30) && left > (medS ? 40 : 15) && now > paceCooldown) {
@@ -282,7 +289,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       if (secLeft === 60 && sg.sec >= 180 && !medS) say('run_min');
       // סוף מקטע: בהליכה — ספירה אחת רכה ורציפה (שלושה קליפים נפרדים נשמעו קטועים); בריצה — כמו קודם
       if (!walkS && secLeft <= 3 && secLeft >= 1) sayNow([`n${secLeft}`]);
-      if (!saidHalf && !medS && totalPlanned > 600 && elapsed / 1000 >= totalPlanned / 2) { saidHalf = true; say(walkS ? 'walk_half' : 'run_half'); }
+      if (!saidHalf && !medS && totalPlanned > 600 && elapsed / 1000 >= totalPlanned / 2 && left > 4)   /* לא ברגע החלפת מקטע: משפט המקטע הבא היה מבטל אותו */ { saidHalf = true; say(walkS ? 'walk_half' : 'run_half'); }
     }
     // סוף המקטע. אם הדף היה מושהה (מסך נעול) והזמן עבר את סוף המקטע — העודף נזקף למקטע הבא, כדי שהאימון יישאר מסונכרן לשעון
     if (left <= 0) { nextSeg(); if (left < -1 && segs[i] !== sg) segStart = elapsed + left * 1000; }
@@ -339,7 +346,7 @@ export function startRun(run, { day = null, coach: forced = null, extra = false 
       <button class="btn sm block" style="margin-top:8px" data-act="route-img" id="routeImgBtn" hidden>תמונת המסלול</button>`;
     // תמונת הסיכום לשיתוף: זמן, מרחק וקצב (לפי המרחק שבשדה)
     on($('.panel'), 'click', '[data-act="share-run"]', () => {
-      const km = Number($('#dist').value) || 0, pace = km ? dur / km : 0, mmss = (x) => `${Math.floor(x / 60)}:${String(Math.round(x % 60)).padStart(2, '0')}`;
+      const km = Number($('#dist').value) || 0, pace = km ? dur / km : 0, mmss = fmtPace;
       shareCard({ title: run.name, eyebrow: walkS ? 'הליכה הושלמה' : 'ריצה הושלמה', coachImg: COACHES[coach]?.img, kpis: [[fmtTime(dur), 'זמן'], ...(km ? [[km, 'ק״מ'], [mmss(pace), 'דקות לק״מ']] : [])], lines: testSec ? [`מבדק 3 ק״מ: ${fmtTime(testSec)}`] : [] });
     });
     on($('.panel'), 'click', '[data-rpe]', (e, b) => {

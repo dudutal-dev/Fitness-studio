@@ -60,7 +60,8 @@ export function gpsTracker() {
       if (recent.length < 2) return null;
       const a = recent[0], b = recent[recent.length - 1];
       const d = b.d - a.d, dt = (b.t - a.t) / 1000;
-      return d > 12 && dt > 5 && ft - b.t < 20000 ? Math.round(dt / (d / 1000)) : null;   // רק אם המרחק עדיין מצטבר
+      // רק אם המרחק עדיין מצטבר, ויש מדידות טריות: כשה-GPS נעלם הקצב האחרון נשאר על המסך עד סוף האימון (25.11.2026)
+      return d > 12 && dt > 5 && ft - b.t < 20000 && Date.now() - lastFix < 20000 ? Math.round(dt / (d / 1000)) : null;
     },
   };
 }

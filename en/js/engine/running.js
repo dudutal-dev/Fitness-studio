@@ -24,7 +24,7 @@ export function paces(run3kSec) {
 }
 
 export function fmtPace(sec) {
-  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  const t = Math.round(sec), m = Math.floor(t / 60), s = t % 60;   // מעגלים לפני החלוקה — אחרת 539.6 שניות הודפסו "8:60"
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
